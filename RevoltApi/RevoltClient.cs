@@ -17,16 +17,16 @@ namespace RevoltApi
 {
     public class RevoltClient
     {
-        private RestClient _restClient = new("https://api.revolt.chat/");
+        internal RestClient _restClient = new("https://api.revolt.chat/");
         public string UserId;
         private string _sessionToken;
         public RevoltApiInfo ApiInfo;
-        private WebsocketClient _webSocket;
+        internal WebsocketClient _webSocket;
         private Session _session;
         private List<User> _users = new();
-        public IReadOnlyList<User> Users => _users.AsReadOnly();
+        public IReadOnlyList<User> UsersCache => _users.AsReadOnly();
         private List<Channel> _channels = new();
-        public IReadOnlyList<Channel> Channels => _channels.AsReadOnly();
+        public IReadOnlyList<Channel> ChannelsCache => _channels.AsReadOnly();
         private Timer _pingTimer;
         public string ApiUrl = "https://api.revolt.chat";
         public string AutumnUrl = "https://autumn.revolt.chat";
@@ -68,6 +68,8 @@ namespace RevoltApi
 
         #endregion
 
+        public RevoltClientChannels Channels { get; private set; }
+
         public RevoltClient(Session session)
         {
             _session = session;
@@ -77,6 +79,7 @@ namespace RevoltApi
             _restClient.AddDefaultHeader("x-session-token", session.SessionToken);
             this.ApiInfo = GetApiInfo().Result;
             _webSocket = new(new Uri(ApiInfo.WebsocketUrl));
+            this.Channels = new RevoltClientChannels(this);
         }
 
         /// <summary>
@@ -178,26 +181,6 @@ namespace RevoltApi
             return JsonConvert.DeserializeObject<RevoltApiInfo>(res.Content);
         }
 
-        public async Task<Message> SendMessageToChannel(string channelId, string content, string attachmentId = null)
-        {
-            var req = new RestRequest($"/channels/{channelId}/messages", Method.POST);
-            req.AddJsonBody(JsonConvert.SerializeObject(new SendMessageRequest
-            {
-                Content = content,
-                AttachmentId = attachmentId
-            }));
-            var res = await _restClient.ExecutePostAsync(req);
-            return _deserialize<Message>(res.Content);
-        }
-
-        public Channel GetChannel(string id)
-        {
-            Channel channel = _channels.FirstOrDefault(u => u._id == id);
-            if (channel != null)
-                return channel;
-            return _deserializeChannel(_restClient.Get(new RestRequest($"/channels/{id}/")).Content);
-        }
-
         public User GetUser(string id)
         {
             User user = _users.FirstOrDefault(u => u._id == id);
@@ -226,31 +209,14 @@ namespace RevoltApi
             return obj.Value<string>("id");
         }
 
-        public async Task BeginTypingAsync(string channelId)
-        {
-            await _webSocket.SendInstant(JsonConvert.SerializeObject(new
-            {
-                type = "BeginTyping",
-                channel = channelId
-            }));
-        }
 
-        public async Task EndTypingAsync(string channelId)
-        {
-            await _webSocket.SendInstant(JsonConvert.SerializeObject(new
-            {
-                type = "EndTyping",
-                channel = channelId
-            }));
-        }
-
-        private Channel _deserializeChannel(string json)
+        internal Channel _deserializeChannel(string json)
         {
             var obj = JObject.Parse(json);
             return _deserializeChannel(obj);
         }
 
-        private Channel _deserializeChannel(JObject obj)
+        internal Channel _deserializeChannel(JObject obj)
         {
             Channel channel;
             switch (obj.Value<string>("channel_type"))
@@ -271,7 +237,7 @@ namespace RevoltApi
             return channel;
         }
 
-        private T _deserialize<T>(string json) where T : RevoltObject
+        internal T _deserialize<T>(string json) where T : RevoltObject
         {
             T obj = JsonConvert.DeserializeObject<T>(json);
             obj.Client = this;

@@ -9,7 +9,7 @@ namespace RevoltApi
     {
         [JsonProperty("nonce")] public string? Nonce;
         [JsonProperty("channel")] public string ChannelId;
-        [JsonIgnore] public Channel Channel => Client.GetChannel(ChannelId);
+        [JsonIgnore] public Channel Channel => Client.Channels.Get(ChannelId);
         [JsonProperty("author")] public string AuthorId;
         [JsonIgnore] public User Author => Client.GetUser(AuthorId);
         [JsonProperty("content")] public string Content;

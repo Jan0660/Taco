@@ -100,9 +100,9 @@ namespace RevoltBot.Modules
 
         public User GetMention(string mention)
         {
-            return Message.Client.Users.FirstOrDefault(u => u._id == mention) ??
-                   Message.Client.Users.FirstOrDefault(u => u.Username.ToLower() == mention.ToLower()) ??
-                   Message.Client.Users.FirstOrDefault(u => u._id == mention.Replace("<@", "").Replace(">", ""));
+            return Message.Client.UsersCache.FirstOrDefault(u => u._id == mention) ??
+                   Message.Client.UsersCache.FirstOrDefault(u => u.Username.ToLower() == mention.ToLower()) ??
+                   Message.Client.UsersCache.FirstOrDefault(u => u._id == mention.Replace("<@", "").Replace(">", ""));
         }
 
         [Command("retard")]

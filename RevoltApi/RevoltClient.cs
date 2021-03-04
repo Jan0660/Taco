@@ -69,6 +69,7 @@ namespace RevoltApi
         #endregion
 
         public RevoltClientChannels Channels { get; private set; }
+        public RevoltClientUsers Users { get; private set; }
 
         public RevoltClient(Session session)
         {
@@ -80,6 +81,7 @@ namespace RevoltApi
             this.ApiInfo = GetApiInfo().Result;
             _webSocket = new(new Uri(ApiInfo.WebsocketUrl));
             this.Channels = new RevoltClientChannels(this);
+            this.Users = new RevoltClientUsers(this);
         }
 
         /// <summary>
@@ -166,7 +168,7 @@ namespace RevoltApi
                     }
                     case "UserPresence":
                     {
-                        var user = GetUser(packet.Value<string>("id"));
+                        var user = Users.Get(packet.Value<string>("id"));
                         user.Online = packet.Value<bool>("online");
                         break;
                     }
@@ -179,14 +181,6 @@ namespace RevoltApi
         {
             var res = await _restClient.ExecuteGetAsync(new RestRequest("/"));
             return JsonConvert.DeserializeObject<RevoltApiInfo>(res.Content);
-        }
-
-        public User GetUser(string id)
-        {
-            User user = _users.FirstOrDefault(u => u._id == id);
-            if (user != null)
-                return user;
-            return _getObject<User>($"/users/{id}").Result;
         }
 
         public async Task<string> UploadFile(string name, string path)
@@ -244,7 +238,7 @@ namespace RevoltApi
             return obj;
         }
 
-        private async Task<T> _getObject<T>(string url) where T : RevoltObject
+        internal async Task<T> _getObject<T>(string url) where T : RevoltObject
         {
             var req = new RestRequest(url);
             var res = await _restClient.ExecuteGetAsync(req);

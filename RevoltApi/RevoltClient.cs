@@ -56,6 +56,14 @@ namespace RevoltApi
             add => _messageDeleted.Add(value);
             remove => _messageDeleted.Remove(value);
         }
+        
+        private List<Func<string, RelationshipStatus, Task>> _userRelationshipUpdated = new();
+
+        public event Func<string, RelationshipStatus, Task> UserRelationshipUpdated
+        {
+            add => _userRelationshipUpdated.Add(value);
+            remove => _userRelationshipUpdated.Remove(value);
+        }
 
         // todo: MessageUpdate
         // todo: ChannelCreate
@@ -63,7 +71,6 @@ namespace RevoltApi
         // todo: ChannelGroupJoin
         // todo: ChannelGroupLeave
         // todo: ChannelDelete
-        // todo: UserRelationship
         // todo: UserPresence
 
         #endregion
@@ -115,6 +122,8 @@ namespace RevoltApi
                 {
                     case "Message":
                         var msg = _deserialize<Message>(message.Text);
+                        if(msg.AuthorId == "01EXAG0ZFX02W7PNQE7W5MT339")
+                            return;
                         foreach (var handler in _messageReceived)
                         {
                             handler.Invoke(msg);
@@ -122,6 +131,7 @@ namespace RevoltApi
 
                         break;
                     case "MessageDelete":
+                    {
                         var id = packet.Value<string>("id");
                         foreach (var handler in _messageDeleted)
                         {
@@ -129,6 +139,7 @@ namespace RevoltApi
                         }
 
                         break;
+                    }
                     case "Ready":
                     {
                         _pingTimer?.Stop();
@@ -170,6 +181,24 @@ namespace RevoltApi
                     {
                         var user = Users.Get(packet.Value<string>("id"));
                         user.Online = packet.Value<bool>("online");
+                        break;
+                    }
+                    case "UserRelationship":
+                    {
+                        var id = packet.Value<string>("user");
+                        if(id == "01EXAG0ZFX02W7PNQE7W5MT339")
+                            return;
+                        var status = Enum.Parse<RelationshipStatus>(packet.Value<string>("status"));
+                        var user = _users.FirstOrDefault(u => u._id == id);
+                        if (user != null)
+                        {
+                            user.Relationship = status;
+                        }
+
+                        foreach (var handler in _userRelationshipUpdated)
+                        {
+                            handler.Invoke(id, status);
+                        }
                         break;
                     }
                 }

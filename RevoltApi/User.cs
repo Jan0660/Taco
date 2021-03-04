@@ -7,7 +7,7 @@ namespace RevoltApi
     {
         [JsonProperty("username")] public string Username;
         // relations
-        // relationship
+        [JsonProperty("relationship")] public RelationshipStatus Relationship;
         [JsonProperty("online")] public bool Online;
         [JsonIgnore] public string DefaultAvatarUrl => $"{Client.ApiUrl}/users/{_id}/default_avatar";
         [JsonIgnore] public string AvatarUrl => $"{Client.ApiUrl}/users/{_id}/avatar";

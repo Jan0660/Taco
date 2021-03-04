@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Log73;
@@ -15,7 +16,11 @@ namespace RevoltBot
 {
     public static class Program
     {
-        public static string Prefix => Config.Prefix;
+        #if DEBUG
+        public const string Prefix = "[";
+        #else
+        public const string Prefix = "-";
+        #endif
         public static Config Config;
         static async Task Main(string[] args)
         {
@@ -45,6 +50,21 @@ namespace RevoltBot
             client.MessageReceived += ClientOnMessageReceived;
             CommandHandler.LoadCommands();
             var c = CommandHandler.Commands;
+            var r = await client.Users.GetRelationships();
+            foreach (var h in r)
+            {
+                if (h.Status == RelationshipStatus.Incoming)
+                    await client.Users.AddFriendAsync(client.UsersCache.First(u => u._id == h.UserId).Username);
+            }
+
+            client.UserRelationshipUpdated += (userId, status) =>
+            {
+                if (status == RelationshipStatus.Incoming)
+                {
+                    client.Users.AddFriendAsync(client.UsersCache.First(u => u._id == userId).Username);
+                }
+                return Task.CompletedTask;
+            };
             await Task.Delay(-1);
         }
 

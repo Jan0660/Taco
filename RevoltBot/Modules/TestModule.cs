@@ -79,7 +79,7 @@ namespace RevoltBot.Modules
                 await Image.LoadAsync(new MemoryStream(await web.DownloadDataTaskAsync(mention.AvatarUrl)));
             authorPfp.Mutate(c => c.Resize(new Size(166, 166)));
             mentionPfp.Mutate(c => c.Resize(new Size(110, 110)));
-            // todo: resource folder or some shit
+            // todo: resource folder or some dumb shit
             var image = await Image.LoadAsync(@"C:\Users\Jan\source\repos\ElseIfBot\Resources\Fuck.png");
             image.Mutate(c =>
             {
@@ -112,6 +112,21 @@ namespace RevoltBot.Modules
             await Task.Delay(7000);
             await ReplyAsync("<@01EXAG0ZFX02W7PNQE7W5MT339> retard");
             await Message.Channel.EndTypingAsync();
+        }
+
+        [Command("druh")]
+        public async Task Druh()
+        {
+            await ReplyAsync("cock");
+            return;
+            var delay = 50;
+            while (true)
+            {
+                await Message.Channel.BeginTypingAsync();
+                await Task.Delay(delay);
+                await Message.Channel.EndTypingAsync();
+                await Task.Delay(delay);
+            }
         }
     }
 }

@@ -118,8 +118,12 @@ namespace RevoltBot.Modules
         [Command("druh")]
         public async Task Druh()
         {
-            await ReplyAsync("cock");
-            return;
+            if (Message.AuthorId != "01EX40TVKYNV114H8Q8VWEGBWQ")
+            {
+                await ReplyAsync("cock");
+                return;
+            }
+
             var delay = 50;
             while (true)
             {

@@ -61,7 +61,7 @@ namespace RevoltBot
             {
                 if (status == RelationshipStatus.Incoming)
                 {
-                    client.Users.AddFriendAsync(client.UsersCache.First(u => u._id == userId).Username);
+                    return client.Users.AddFriendAsync(client.UsersCache.First(u => u._id == userId).Username);
                 }
                 return Task.CompletedTask;
             };

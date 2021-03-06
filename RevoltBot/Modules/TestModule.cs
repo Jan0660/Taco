@@ -102,7 +102,8 @@ namespace RevoltBot.Modules
         {
             return Message.Client.UsersCache.FirstOrDefault(u => u._id == mention) ??
                    Message.Client.UsersCache.FirstOrDefault(u => u.Username.ToLower() == mention.ToLower()) ??
-                   Message.Client.UsersCache.FirstOrDefault(u => u._id == mention.Replace("<@", "").Replace(">", ""));
+                   Message.Client.UsersCache.FirstOrDefault(u => u._id == mention.Replace("<@", "").Replace(">", "")) ??
+                   Message.Client.Users.Get(mention);
         }
 
         [Command("retard")]

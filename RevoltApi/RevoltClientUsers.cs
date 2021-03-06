@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -21,7 +22,11 @@ namespace RevoltApi
             User user = Client.UsersCache.FirstOrDefault(u => u._id == id);
             if (user != null)
                 return user;
-            return Client._getObject<User>($"/users/{id}").Result;
+            var req = new RestRequest($"/users/{id}");
+            var res = Client._restClient.ExecuteGetAsync(req).Result;
+            if (res.StatusCode == HttpStatusCode.NotFound)
+                return null;
+            return Client._deserialize<User>(res.Content);
         }
 
         public async Task<Relationship[]> GetRelationships()
@@ -45,6 +50,7 @@ namespace RevoltApi
                 user.Relationship = status;
             }
 
+            // todo
             return RelationshipStatus.None;
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using RevoltApi;
 
 namespace RevoltBot
@@ -10,12 +11,14 @@ namespace RevoltBot
         public Type AttributeType;
         public MethodInfo Method;
 
-        public void Execute(Message message, string args)
+        public async Task ExecuteAsync(Message message, string args)
         {
             var module = Activator.CreateInstance(Method.DeclaringType!) as ModuleBase;
             module.Message = message;
             module.Args = args;
-            Method.Invoke(module, null);
+            var val = Method.Invoke(module, null);
+            if (val is Task task)
+                await task;
         }
     }
 }

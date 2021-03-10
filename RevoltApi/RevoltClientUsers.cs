@@ -43,6 +43,8 @@ namespace RevoltApi
         public async Task<RelationshipStatus> AddFriendAsync(string username)
         {
             var res = await Client._restClient.ExecuteAsync(new RestRequest($"/users/{username}/friend", Method.PUT));
+            if (res.Content == "{\"type\":\"NoEffect\"}")
+                throw new Exception("No effect.");
             var user = Client.UsersCache.FirstOrDefault(u => u.Username == username);
             var status = Enum.Parse<RelationshipStatus>(JObject.Parse(res.Content).Value<string>("status"));
             if (user != null)
@@ -50,8 +52,58 @@ namespace RevoltApi
                 user.Relationship = status;
             }
 
-            // todo
-            return RelationshipStatus.None;
+            return status;
+        }
+        
+        /// <summary>
+        /// deletes a friend request or unfriends them
+        /// </summary>
+        /// <returns></returns>
+        public async Task<RelationshipStatus> RemoveFriendAsync(string id)
+        {
+            var res = await Client._restClient.ExecuteAsync(new RestRequest($"/users/{id}/friend", Method.DELETE));
+            if (res.Content == "{\"type\":\"NoEffect\"}")
+                throw new Exception("No effect.");
+            var user = Client.UsersCache.FirstOrDefault(u => u._id == id);
+            var str = JObject.Parse(res.Content).Value<string>("status");
+            var status = Enum.Parse<RelationshipStatus>(str);
+            if (user != null)
+            {
+                user.Relationship = status;
+            }
+
+            return status;
+        }
+        
+        public async Task<RelationshipStatus> BlockAsync(string id)
+        {
+            var res = await Client._restClient.ExecuteAsync(new RestRequest($"/users/{id}/block", Method.PUT));
+            if (res.Content == "{\"type\":\"NoEffect\"}")
+                throw new Exception("No effect.");
+            var user = Client.UsersCache.FirstOrDefault(u => u._id == id);
+            var status = Enum.Parse<RelationshipStatus>(JObject.Parse(res.Content).Value<string>("status"));
+            if (user != null)
+            {
+                user.Relationship = status;
+            }
+
+            return status;
+        }
+
+        public async Task<RelationshipStatus> UnblockAsync(string id)
+        {
+            var res = await Client._restClient.ExecuteAsync(new RestRequest($"/users/{id}/block", Method.DELETE));
+            if (res.Content == "{\"type\":\"NoEffect\"}")
+                throw new Exception("No effect.");
+            var user = Client.UsersCache.FirstOrDefault(u => u._id == id);
+            var str = JObject.Parse(res.Content).Value<string>("status");
+            var status = Enum.Parse<RelationshipStatus>(str);
+            if (user != null)
+            {
+                user.Relationship = status;
+            }
+
+            return status;
         }
     }
 }

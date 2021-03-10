@@ -73,20 +73,25 @@ namespace RevoltBot
             Console.Debug($"{message.Author.Username}[{message.AuthorId}] at [{message.ChannelId}] => {message.Content}");
             if (message.Content.StartsWith(Prefix))
             {
-                try
+                Task.Factory.StartNew(() =>
                 {
-                    CommandHandler.ExecuteCommand(message, Prefix.Length);
-                }
-                catch(Exception exception)
-                {
-                    if (exception.Message == "COMMAND_NOT_FOUND")
-                        return Task.CompletedTask;
-                    message.Channel.SendMessageAsync($@"> ## Death occurred
+                    try
+                    {
+                        CommandHandler.ExecuteCommandAsync(message, Prefix.Length).Wait();
+                    }
+                    catch (Exception exception)
+                    {
+                        if (exception.Message == "COMMAND_NOT_FOUND")
+                            return Task.CompletedTask;
+                        message.Channel.SendMessageAsync($@"> ## Death occurred
 > 
 > ```csharp
 > {exception.Message.Replace("\n", "\n> ")}
 > ```");
-                }
+                    }
+
+                    return Task.CompletedTask;
+                });
             }
 
             return Task.CompletedTask;

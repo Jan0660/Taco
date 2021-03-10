@@ -133,5 +133,20 @@ namespace RevoltBot.Modules
                 await Task.Delay(delay);
             }
         }
+
+        [Command("unfriend")]
+        public async Task UnfriendMePls()
+        {
+            if (Message.AuthorId != "01EX40TVKYNV114H8Q8VWEGBWQ")
+            {
+                await ReplyAsync("cock");
+                return;
+            }
+            Console.WriteLine("h1");
+            await Message.Client.Users.RemoveFriendAsync(Message.AuthorId);
+
+            Console.WriteLine("h2");
+            await ReplyAsync("get kek'd");
+        }
     }
 }

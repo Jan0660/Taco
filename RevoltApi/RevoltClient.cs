@@ -64,8 +64,14 @@ namespace RevoltApi
             add => _userRelationshipUpdated.Add(value);
             remove => _userRelationshipUpdated.Remove(value);
         }
+        
+        private List<Func<string, MessageEditData, Task>> _messageUpdated = new();
 
-        // todo: MessageUpdate
+        public event Func<string, MessageEditData, Task> MessageUpdated
+        {
+            add => _messageUpdated.Add(value);
+            remove => _messageUpdated.Remove(value);
+        }
         // todo: ChannelCreate
         // todo: ChannelUpdate
         // todo: ChannelGroupJoin
@@ -201,6 +207,15 @@ namespace RevoltApi
                         }
                         break;
                     }
+                    case "MessageUpdate":
+                        var messageId = packet.Value<string>("id");
+                        MessageEditData data = packet.Value<JObject>("data").ToObject<MessageEditData>();
+
+                        foreach (var handler in _messageUpdated)
+                        {
+                            handler.Invoke(messageId, data);
+                        }
+                        break;
                 }
             }));
             await _webSocket.Start();

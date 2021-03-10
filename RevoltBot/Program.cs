@@ -65,6 +65,11 @@ namespace RevoltBot
                 }
                 return Task.CompletedTask;
             };
+            client.MessageUpdated += (messageId, data) =>
+            {
+                Console.Info($"Message Updated: Id: {messageId}; NewContent: {data.Content}; Date: {data.Edited.Date};");
+                return Task.CompletedTask;
+            };
             await Task.Delay(-1);
         }
 

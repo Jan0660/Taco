@@ -72,6 +72,28 @@ namespace RevoltApi
             add => _messageUpdated.Add(value);
             remove => _messageUpdated.Remove(value);
         }
+        
+        private List<Func<string, JObject, ResponseMessage, Task>> _packetReceived = new();
+
+        /// <summary>
+        /// Raised before a packet is handled. Ran asynchronously/not awaited.
+        /// </summary>
+        public event Func<string, JObject, ResponseMessage, Task> PacketReceived
+        {
+            add => _packetReceived.Add(value);
+            remove => _packetReceived.Remove(value);
+        }
+        
+        private List<Func<string?, JObject?, ResponseMessage, Task>> _packetError = new();
+
+        /// <summary>
+        /// Invoked when an exception occurs when handling a websocket packet.
+        /// </summary>
+        public event Func<string?, JObject?, ResponseMessage, Task> PacketError
+        {
+            add => _packetError.Add(value);
+            remove => _packetError.Remove(value);
+        }
         // todo: ChannelCreate
         // todo: ChannelUpdate
         // todo: ChannelGroupJoin
@@ -122,104 +144,119 @@ namespace RevoltApi
 
             _webSocket.MessageReceived.Subscribe((message =>
             {
-                var packet = JObject.Parse(message.Text);
-                Console.Debug($"Message receive: Length: {message.Text.Length}; Type: {packet.Value<string>("type")};");
-                // todo: add PacketReceived event
-                // todo: try catch and add PacketError event
-                switch (packet.Value<string>("type"))
+                JObject packet = null;
+                string packetType = null;
+                try
                 {
-                    case "Message":
-                        var msg = _deserialize<Message>(message.Text);
-                        if (msg.AuthorId == "01EXAG0ZFX02W7PNQE7W5MT339")
-                            return;
-                        foreach (var handler in _messageReceived)
-                        {
-                            handler.Invoke(msg);
-                        }
-
-                        break;
-                    case "MessageDelete":
+                    packet = JObject.Parse(message.Text);
+                    packetType = packet.Value<string>("type");
+                    foreach (var handler in _packetReceived)
                     {
-                        var id = packet.Value<string>("id");
-                        foreach (var handler in _messageDeleted)
-                        {
-                            handler.Invoke(id);
-                        }
-
-                        break;
+                        handler.Invoke(packetType, packet, message);
                     }
-                    case "Ready":
+
+                    switch (packetType)
                     {
-                        _pingTimer?.Stop();
-                        _pingTimer = new Timer(1000d);
-                        _pingTimer.Elapsed += (sender, args) =>
-                        {
-                            _webSocket.Send(JsonConvert.SerializeObject(new
+                        case "Message":
+                            var msg = _deserialize<Message>(message.Text);
+                            if (msg.AuthorId == "01EXAG0ZFX02W7PNQE7W5MT339")
+                                return;
+                            foreach (var handler in _messageReceived)
                             {
-                                type = "Ping",
-                                time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-                            }));
-                        };
-                        _pingTimer.Start();
-                        _users = new();
-                        _channels = new();
-                        foreach (var userToken in packet["users"]!)
-                        {
-                            var user = userToken.ToObject<User>();
-                            user!.Client = this;
-                            _users.Add(user);
-                        }
+                                handler.Invoke(msg);
+                            }
 
-                        foreach (var channelToken in packet["channels"]!)
+                            break;
+                        case "MessageDelete":
                         {
-                            var channel = _deserializeChannel((JObject) channelToken);
-                            if (channel is MessageChannel messageChannel)
-                                messageChannel.LastMessage.Client = this;
-                            _channels.Add(channel);
-                        }
+                            var id = packet.Value<string>("id");
+                            foreach (var handler in _messageDeleted)
+                            {
+                                handler.Invoke(id);
+                            }
 
-                        foreach (var handler in _onReady)
+                            break;
+                        }
+                        case "Ready":
                         {
-                            handler.Invoke();
-                        }
+                            _pingTimer?.Stop();
+                            _pingTimer = new Timer(1000d);
+                            _pingTimer.Elapsed += (sender, args) =>
+                            {
+                                _webSocket.Send(JsonConvert.SerializeObject(new
+                                {
+                                    type = "Ping",
+                                    time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                                }));
+                            };
+                            _pingTimer.Start();
+                            _users = new();
+                            _channels = new();
+                            foreach (var userToken in packet["users"]!)
+                            {
+                                var user = userToken.ToObject<User>();
+                                user!.Client = this;
+                                _users.Add(user);
+                            }
 
-                        break;
+                            foreach (var channelToken in packet["channels"]!)
+                            {
+                                var channel = _deserializeChannel((JObject) channelToken);
+                                if (channel is MessageChannel messageChannel)
+                                    messageChannel.LastMessage.Client = this;
+                                _channels.Add(channel);
+                            }
+
+                            foreach (var handler in _onReady)
+                            {
+                                handler.Invoke();
+                            }
+
+                            break;
+                        }
+                        case "UserPresence":
+                        {
+                            var user = Users.Get(packet.Value<string>("id"));
+                            user.Online = packet.Value<bool>("online");
+                            break;
+                        }
+                        case "UserRelationship":
+                        {
+                            var id = packet.Value<string>("user");
+                            if (id == "01EXAG0ZFX02W7PNQE7W5MT339")
+                                return;
+                            var status = Enum.Parse<RelationshipStatus>(packet.Value<string>("status"));
+                            var user = _users.FirstOrDefault(u => u._id == id);
+                            if (user != null)
+                            {
+                                user.Relationship = status;
+                            }
+
+                            foreach (var handler in _userRelationshipUpdated)
+                            {
+                                handler.Invoke(id, status);
+                            }
+
+                            break;
+                        }
+                        case "MessageUpdate":
+                            var messageId = packet.Value<string>("id");
+                            MessageEditData data = packet.Value<JObject>("data").ToObject<MessageEditData>();
+
+                            foreach (var handler in _messageUpdated)
+                            {
+                                handler.Invoke(messageId, data);
+                            }
+
+                            break;
                     }
-                    case "UserPresence":
+                }
+                catch (Exception exc)
+                {
+                    foreach (var handler in _packetError)
                     {
-                        var user = Users.Get(packet.Value<string>("id"));
-                        user.Online = packet.Value<bool>("online");
-                        break;
+                        handler.Invoke(packetType, packet, message);
                     }
-                    case "UserRelationship":
-                    {
-                        var id = packet.Value<string>("user");
-                        if (id == "01EXAG0ZFX02W7PNQE7W5MT339")
-                            return;
-                        var status = Enum.Parse<RelationshipStatus>(packet.Value<string>("status"));
-                        var user = _users.FirstOrDefault(u => u._id == id);
-                        if (user != null)
-                        {
-                            user.Relationship = status;
-                        }
-
-                        foreach (var handler in _userRelationshipUpdated)
-                        {
-                            handler.Invoke(id, status);
-                        }
-
-                        break;
-                    }
-                    case "MessageUpdate":
-                        var messageId = packet.Value<string>("id");
-                        MessageEditData data = packet.Value<JObject>("data").ToObject<MessageEditData>();
-
-                        foreach (var handler in _messageUpdated)
-                        {
-                            handler.Invoke(messageId, data);
-                        }
-
-                        break;
                 }
             }));
             await _webSocket.Start();

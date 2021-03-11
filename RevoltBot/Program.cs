@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -30,8 +31,11 @@ namespace RevoltBot
 
             #region no
 
+#if DEBUG
             Console.Options.UseAnsi = false;
             Console.Options.ColorScheme = new RiderDarkMelonColorScheme();
+#endif
+            MessageTypes.Debug.Style.Color = Color.HotPink;
             Console.Options.LogLevel = LogLevel.Debug;
             Console.Options.ObjectSerialization = ConsoleOptions.ObjectSerializationMethod.Json;
             var client =
@@ -43,10 +47,11 @@ namespace RevoltBot
                 Console.Debug($"Message receive: Length: {message.Text.Length}; Type: {packetType};");
                 return Task.CompletedTask;
             };
-            client.PacketError += (packetType, packet, message) =>
+            client.PacketError += (packetType, packet, message, exception) =>
             {
                 Console.Error(
-                    $"Packet error: message.Length: {message.Text.Length}; packetType: {packetType ?? "null"}; JObject parsed?: {packet != null}");
+                    @$"Packet error: message.Length: {message.Text.Length}; packetType: {packetType ?? "null"}; JObject parsed?: {packet != null};
+exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                 return Task.CompletedTask;
             };
             client.OnReady += () =>

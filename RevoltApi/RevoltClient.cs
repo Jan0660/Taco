@@ -84,12 +84,12 @@ namespace RevoltApi
             remove => _packetReceived.Remove(value);
         }
         
-        private List<Func<string?, JObject?, ResponseMessage, Task>> _packetError = new();
+        private List<Func<string?, JObject?, ResponseMessage, Exception, Task>> _packetError = new();
 
         /// <summary>
         /// Invoked when an exception occurs when handling a websocket packet.
         /// </summary>
-        public event Func<string?, JObject?, ResponseMessage, Task> PacketError
+        public event Func<string?, JObject?, ResponseMessage, Exception, Task> PacketError
         {
             add => _packetError.Add(value);
             remove => _packetError.Remove(value);
@@ -255,7 +255,7 @@ namespace RevoltApi
                 {
                     foreach (var handler in _packetError)
                     {
-                        handler.Invoke(packetType, packet, message);
+                        handler.Invoke(packetType, packet, message, exc);
                     }
                 }
             }));

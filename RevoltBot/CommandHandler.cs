@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using RevoltApi;
+using RevoltBot.Attributes;
 
 namespace RevoltBot
 {
@@ -36,7 +37,8 @@ namespace RevoltBot
                         }
                         var command = new CommandInfo
                         {
-                            Aliases = aliases.ToArray(), AttributeType = att.AttributeType, Method = method
+                            Aliases = aliases.ToArray(), AttributeType = att.AttributeType, Method = method,
+                            BarePreconditions = method.GetCustomAttributes<BarePreconditionAttribute>(true).ToArray()
                         };
                         Commands.Add(command);
                     }
@@ -53,7 +55,16 @@ namespace RevoltBot
                 throw new Exception("COMMAND_NOT_FOUND");
             var alias = command.Aliases.First(alias => relevant.ToLower().StartsWith(alias.ToLower()));
             var args = relevant.Remove(0, alias.Length + (alias.Length == relevant.Length ? 0 : 1));
-            await command.ExecuteAsync(message, args);
+            var passedPreconditions = true;
+            foreach (var precondition in command.BarePreconditions)
+            {
+                if (!await precondition.Evaluate(message))
+                {
+                    passedPreconditions = false;
+                }
+            }
+            if(passedPreconditions)
+                await command.ExecuteAsync(message, args);
         }
     }
 }

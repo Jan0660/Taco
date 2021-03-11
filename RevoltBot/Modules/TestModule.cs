@@ -7,6 +7,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using RestSharp;
 using RevoltApi;
+using RevoltApi.Channels;
+using RevoltBot.Attributes;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using Console = Log73.Console;
@@ -116,14 +118,10 @@ namespace RevoltBot.Modules
         }
 
         [Command("druh")]
+        [RequireBotOwner]
+        [GroupOnly]
         public async Task Druh()
         {
-            if (Message.AuthorId != "01EX40TVKYNV114H8Q8VWEGBWQ")
-            {
-                await ReplyAsync("cock");
-                return;
-            }
-
             var delay = 50;
             while (true)
             {
@@ -147,6 +145,14 @@ namespace RevoltBot.Modules
 
             Console.WriteLine("h2");
             await ReplyAsync("get kek'd");
+        }
+
+        [Command("leave")]
+        [GroupOnly]
+        [RequireGroupOwner]
+        public async Task LeaveChannel()
+        {
+            await Message.Client.Channels.LeaveAsync(Message.ChannelId);
         }
     }
 }

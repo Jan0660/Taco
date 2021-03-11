@@ -56,7 +56,7 @@ namespace RevoltApi
             add => _messageDeleted.Add(value);
             remove => _messageDeleted.Remove(value);
         }
-        
+
         private List<Func<string, RelationshipStatus, Task>> _userRelationshipUpdated = new();
 
         public event Func<string, RelationshipStatus, Task> UserRelationshipUpdated
@@ -64,7 +64,7 @@ namespace RevoltApi
             add => _userRelationshipUpdated.Add(value);
             remove => _userRelationshipUpdated.Remove(value);
         }
-        
+
         private List<Func<string, MessageEditData, Task>> _messageUpdated = new();
 
         public event Func<string, MessageEditData, Task> MessageUpdated
@@ -124,11 +124,13 @@ namespace RevoltApi
             {
                 var packet = JObject.Parse(message.Text);
                 Console.Debug($"Message receive: Length: {message.Text.Length}; Type: {packet.Value<string>("type")};");
+                // todo: add PacketReceived event
+                // todo: try catch and add PacketError event
                 switch (packet.Value<string>("type"))
                 {
                     case "Message":
                         var msg = _deserialize<Message>(message.Text);
-                        if(msg.AuthorId == "01EXAG0ZFX02W7PNQE7W5MT339")
+                        if (msg.AuthorId == "01EXAG0ZFX02W7PNQE7W5MT339")
                             return;
                         foreach (var handler in _messageReceived)
                         {
@@ -192,7 +194,7 @@ namespace RevoltApi
                     case "UserRelationship":
                     {
                         var id = packet.Value<string>("user");
-                        if(id == "01EXAG0ZFX02W7PNQE7W5MT339")
+                        if (id == "01EXAG0ZFX02W7PNQE7W5MT339")
                             return;
                         var status = Enum.Parse<RelationshipStatus>(packet.Value<string>("status"));
                         var user = _users.FirstOrDefault(u => u._id == id);
@@ -205,6 +207,7 @@ namespace RevoltApi
                         {
                             handler.Invoke(id, status);
                         }
+
                         break;
                     }
                     case "MessageUpdate":
@@ -215,6 +218,7 @@ namespace RevoltApi
                         {
                             handler.Invoke(messageId, data);
                         }
+
                         break;
                 }
             }));

@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Owoify;
+using RevoltBot.Attributes;
 
 namespace RevoltBot.Modules
 {

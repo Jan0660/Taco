@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
 using Jan0660.AzurAPINet;
+using RevoltBot.Attributes;
 
 namespace RevoltBot.Modules
 {

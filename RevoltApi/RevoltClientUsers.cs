@@ -45,6 +45,8 @@ namespace RevoltApi
             var res = await Client._restClient.ExecuteAsync(new RestRequest($"/users/{username}/friend", Method.PUT));
             if (res.Content == "{\"type\":\"NoEffect\"}")
                 throw new Exception("No effect.");
+            if (res.Content == "{\"type\":\"AlreadyFriends\"}")
+                throw new Exception("Already friends.");
             var user = Client.UsersCache.FirstOrDefault(u => u.Username == username);
             var status = Enum.Parse<RelationshipStatus>(JObject.Parse(res.Content).Value<string>("status"));
             if (user != null)

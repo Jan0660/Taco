@@ -53,5 +53,13 @@ namespace RevoltApi
                 channel = channelId
             }));
         }
+
+        /// <summary>
+        /// Closes DM channel or leaves group channel
+        /// </summary>
+        /// <param name="channelId"></param>
+        /// <returns></returns>
+        public Task LeaveAsync(string channelId)
+            => Client._restClient.ExecuteAsync(new RestRequest($"/channels/{channelId}", Method.DELETE));
     }
 }

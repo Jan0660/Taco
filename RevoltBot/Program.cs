@@ -22,6 +22,7 @@ namespace RevoltBot
         public const string Prefix = "-";
         #endif
         public static Config Config;
+        public const string BotOwnerId = "01EX40TVKYNV114H8Q8VWEGBWQ";
         static async Task Main(string[] args)
         {
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"));
@@ -70,6 +71,7 @@ namespace RevoltBot
                 Console.Info($"Message Updated: Id: {messageId}; NewContent: {data.Content}; Date: {data.Edited.Date};");
                 return Task.CompletedTask;
             };
+            Console.Info("Finish load.");
             await Task.Delay(-1);
         }
 

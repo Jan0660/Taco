@@ -1,0 +1,23 @@
+image: mcr.microsoft.com/dotnet/sdk:5.0
+
+# Restore packages the wrapper depends on.
+restore-wrapper:
+  stage: restore-wrapper
+  script:
+    - cd RevoltApi
+    - dotnet restore
+
+# Build the wrapper.
+build-wrapper:
+  stage: build-wrapper
+  needs:
+    - restore-wrapper
+  dependencies:
+    - restore-wrapper
+  script:
+    - cd RevoltApi
+    - dotnet build --configuration release
+
+stages:
+  - restore-wrapper
+  - build-wrapper

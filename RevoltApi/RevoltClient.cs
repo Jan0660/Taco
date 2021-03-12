@@ -306,6 +306,9 @@ namespace RevoltApi
                 case "DirectMessage":
                     channel = obj.ToObject<DirectMessageChannel>();
                     break;
+                case "SavedMessages":
+                    channel = obj.ToObject<SavedMessagesChannel>();
+                    break;
                 default:
                     Console.Warn($"Unimplemented channel_type: {obj.Value<string>("channel_type")}");
                     channel = obj.ToObject<Channel>();

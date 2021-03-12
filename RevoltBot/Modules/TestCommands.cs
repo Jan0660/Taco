@@ -154,5 +154,17 @@ namespace RevoltBot.Modules
         {
             await Message.Client.Channels.LeaveAsync(Message.ChannelId);
         }
+
+        [Command("hspace")]
+        public async Task HSpace()
+        {
+            var text = "";
+            for (int i = 0; i < 30; i++)
+            {
+                text += $"$\\hspace{{{i}cm}}$ penis\n";
+            }
+
+            await ReplyAsync(text);
+        }
     }
 }

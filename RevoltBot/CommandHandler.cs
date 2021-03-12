@@ -11,20 +11,22 @@ namespace RevoltBot
     public static class CommandHandler
     {
         public static List<CommandInfo> Commands = new();
+
         public static void LoadCommands()
         {
             var types = Assembly.GetExecutingAssembly().GetTypes();
             foreach (var type in types)
             {
-                if(type.IsInterface)
+                if (type.IsInterface)
                     continue;
                 // https://stackoverflow.com/questions/4963160/how-to-determine-if-a-type-implements-an-interface-with-c-sharp-reflection
                 if (typeof(ModuleBase).IsAssignableFrom(type))
                 {
                     foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance))
                     {
-                        var att = method.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "CommandAttribute");
-                        if(att == null)
+                        var att = method.CustomAttributes.FirstOrDefault(
+                            a => a.AttributeType.Name == "CommandAttribute");
+                        if (att == null)
                             continue;
                         var aliases = new List<string>();
                         foreach (var arg in att.ConstructorArguments)
@@ -32,9 +34,10 @@ namespace RevoltBot
                             var val = arg.Value as IReadOnlyCollection<CustomAttributeTypedArgument>;
                             foreach (var h in val)
                             {
-                                aliases.Add((string)h.Value);
+                                aliases.Add((string) h.Value);
                             }
                         }
+
                         var command = new CommandInfo
                         {
                             Aliases = aliases.ToArray(), AttributeType = att.AttributeType, Method = method,
@@ -50,7 +53,22 @@ namespace RevoltBot
         {
             var relevant = message.Content.Remove(0, prefixLength);
             // get command
-            var command = Commands.FirstOrDefault(c => c.Aliases.Any(alias => relevant.ToLower().StartsWith(alias.ToLower())));
+            var commands = Commands.Where(c => c.Aliases.Any(alias => relevant.ToLower() == alias.ToLower()))
+                .Concat(Commands.Where(c => c.Aliases.Any(alias => relevant.ToLower().StartsWith(alias.ToLower()))));
+            CommandInfo command = null;
+            int longest = 0;
+            foreach (var cmd in commands)
+            {
+                foreach (var cmdAlias in cmd.Aliases.Where(alias => relevant.ToLower().StartsWith(alias.ToLower())))
+                {
+                    if (longest < cmdAlias.Length)
+                    {
+                        longest = cmdAlias.Length;
+                        command = cmd;
+                    }
+                }
+            }
+
             if (command == null)
                 throw new Exception("COMMAND_NOT_FOUND");
             var alias = command.Aliases.First(alias => relevant.ToLower().StartsWith(alias.ToLower()));
@@ -63,7 +81,8 @@ namespace RevoltBot
                     passedPreconditions = false;
                 }
             }
-            if(passedPreconditions)
+
+            if (passedPreconditions)
                 await command.ExecuteAsync(message, args);
         }
     }

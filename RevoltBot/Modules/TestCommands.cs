@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using RestSharp;
 using RevoltApi;
 using RevoltApi.Channels;
@@ -68,6 +69,7 @@ namespace RevoltBot.Modules
                 await ReplyAsync("mention someone h");
                 return;
             }
+
             var web = new WebClient();
             var authorPfp =
                 await Image.LoadAsync(new MemoryStream(await web.DownloadDataTaskAsync(Message.Author.AvatarUrl)));
@@ -134,6 +136,7 @@ namespace RevoltBot.Modules
                 await ReplyAsync("cock");
                 return;
             }
+
             Console.WriteLine("h1");
             await Message.Client.Users.RemoveFriendAsync(Message.AuthorId);
 
@@ -159,6 +162,31 @@ namespace RevoltBot.Modules
             }
 
             await ReplyAsync(text);
+        }
+
+        [Command("iplookup", "hack", "ip", "nslookup")]
+        public async Task Hack()
+        {
+            // todo: filter out http://(.+)/ ??? and hrafegtjyku
+            var obj = JObject.Parse(
+                (await new RestClient().ExecuteGetAsync(new RestRequest("http://ip-api.com/json/" + Args))).Content);
+            // query, country, countryCode, regionName, city, zip, timezone, isp, org
+            dynamic dyn = obj;
+            // check for death response
+            if (dyn.query == Args && dyn.country == null)
+            {
+                await ReplyAsync(":x: Sorry, but I couldn't find anything for your input.");
+                return;
+            }
+            await ReplyAsync(@$"> ## IP Lookup: {Args}
+> **IP:** {dyn.query}
+> **Country:** {dyn.country} [{dyn.countryCode}]
+> **Region:** {dyn.regionName}
+> **City:** {dyn.city}
+> **Zip:** {dyn.zip}
+> **Time zone:** {dyn.timezone}
+> **ISP:** {dyn.isp}
+> **Organization:** {dyn.org}");
         }
     }
 }

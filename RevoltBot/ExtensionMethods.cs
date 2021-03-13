@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Jan0660.AzurAPINet.Ships;
 using RevoltApi;
 using RevoltApi.Channels;
+using RevoltBot.Attributes;
 using SixLabors.ImageSharp;
 
 namespace RevoltBot
@@ -51,6 +52,18 @@ namespace RevoltBot
             // ASW
             dict.Add("AntiSub", stats.AntiSubmarineWarfare.ToString());
             return dict;
+        }
+
+        public static async Task<bool> EvaluateBool(this BarePreconditionAttribute precondition, Message message)
+        {
+            try
+            {
+                return await precondition.Evaluate(message);
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

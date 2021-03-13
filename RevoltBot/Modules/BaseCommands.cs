@@ -24,14 +24,13 @@ namespace RevoltBot.Modules
             if (Args == "")
             {
                 // main help
-                var description = @"Oh hey im too lazy to write a proper help command!!1!!!111!
-Here's a table of shit you and I have no idea what
-| Module | Description |
-|:------- |:------:|
+                var description = $@"Use `{Program.Prefix}help <name of module>` to get the list of commands in a module.
+| Module | Description | Command count |
+|:------- |:------:|:-----:|
 ";
                 foreach (var module in CommandHandler.ModuleInfos)
                 {
-                    description += $"{module.Name} | {module.Summary ?? "no summary"}\n";
+                    description += $"| {module.Name} | {module.Summary ?? "No summary"} | {module.Commands.Count} |\n";
                 }
 
                 await ReplyAsync(description);
@@ -42,15 +41,15 @@ Here's a table of shit you and I have no idea what
                 {
                     var module =
                         CommandHandler.ModuleInfos.FirstOrDefault(m =>
-                            m.Names != null ? m.Names.AllNames.Any(a => a.ToLower() == Args.ToLower()) : false);
+                            m.Names?.AllNames.Any(a => a.ToLower() == Args.ToLower()) ?? m.Name.ToLower() == Args.ToLower());
                     if (module == null)
                         goto after_module;
-                    var response = @$"> ## {module.Name}
+                    var response = @$"> # {module.Name}
 > **No. of commands:** {module.Commands.Count}
-> ";
+> ## Commands:
+";
                     foreach (var command in module.Commands)
-                        response += $"{command.Aliases.First()}, ";
-                    response = response.Remove(response.Length - 2);
+                        response += $"> > {command.Aliases.First()} - {command.Summary ?? "No summary"}\n";
                     await ReplyAsync(response);
                     return;
                 }
@@ -62,7 +61,8 @@ Here's a table of shit you and I have no idea what
                         goto after_command;
                     var preconditions = "";
                     foreach (var precondition in command.BarePreconditions)
-                        preconditions += $"{precondition.GetType().Name.Replace("Attribute", "")}, ";
+                        preconditions += 
+$"$\\color{{{(await precondition.EvaluateBool(Message) ? "lime" : "red")}}}\\text{{{precondition.GetType().Name.Replace("Attribute", "")}}}$, ";
                     preconditions = preconditions.Remove(preconditions.Length - 2);
                     await ReplyAsync($@"> ## {command.Aliases.First()}
 > {command.Summary}" + (preconditions != "" ? "\n> **Preconditions:** " + preconditions : ""));

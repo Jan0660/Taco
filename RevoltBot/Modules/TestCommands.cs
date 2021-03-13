@@ -19,12 +19,14 @@ namespace RevoltBot.Modules
     public class TestModule : ModuleBase
     {
         [Command("test", "test-alias")]
+        [Summary("test")]
         public async Task TestCommand()
         {
             await ReplyAsync("test");
         }
 
         [Command("whois")]
+        [Summary("Retrieve information about a user.")]
         public async Task WhoIs()
         {
             var user = GetMention(Args);
@@ -34,7 +36,7 @@ namespace RevoltBot.Modules
                 return;
             }
 
-            await ReplyAsync($@"> ## {"\u200b"} {user.Username}
+            await ReplyAsync($@"> ## {user.Username}
 > Mention: <@{user._id}>
 > Id: `{user._id}`
 > Online: {user.Online}
@@ -42,8 +44,10 @@ namespace RevoltBot.Modules
         }
 
         [Command("revolt")]
+        [Summary("Information about revolt instance.")]
         public async Task RevoltInfo()
         {
+            // todo: when https://voso.revolt.chat/
             var info = await Message.Client.GetApiInfo();
             await ReplyAsync(@$"> ## Revolt info (for app.revolt.chat)
 > ### Versions
@@ -54,13 +58,14 @@ namespace RevoltBot.Modules
 > **Captcha:** {info.Features.Captcha.Enabled}");
         }
 
-        [Command("discord")]
-        public async Task Discord()
-        {
-            await Message.Channel.SendFileAsync("bruh", "discord.jpg", @"C:\Users\Jan\Downloads\image0-53 (1).jpg");
-        }
+        // [Command("discord")]
+        // public async Task Discord()
+        // {
+        //     await Message.Channel.SendFileAsync("bruh", "discord.jpg", @"C:\Users\Jan\Downloads\image0-53 (1).jpg");
+        // }
 
         [Command("fuck")]
+        [Summary("Fuck someone.")]
         public async Task Fuck()
         {
             var mention = GetMention(Args);
@@ -87,14 +92,14 @@ namespace RevoltBot.Modules
             await Message.Channel.SendPngAsync(image, "get fucked nerd");
         }
 
-        [Command("jan")]
-        public async Task Jan()
-        {
-            var web = new WebClient();
-            await Message.Channel.SendFileAsync("jan", "jan.png",
-                await web.DownloadDataTaskAsync(
-                    "https://cdn.discordapp.com/attachments/803693023661522966/816394428176138250/motivate.png"));
-        }
+        // [Command("jan")]
+        // public async Task Jan()
+        // {
+        //     var web = new WebClient();
+        //     await Message.Channel.SendFileAsync("jan", "jan.png",
+        //         await web.DownloadDataTaskAsync(
+        //             "https://cdn.discordapp.com/attachments/803693023661522966/816394428176138250/motivate.png"));
+        // }
 
         public User GetMention(string mention)
         {
@@ -125,26 +130,27 @@ namespace RevoltBot.Modules
                 await Task.Delay(delay);
                 await Message.Channel.EndTypingAsync();
                 await Task.Delay(delay);
-            }
+            } 
         }
-
-        [Command("unfriend")]
-        public async Task UnfriendMePls()
-        {
-            if (Message.AuthorId != "01EX40TVKYNV114H8Q8VWEGBWQ")
-            {
-                await ReplyAsync("cock");
-                return;
-            }
-
-            Console.WriteLine("h1");
-            await Message.Client.Users.RemoveFriendAsync(Message.AuthorId);
-
-            Console.WriteLine("h2");
-            await ReplyAsync("get kek'd");
-        }
+        //
+        // [Command("unfriend")]
+        // public async Task UnfriendMePls()
+        // {
+        //     if (Message.AuthorId != "01EX40TVKYNV114H8Q8VWEGBWQ")
+        //     {
+        //         await ReplyAsync("cock");
+        //         return;
+        //     }
+        //
+        //     Console.WriteLine("h1");
+        //     await Message.Client.Users.RemoveFriendAsync(Message.AuthorId);
+        //
+        //     Console.WriteLine("h2");
+        //     await ReplyAsync("get kek'd");
+        // }
 
         [Command("leave")]
+        [Summary("Leaves the group.")]
         [GroupOnly]
         [RequireGroupOwner]
         public async Task LeaveChannel()
@@ -152,19 +158,20 @@ namespace RevoltBot.Modules
             await Message.Client.Channels.LeaveAsync(Message.ChannelId);
         }
 
-        [Command("hspace")]
-        public async Task HSpace()
-        {
-            var text = "";
-            for (int i = 0; i < 30; i++)
-            {
-                text += $"$\\hspace{{{i}cm}}$ >\n";
-            }
-
-            await ReplyAsync(text);
-        }
+        // [Command("hspace")]
+        // public async Task HSpace()
+        // {
+        //     var text = "";
+        //     for (int i = 0; i < 30; i++)
+        //     {
+        //         text += $"$\\hspace{{{i}cm}}$ >\n";
+        //     }
+        //
+        //     await ReplyAsync(text);
+        // }
 
         [Command("iplookup", "hack", "ip", "nslookup")]
+        [Summary("Retrieve information about an IP or domain.")]
         public async Task Hack()
         {
             // todo: filter out http://(.+)/ ??? and hrafegtjyku

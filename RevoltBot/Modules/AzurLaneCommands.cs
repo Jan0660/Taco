@@ -7,7 +7,7 @@ using RevoltBot.Attributes;
 
 namespace RevoltBot.Modules
 {
-    [ModuleName("Azur Lane")]
+    [ModuleName("Azur Lane", "AzurLane", "az")]
     [Summary("ship, shipstats")]
     public class AzurLaneModule : ModuleBase
     {

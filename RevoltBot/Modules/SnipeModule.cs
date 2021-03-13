@@ -6,7 +6,8 @@ using RevoltBot.Attributes;
 
 namespace RevoltBot.Modules
 {
-    [Summary("snipe")]
+    [Summary("Snipe")]
+    [ModuleName("Snipe")]
     public class SnipeModule : ModuleBase
     {
         private static List<Message> _messages = new();

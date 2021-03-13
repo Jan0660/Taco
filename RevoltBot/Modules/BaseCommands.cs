@@ -7,10 +7,12 @@ using RevoltBot.Attributes;
 
 namespace RevoltBot.Modules
 {
-    [ModuleName("base", "basic", "core")]
+    [ModuleName("Basic", "base", "core")]
+    [Summary("Basic commands like `info` and `help`.")]
     public class BaseCommands : ModuleBase
     {
         [Command("info")]
+        [Summary("General information about the bot.")]
         public Task BotInformation()
             => ReplyAsync($@"> ## Taco
 > **Developed by:** `owouwuvu` <@01EX40TVKYNV114H8Q8VWEGBWQ>

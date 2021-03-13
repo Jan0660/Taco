@@ -11,9 +11,9 @@ namespace RevoltBot.Modules
     {
         [Command("info")]
         public Task BotInformation()
-            => ReplyAsync($@"> Taco
+            => ReplyAsync($@"> ## Taco
 > **Developed by:** `owouwuvu` <@01EX40TVKYNV114H8Q8VWEGBWQ>
-> **Latest update at:** {new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime.ToString("dd/mm/yyyy")}
+> **Latest update at:** {new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime.ToString("dd/MM/yyyy")}
 > **Groups count:** {Message.Client.ChannelsCache.OfType<GroupChannel>().Count()}");
 
         [Command("help")]

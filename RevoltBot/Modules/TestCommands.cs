@@ -114,11 +114,11 @@ namespace RevoltBot.Modules
         }
 
         [Command("druh")]
+        [Summary("rape webcocket")]
         [RequireBotOwner]
-        [GroupOnly]
         public async Task Druh()
         {
-            var delay = 50;
+            var delay = 30;
             while (true)
             {
                 await Message.Channel.BeginTypingAsync();

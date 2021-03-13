@@ -41,8 +41,8 @@ Here's a table of shit you and I have no idea what
             {
                 {
                     var module =
-                        CommandHandler.ModuleInfos.FirstOrDefault(m => m.Names != null ?
-                            m.Names.AllNames.Any(a => a.ToLower() == Args.ToLower() ): false);
+                        CommandHandler.ModuleInfos.FirstOrDefault(m =>
+                            m.Names != null ? m.Names.AllNames.Any(a => a.ToLower() == Args.ToLower()) : false);
                     if (module == null)
                         goto after_module;
                     var response = @$"> ## {module.Name}
@@ -55,7 +55,20 @@ Here's a table of shit you and I have no idea what
                     return;
                 }
                 after_module: ;
-                // todo: command help
+                {
+                    var command =
+                        CommandHandler.Commands.FirstOrDefault(c => c.Aliases.Any(a => a.ToLower() == Args.ToLower()));
+                    if (command == null)
+                        goto after_command;
+                    var preconditions = "";
+                    foreach (var precondition in command.BarePreconditions)
+                        preconditions += $"{precondition.GetType().Name.Replace("Attribute", "")}, ";
+                    preconditions = preconditions.Remove(preconditions.Length - 2);
+                    await ReplyAsync($@"> ## {command.Aliases.First()}
+> {command.Summary}" + (preconditions != "" ? "\n> **Preconditions:** " + preconditions : ""));
+                    return;
+                }
+                after_command: ;
                 // todo: special help pages
             }
 

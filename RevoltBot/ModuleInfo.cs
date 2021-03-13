@@ -5,8 +5,7 @@ namespace RevoltBot
     public class ModuleInfo
     {
         public Type Type;
-        // todo
-        private string _name = null;
+        private string _name;
 
         public string Name
         {

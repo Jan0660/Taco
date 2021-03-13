@@ -21,6 +21,7 @@ build-wrapper:
 restore-bot:
   stage: restore-bot
   needs:
+    - restore-wrapper
     - build-wrapper
   script:
     - cd RevoltBot
@@ -30,6 +31,8 @@ restore-bot:
 build-bot:
   stage: build-bot
   needs:
+    - restore-wrapper
+    - build-wrapper
     - restore-bot
   dependencies:
     - restore-wrapper

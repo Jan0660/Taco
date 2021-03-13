@@ -27,7 +27,7 @@ restore-bot:
     - cd RevoltBot
     - dotnet restore
 
-# Build the wrapper.
+# Build the bot.
 build-bot:
   stage: build-bot
   needs:

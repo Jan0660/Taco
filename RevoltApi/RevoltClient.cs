@@ -180,7 +180,7 @@ namespace RevoltApi
                         case "Ready":
                         {
                             _pingTimer?.Stop();
-                            _pingTimer = new Timer(1000d);
+                            _pingTimer = new Timer(30000d);
                             _pingTimer.Elapsed += (sender, args) =>
                             {
                                 _webSocket.Send(JsonConvert.SerializeObject(new

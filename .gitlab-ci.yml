@@ -17,7 +17,28 @@ build-wrapper:
   script:
     - cd RevoltApi
     - dotnet build --configuration release
+# Restore packages the bot depends on.
+restore-bot:
+  stage: restore-bot
+  needs:
+    - build-wrapper
+  script:
+    - cd RevoltBot
+    - dotnet restore
+
+# Build the wrapper.
+build-bot:
+  stage: build-bot
+  needs:
+    - restore-bot
+  dependencies:
+    - restore-wrapper
+  script:
+    - cd RevoltBot
+    - dotnet build --configuration release
 
 stages:
   - restore-wrapper
   - build-wrapper
+  - restore-bot
+  - build-bot

@@ -37,7 +37,11 @@ namespace RevoltBot
             Console.Options.UseAnsi = false;
             Console.Options.ColorScheme = new RiderDarkMelonColorScheme();
 #endif
+#if DEBUG
             MessageTypes.Debug.Style.Color = Color.Pink;
+#else
+            MessageTypes.Debug.Style.Color = Color.FromArgb(255, 191, 254);
+#endif
             Console.Options.LogLevel = LogLevel.Debug;
             Console.Options.ObjectSerialization = ConsoleOptions.ObjectSerializationMethod.Json;
 

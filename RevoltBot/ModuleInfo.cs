@@ -10,9 +10,7 @@ namespace RevoltBot
         public List<CommandInfo> Commands = new ();
         public Type Type;
 
-        public string Name =>
-            // todo
-            Names.Text ?? Type.Name;
+        public string Name => Names?.Text ?? Type.Name;
         public ModuleNameAttribute Names;
         public string Summary;
     }

@@ -11,6 +11,7 @@ namespace RevoltBot
     public static class CommandHandler
     {
         public static List<CommandInfo> Commands = new();
+        public static List<ModuleInfo> ModuleInfos = new();
 
         public static void LoadCommands()
         {
@@ -22,6 +23,14 @@ namespace RevoltBot
                 // https://stackoverflow.com/questions/4963160/how-to-determine-if-a-type-implements-an-interface-with-c-sharp-reflection
                 if (typeof(ModuleBase).IsAssignableFrom(type))
                 {
+                    if(type == typeof(ModuleBase))
+                        continue;
+                    ModuleInfos.Add(new ModuleInfo()
+                    {
+                        Type = type,
+                        Summary = type.GetCustomAttribute<SummaryAttribute>()?.Text,
+                        Name = type.GetCustomAttribute<ModuleNameAttribute>()?.Text
+                    });
                     foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance))
                     {
                         var att = method.CustomAttributes.FirstOrDefault(
@@ -41,7 +50,8 @@ namespace RevoltBot
                         var command = new CommandInfo
                         {
                             Aliases = aliases.ToArray(), AttributeType = att.AttributeType, Method = method,
-                            BarePreconditions = method.GetCustomAttributes<BarePreconditionAttribute>(true).ToArray()
+                            BarePreconditions = method.GetCustomAttributes<BarePreconditionAttribute>(true).ToArray(),
+                            Summary = method.GetCustomAttribute<SummaryAttribute>()?.Text
                         };
                         Commands.Add(command);
                     }

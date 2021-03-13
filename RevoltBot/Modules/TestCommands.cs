@@ -23,12 +23,6 @@ namespace RevoltBot.Modules
             await ReplyAsync("test");
         }
 
-        [Command("help", "help-alias")]
-        public async Task HelpCommand()
-        {
-            await ReplyAsync("lol fuck you");
-        }
-
         [Command("whois")]
         public async Task WhoIs()
         {
@@ -161,7 +155,7 @@ namespace RevoltBot.Modules
             var text = "";
             for (int i = 0; i < 30; i++)
             {
-                text += $"$\\hspace{{{i}cm}}$ penis\n";
+                text += $"$\\hspace{{{i}cm}}$ >\n";
             }
 
             await ReplyAsync(text);

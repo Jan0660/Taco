@@ -15,6 +15,7 @@ namespace RevoltBot
         public Type AttributeType;
         public MethodInfo Method;
         public BarePreconditionAttribute[] BarePreconditions;
+        public string Summary;
         private string DebuggerDisplay
         {
             get

@@ -4,6 +4,8 @@ using RevoltBot.Attributes;
 
 namespace RevoltBot.Modules
 {
+    [ModuleName("Fun")]
+    [Summary("r")]
     public class FunCommands : ModuleBase
     {
         [Command("owo")]

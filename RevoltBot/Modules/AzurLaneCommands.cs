@@ -7,6 +7,8 @@ using RevoltBot.Attributes;
 
 namespace RevoltBot.Modules
 {
+    [ModuleName("Azur Lane")]
+    [Summary("ship, shipstats")]
     public class AzurLaneModule : ModuleBase
     {
         public static AzurAPIClient Azurlane = new();
@@ -15,11 +17,12 @@ namespace RevoltBot.Modules
         public async Task Ship()
         {
             var ship = Azurlane.getShip(Args);
-            var web = new WebClient();
+            // var web = new WebClient();
             // var data = await web.DownloadDataTaskAsync(ship.Skins.First().Image);
             await Message.Channel.SendMessageAsync(
                 @$"> # [{ship.Names.en ?? ship.Names.code} [{ship.Id}]]({ship.WikiUrl})
 > **Nationality:** {ship.Nationality}
+> **Class:** {ship.Class}
 > **Build Time:** {(ship.Construction.Constructable ? ship.Construction.ConstructionTime.ToString("hh\\:mm\\:ss") : "Cannot be constructed")}
 > **Rarity:** {ship.Rarity} **|** $\color{{orange}}\text{{{ship.Stars.StarsString}}}$
 > **Scrap Value:** {(ship.ScrapValue.CanScrap ? $@"{ship.ScrapValue.Coin} Coins; {ship.ScrapValue.Oil} Oil; {ship.ScrapValue.Medal} Medals;" : "Cannot be scraped")}

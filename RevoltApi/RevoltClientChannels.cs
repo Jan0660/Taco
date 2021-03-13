@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RestSharp;
@@ -26,6 +27,8 @@ namespace RevoltApi
         
         public async Task<Message> SendMessageAsync(string channelId, string content, string attachmentId = null)
         {
+            if ((content == "" | content == null) && !(attachmentId == null | attachmentId == ""))
+                throw new Exception("Cannot send empty message without an attachment.");
             var req = new RestRequest($"/channels/{channelId}/messages", Method.POST);
             req.AddJsonBody(JsonConvert.SerializeObject(new SendMessageRequest
             {

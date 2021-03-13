@@ -1,24 +1,19 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using RevoltBot.Attributes;
 
 namespace RevoltBot
 {
     public class ModuleInfo
     {
+        public List<CommandInfo> Commands = new ();
         public Type Type;
-        private string _name;
 
-        public string Name
-        {
-            get
-            {
-                // todo
-                return _name ?? Type.Name;
-            }
-            set
-            {
-                _name = value;
-            }
-        }
+        public string Name =>
+            // todo
+            Names.Text ?? Type.Name;
+        public ModuleNameAttribute Names;
         public string Summary;
     }
 }

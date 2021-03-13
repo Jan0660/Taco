@@ -113,6 +113,7 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                     }
                     catch (Exception exception)
                     {
+                        Console.Exception(exception);
                         if (exception.Message == "One or more errors occurred. (COMMAND_NOT_FOUND)")
                             return Task.CompletedTask;
                         await message.Channel.SendMessageAsync($@"> ## Death occurred

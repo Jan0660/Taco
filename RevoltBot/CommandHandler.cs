@@ -25,18 +25,20 @@ namespace RevoltBot
                 {
                     if(type == typeof(ModuleBase))
                         continue;
-                    ModuleInfos.Add(new ModuleInfo()
+                    var module = new ModuleInfo()
                     {
                         Type = type,
                         Summary = type.GetCustomAttribute<SummaryAttribute>()?.Text,
-                        Name = type.GetCustomAttribute<ModuleNameAttribute>()?.Text
-                    });
+                        Names = type.GetCustomAttribute<ModuleNameAttribute>()
+                    };
+                    ModuleInfos.Add(module);
                     foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance))
                     {
                         var att = method.CustomAttributes.FirstOrDefault(
                             a => a.AttributeType.Name == "CommandAttribute");
                         if (att == null)
                             continue;
+                        // todo: just use .GetCustomAttribute retard?????
                         var aliases = new List<string>();
                         foreach (var arg in att.ConstructorArguments)
                         {
@@ -54,6 +56,7 @@ namespace RevoltBot
                             Summary = method.GetCustomAttribute<SummaryAttribute>()?.Text
                         };
                         Commands.Add(command);
+                        module.Commands.Add(command);
                     }
                 }
             }

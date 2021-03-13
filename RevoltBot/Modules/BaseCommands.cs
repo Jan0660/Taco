@@ -7,6 +7,7 @@ using RevoltBot.Attributes;
 
 namespace RevoltBot.Modules
 {
+    [ModuleName("base", "basic", "core")]
     public class BaseCommands : ModuleBase
     {
         [Command("info")]
@@ -20,17 +21,45 @@ namespace RevoltBot.Modules
         [Summary("HELP ME")]
         public async Task Help()
         {
-            var description = @"Oh hey im too lazy to write a proper help command!!1!!!111!
+            if (Args == "")
+            {
+                // main help
+                var description = @"Oh hey im too lazy to write a proper help command!!1!!!111!
 Here's a table of shit you and I have no idea what
 | Module | Description |
 |:------- |:------:|
 ";
-            foreach (var module in CommandHandler.ModuleInfos)
+                foreach (var module in CommandHandler.ModuleInfos)
+                {
+                    description += $"{module.Name} | {module.Summary ?? "no summary"}\n";
+                }
+
+                await ReplyAsync(description);
+                return;
+            }
+            else
             {
-                description += $"{module.Name} | {module.Summary ?? "no summary"}\n";
+                {
+                    var module =
+                        CommandHandler.ModuleInfos.FirstOrDefault(m => m.Names != null ?
+                            m.Names.AllNames.Any(a => a.ToLower() == Args.ToLower() ): false);
+                    if (module == null)
+                        goto after_module;
+                    var response = @$"> ## {module.Name}
+> **No. of commands:** {module.Commands.Count}
+> ";
+                    foreach (var command in module.Commands)
+                        response += $"{command.Aliases.First()}, ";
+                    response = response.Remove(response.Length - 2);
+                    await ReplyAsync(response);
+                    return;
+                }
+                after_module: ;
+                // todo: command help
+                // todo: special help pages
             }
 
-            await ReplyAsync(description);
+            await ReplyAsync("no");
         }
     }
 }

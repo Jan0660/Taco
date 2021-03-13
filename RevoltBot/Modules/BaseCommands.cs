@@ -20,7 +20,7 @@ namespace RevoltBot.Modules
         [Summary("HELP ME")]
         public async Task Help()
         {
-            var description = @"Oh hey im too lazy to write a proper help command.
+            var description = @"Oh hey im too lazy to write a proper help command!!1!!!111!
 Here's a table of shit you and I have no idea what
 | Module | Description |
 |:------- |:------:|

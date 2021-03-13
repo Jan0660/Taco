@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -27,6 +28,7 @@ namespace RevoltBot
 
         static async Task Main(string[] args)
         {
+            var stopwatch = Stopwatch.StartNew();
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"));
 
             #region no
@@ -38,10 +40,16 @@ namespace RevoltBot
             MessageTypes.Debug.Style.Color = Color.Pink;
             Console.Options.LogLevel = LogLevel.Debug;
             Console.Options.ObjectSerialization = ConsoleOptions.ObjectSerializationMethod.Json;
+
+            #endregion
+
             var client =
                 new RevoltClient(JsonConvert.DeserializeObject<Session>(await File.ReadAllTextAsync("./session.json")));
             var info = client.ApiInfo;
             Console.Info($"API Version: {info.Version}");
+
+            #region event handlers
+
             client.PacketReceived += (packetType, packet, message) =>
             {
                 Console.Debug($"Message receive: Length: {message.Text.Length}; Type: {packetType};");
@@ -65,20 +73,6 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                     return dm.SendMessageAsync("fuck off");
                 return Task.CompletedTask;
             };
-            await client.ConnectWebSocketAsync();
-
-            #endregion
-
-            SnipeModule.Init(client);
-            client.MessageReceived += ClientOnMessageReceived;
-            CommandHandler.LoadCommands();
-            var c = CommandHandler.Commands;
-            var r = await client.Users.GetRelationships();
-            foreach (var h in r)
-            {
-                if (h.Status == RelationshipStatus.Incoming)
-                    await client.Users.AddFriendAsync(client.UsersCache.First(u => u._id == h.UserId).Username);
-            }
 
             client.UserRelationshipUpdated += (userId, status) =>
             {
@@ -95,7 +89,22 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                     $"Message Updated: Id: {messageId}; NewContent: {data.Content}; Date: {data.Edited.Date};");
                 return Task.CompletedTask;
             };
-            Console.Info("Finish load.");
+
+            #endregion
+
+            await client.ConnectWebSocketAsync();
+
+            SnipeModule.Init(client);
+            client.MessageReceived += ClientOnMessageReceived;
+            CommandHandler.LoadCommands();
+            var r = await client.Users.GetRelationships();
+            foreach (var h in r)
+            {
+                if (h.Status == RelationshipStatus.Incoming)
+                    await client.Users.AddFriendAsync(client.UsersCache.First(u => u._id == h.UserId).Username);
+            }
+
+            Console.Info($"Finished loading and connected in {stopwatch.ElapsedMilliseconds}ms.");
             await Task.Delay(-1);
         }
 
@@ -126,6 +135,7 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                     return Task.CompletedTask;
                 });
             }
+
             return Task.CompletedTask;
         }
     }

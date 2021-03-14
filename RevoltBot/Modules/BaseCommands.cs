@@ -25,7 +25,7 @@ namespace RevoltBot.Modules
         }
 
         [Command("help")]
-        [Summary("HELP ME")]
+        [Summary("HELP ME HELP ME PLEASE SEND HELP")]
         public async Task Help()
         {
             if (Args == "")

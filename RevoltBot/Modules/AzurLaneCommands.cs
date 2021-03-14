@@ -14,6 +14,7 @@ namespace RevoltBot.Modules
         public static AzurAPIClient Azurlane = new();
 
         [Command("ship")]
+        [Summary("Basic information about a ship.")]
         public async Task Ship()
         {
             var ship = Azurlane.getShip(Args);
@@ -30,6 +31,7 @@ namespace RevoltBot.Modules
         }
 
         [Command("shipstats")]
+        [Summary("Level 100, 120 (retrofit?) stats for a ship.")]
         public async Task ShipStats()
         {
             var ship = Azurlane.getShip(Args);

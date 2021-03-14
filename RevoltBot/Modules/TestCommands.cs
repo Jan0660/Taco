@@ -202,6 +202,7 @@ namespace RevoltBot.Modules
         }
 
         [Command("ping")]
+        [Summary("Ping!")]
         public Task Ping()
         {
             var web = new WebClient();

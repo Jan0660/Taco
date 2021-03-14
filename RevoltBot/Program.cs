@@ -32,7 +32,7 @@ namespace RevoltBot
             var stopwatch = Stopwatch.StartNew();
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"));
 
-            #region no
+            #region Logging configuration
 
 #if DEBUG
             Console.Options.UseAnsi = false;
@@ -53,7 +53,7 @@ namespace RevoltBot
             var info = client.ApiInfo;
             Console.Info($"API Version: {info.Version}");
 
-            #region event handlers
+            #region Event handlers
 
             client.PacketReceived += (packetType, packet, message) =>
             {
@@ -129,7 +129,8 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                     catch (Exception exception)
                     {
                         Console.Exception(exception);
-                        if (exception.Message == "One or more errors occurred. (COMMAND_NOT_FOUND)")
+                        if (exception.Message == "One or more errors occurred. (COMMAND_NOT_FOUND)" |
+                            exception.Message == "COMMAND_NOT_FOUND")
                             return Task.CompletedTask;
                         await message.Channel.SendMessageAsync($@"> ## Death occurred
 > 

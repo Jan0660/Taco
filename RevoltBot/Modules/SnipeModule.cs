@@ -14,6 +14,7 @@ namespace RevoltBot.Modules
         private static List<Message> _snipedMessages = new();
 
         [Command("snipe")]
+        [Summary("Retrieves deleted messages in current group.")]
         public async Task Snipe()
         {
             var sniped = _snipedMessages.Where(m => m.ChannelId == Message.ChannelId);

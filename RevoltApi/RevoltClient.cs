@@ -91,8 +91,26 @@ namespace RevoltApi
         }
         // todo: ChannelCreate
         // todo: ChannelUpdate
-        // todo: ChannelGroupJoin
-        // todo: ChannelGroupLeave
+        private List<Func<string, string, Task>> _channelGroupJoin = new();
+
+        /// <summary>
+        /// GroupId, UserId
+        /// </summary>
+        public event Func<string, string, Task> ChannelGroupJoin
+        {
+            add => _channelGroupJoin.Add(value);
+            remove => _channelGroupJoin.Remove(value);
+        }
+        private List<Func<string, string, Task>> _channelGroupLeave = new();
+
+        /// <summary>
+        /// GroupId, UserId
+        /// </summary>
+        public event Func<string, string, Task> ChannelGroupLeave
+        {
+            add => _channelGroupLeave.Add(value);
+            remove => _channelGroupLeave.Remove(value);
+        }
         // todo: ChannelDelete
         // todo: UserPresence
 
@@ -240,6 +258,15 @@ namespace RevoltApi
                             foreach (var handler in _messageUpdated)
                             {
                                 handler.Invoke(messageId, data);
+                            }
+
+                            break;
+                        case "ChannelGroupJoin":
+                            var groupId = packet.Value<string>("id");
+                            var userId = packet.Value<string>("user");
+                            foreach (var handler in _channelGroupJoin)
+                            {
+                                handler.Invoke(groupId, userId);
                             }
 
                             break;

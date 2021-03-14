@@ -15,7 +15,6 @@ namespace RevoltApi
     public class RevoltClient
     {
         internal RestClient _restClient = new("https://api.revolt.chat/");
-        public string UserId;
         public RevoltApiInfo ApiInfo;
         internal WebsocketClient _webSocket;
         private Session _session;
@@ -149,7 +148,6 @@ namespace RevoltApi
         public RevoltClient(Session session)
         {
             _session = session;
-            this.UserId = session.UserId;
             _restClient.AddDefaultHeader("x-user-id", session.UserId);
             _restClient.AddDefaultHeader("x-session-token", session.SessionToken);
             this.ApiInfo = GetApiInfo().Result;

@@ -19,7 +19,7 @@ namespace RevoltBot.Modules
     public class TestModule : ModuleBase
     {
         [Command("test", "test-alias")]
-        [Summary("test")]
+        [Summary("Test command.")]
         public async Task TestCommand()
         {
             await ReplyAsync("test");
@@ -93,6 +93,7 @@ namespace RevoltBot.Modules
         }
 
         [Command("uber-fruit", "uber", "uberfruit")]
+        [Summary("Sends some nice uber fruit.")]
         public Task UberFruit()
             => Message.Channel.SendFileAsync("", "uber.png", "./Resources/UberFruit.png");
 
@@ -198,6 +199,17 @@ namespace RevoltBot.Modules
 > **Time zone:** {dyn.timezone}
 > **ISP:** {dyn.isp}
 > **Organization:** {dyn.org}");
+        }
+
+        [Command("ping")]
+        public Task Ping()
+        {
+            var web = new WebClient();
+            var stopwatch = Stopwatch.StartNew();
+            web.DownloadString(Message.Client.ApiUrl);
+            var restPing = stopwatch.ElapsedMilliseconds;
+            return ReplyAsync(@$"REST API Ping: {restPing}ms
+Websocket Ping: doesnt exist");
         }
     }
 }

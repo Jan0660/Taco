@@ -307,6 +307,18 @@ namespace RevoltApi
 
                             break;
                         }
+                        case "ChannelGroupLeave":
+                        {
+                            var groupId = packet.Value<string>("id");
+                            var userId = packet.Value<string>("user");
+                            foreach (var handler in _channelGroupLeave)
+                            {
+                                handler.Invoke(groupId, userId);
+                            }
+
+                            break;
+                            break;
+                        }
                         case "ChannelDelete":
                             var channelId = packet.Value<string>("id");
                             foreach (var handler in _channelDelete)

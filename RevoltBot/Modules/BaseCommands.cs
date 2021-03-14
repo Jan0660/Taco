@@ -56,7 +56,7 @@ namespace RevoltBot.Modules
 > ## Commands:
 ";
                     foreach (var command in module.Commands)
-                        response += $"> > {command.Aliases.First()} - {command.Summary ?? "No summary"}\n";
+                        response += $"> > {command.Aliases.First()} • {command.Summary ?? "No summary"}\n";
                     await ReplyAsync(response);
                     return;
                 }

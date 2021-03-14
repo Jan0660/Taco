@@ -70,12 +70,6 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                 Console.Info($"Ready! Users: {client.UsersCache.Count}; Channels: {client.ChannelsCache.Count};");
                 return Task.CompletedTask;
             };
-            client.MessageReceived += message =>
-            {
-                if (message.Channel is DirectMessageChannel dm)
-                    return dm.SendMessageAsync("fuck off");
-                return Task.CompletedTask;
-            };
 
             client.UserRelationshipUpdated += (userId, status) =>
             {

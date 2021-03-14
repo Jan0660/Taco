@@ -14,7 +14,7 @@ namespace RevoltBot
         public string[] Aliases;
         public Type AttributeType;
         public MethodInfo Method;
-        public BarePreconditionAttribute[] BarePreconditions;
+        public PreconditionAttribute[] Preconditions;
         public string Summary;
         private string DebuggerDisplay
         {

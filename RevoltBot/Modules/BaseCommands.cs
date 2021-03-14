@@ -67,9 +67,9 @@ namespace RevoltBot.Modules
                     if (command == null)
                         goto after_command;
                     var preconditions = "";
-                    foreach (var precondition in command.BarePreconditions)
+                    foreach (var precondition in command.Preconditions)
                         preconditions += 
-$"$\\color{{{(await precondition.EvaluateBool(Message) ? "lime" : "red")}}}\\text{{{precondition.GetType().Name.Replace("Attribute", "")}}}$, ";
+$"$\\color{{{((await precondition.Evaluate(Message)).IsSuccess ? "lime" : "red")}}}\\text{{{precondition.GetType().Name.Replace("Attribute", "")}}}$, ";
                     preconditions = preconditions.Remove(preconditions.Length - 2);
                     await ReplyAsync($@"> ## {command.Aliases.First()}
 > {command.Summary}" + (preconditions != "" ? "\n> **Preconditions:** " + preconditions : ""));

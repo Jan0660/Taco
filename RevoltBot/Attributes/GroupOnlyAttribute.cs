@@ -4,14 +4,13 @@ using RevoltApi.Channels;
 
 namespace RevoltBot.Attributes
 {
-    public class GroupOnlyAttribute : BarePreconditionAttribute
+    public class GroupOnlyAttribute : PreconditionAttribute
     {
-        public override async Task<bool> Evaluate(Message message)
+        public override async Task<PreconditionResult> Evaluate(Message message)
         {
             if (message.Channel is GroupChannel)
-                return true;
-            await message.Channel.SendMessageAsync("This command can only be executed in a group channel.");
-            return false;
+                return PreconditionResult.FromSuccess();
+            return PreconditionResult.FromError("This command can only be executed in a group channel.");
         }
     }
 }

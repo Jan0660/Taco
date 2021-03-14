@@ -4,8 +4,8 @@ using RevoltApi;
 
 namespace RevoltBot.Attributes
 {
-    public abstract class BarePreconditionAttribute : Attribute
+    public abstract class PreconditionAttribute : Attribute
     {
-        public abstract Task<bool> Evaluate(Message message);
+        public abstract Task<PreconditionResult> Evaluate(Message message);
     }
 }

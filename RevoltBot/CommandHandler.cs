@@ -52,7 +52,7 @@ namespace RevoltBot
                         var command = new CommandInfo
                         {
                             Aliases = aliases.ToArray(), AttributeType = att.AttributeType, Method = method,
-                            BarePreconditions = method.GetCustomAttributes<BarePreconditionAttribute>(true).ToArray(),
+                            Preconditions = method.GetCustomAttributes<PreconditionAttribute>(true).ToArray(),
                             Summary = method.GetCustomAttribute<SummaryAttribute>()?.Text
                         };
                         Commands.Add(command);
@@ -86,17 +86,17 @@ namespace RevoltBot
                 throw new Exception("COMMAND_NOT_FOUND");
             var alias = command.Aliases.First(alias => relevant.ToLower().StartsWith(alias.ToLower()));
             var args = relevant.Remove(0, alias.Length + (alias.Length == relevant.Length ? 0 : 1));
-            var passedPreconditions = true;
-            foreach (var precondition in command.BarePreconditions)
+            foreach (var precondition in command.Preconditions)
             {
-                if (!await precondition.Evaluate(message))
+                var result = await precondition.Evaluate(message);
+                if (!result.IsSuccess)
                 {
-                    passedPreconditions = false;
+                    await message.Channel.SendMessageAsync(result.Message);
+                    return;
                 }
             }
 
-            if (passedPreconditions)
-                await command.ExecuteAsync(message, args);
+            await command.ExecuteAsync(message, args);
         }
     }
 }

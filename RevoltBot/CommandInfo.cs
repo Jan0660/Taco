@@ -12,7 +12,6 @@ namespace RevoltBot
     public class CommandInfo
     {
         public string[] Aliases;
-        public Type AttributeType;
         public MethodInfo Method;
         public PreconditionAttribute[] Preconditions;
         public string Summary;

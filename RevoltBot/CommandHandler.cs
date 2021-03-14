@@ -34,24 +34,14 @@ namespace RevoltBot
                     ModuleInfos.Add(module);
                     foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance))
                     {
-                        var att = method.CustomAttributes.FirstOrDefault(
-                            a => a.AttributeType.Name == "CommandAttribute");
+                        var att = method.GetCustomAttribute<CommandAttribute>();
                         if (att == null)
                             continue;
-                        // todo: just use .GetCustomAttribute retard?????
-                        var aliases = new List<string>();
-                        foreach (var arg in att.ConstructorArguments)
-                        {
-                            var val = arg.Value as IReadOnlyCollection<CustomAttributeTypedArgument>;
-                            foreach (var h in val)
-                            {
-                                aliases.Add((string) h.Value);
-                            }
-                        }
+                        var aliases = att.Aliases;
 
                         var command = new CommandInfo
                         {
-                            Aliases = aliases.ToArray(), AttributeType = att.AttributeType, Method = method,
+                            Aliases = aliases, Method = method,
                             Preconditions = method.GetCustomAttributes<PreconditionAttribute>(true).ToArray(),
                             Summary = method.GetCustomAttribute<SummaryAttribute>()?.Text
                         };

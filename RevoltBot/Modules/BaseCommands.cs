@@ -16,7 +16,7 @@ namespace RevoltBot.Modules
         [Summary("General information about the bot.")]
         public Task BotInformation()
         {
-            var uptime = Program.StartTime - DateTime.Now;
+            var uptime = DateTime.Now - Program.StartTime;
             return ReplyAsync($@"> ## Taco
 > **Developed by:** `owouwuvu` <@01EX40TVKYNV114H8Q8VWEGBWQ>
 > **Uptime:** {(uptime.Days == 0 ? "" : uptime.Days + " Days")} {uptime.Hours} Hours {uptime.Minutes} Minutes

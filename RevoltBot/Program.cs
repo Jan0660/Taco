@@ -24,6 +24,8 @@ namespace RevoltBot
         public static Config Config;
         public const string BotOwnerId = "01EX40TVKYNV114H8Q8VWEGBWQ";
         public static DateTime StartTime { get; private set; }
+        private static RevoltClient _client;
+        public static RevoltClient Client => _client;
 
         static async Task Main(string[] args)
         {
@@ -46,41 +48,41 @@ namespace RevoltBot
 
             #endregion
 
-            var client =
+            _client =
                 new RevoltClient(JsonConvert.DeserializeObject<Session>(await File.ReadAllTextAsync("./session.json")));
-            var info = client.ApiInfo;
+            var info = _client.ApiInfo;
             Console.Info($"API Version: {info.Version}");
 
             #region Event handlers
 
-            client.PacketReceived += (packetType, packet, message) =>
+            _client.PacketReceived += (packetType, packet, message) =>
             {
                 Console.Debug($"Message receive: Length: {message.Text.Length}; Type: {packetType};");
                 return Task.CompletedTask;
             };
-            client.PacketError += (packetType, packet, message, exception) =>
+            _client.PacketError += (packetType, packet, message, exception) =>
             {
                 Console.Error(
                     @$"Packet error: message.Length: {message.Text.Length}; packetType: {packetType ?? "null"}; JObject parsed?: {packet != null};
 exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                 return Task.CompletedTask;
             };
-            client.OnReady += () =>
+            _client.OnReady += () =>
             {
-                Console.Info($"Ready! Users: {client.UsersCache.Count}; Channels: {client.ChannelsCache.Count};");
+                Console.Info($"Ready! Users: {_client.UsersCache.Count}; Channels: {_client.ChannelsCache.Count};");
                 return Task.CompletedTask;
             };
 
-            client.UserRelationshipUpdated += (userId, status) =>
+            _client.UserRelationshipUpdated += (userId, status) =>
             {
                 if (status == RelationshipStatus.Incoming)
                 {
-                    return client.Users.AddFriendAsync(client.UsersCache.First(u => u._id == userId).Username);
+                    return _client.Users.AddFriendAsync(_client.UsersCache.First(u => u._id == userId).Username);
                 }
 
                 return Task.CompletedTask;
             };
-            client.MessageUpdated += (messageId, data) =>
+            _client.MessageUpdated += (messageId, data) =>
             {
                 Console.Info(
                     $"Message Updated: Id: {messageId}; NewContent: {data.Content}; Date: {data.Edited.Date};");
@@ -89,18 +91,19 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
 
             #endregion
 
-            await client.ConnectWebSocketAsync();
+            await _client.ConnectWebSocketAsync();
 
-            SnipeModule.Init(client);
-            client.MessageReceived += ClientOnMessageReceived;
+            SnipeModule.Init(_client);
+            _client.MessageReceived += ClientOnMessageReceived;
             CommandHandler.LoadCommands();
-            var r = await client.Users.GetRelationships();
+            var r = await _client.Users.GetRelationships();
             foreach (var h in r)
             {
                 if (h.Status == RelationshipStatus.Incoming)
-                    await client.Users.AddFriendAsync(client.UsersCache.First(u => u._id == h.UserId).Username);
+                    await _client.Users.AddFriendAsync(_client.UsersCache.First(u => u._id == h.UserId).Username);
             }
 
+            BingReminder.Init();
             StartTime = DateTime.Now;
             Console.Info($"Finished loading and connected in {stopwatch.ElapsedMilliseconds}ms.");
             await Task.Delay(-1);
@@ -137,5 +140,8 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
 
             return Task.CompletedTask;
         }
+
+        public static Task SaveConfig()
+            => File.WriteAllTextAsync("./config.json", JsonConvert.SerializeObject(Config));
     }
 }

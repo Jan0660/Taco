@@ -25,6 +25,7 @@ namespace RevoltBot
 #endif
         public static Config Config;
         public const string BotOwnerId = "01EX40TVKYNV114H8Q8VWEGBWQ";
+        public static DateTime StartTime { get; private set; }
 
         static async Task Main(string[] args)
         {
@@ -108,6 +109,7 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                     await client.Users.AddFriendAsync(client.UsersCache.First(u => u._id == h.UserId).Username);
             }
 
+            StartTime = DateTime.Now;
             Console.Info($"Finished loading and connected in {stopwatch.ElapsedMilliseconds}ms.");
             await Task.Delay(-1);
         }

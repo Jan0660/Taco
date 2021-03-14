@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -14,10 +15,14 @@ namespace RevoltBot.Modules
         [Command("info")]
         [Summary("General information about the bot.")]
         public Task BotInformation()
-            => ReplyAsync($@"> ## Taco
+        {
+            var uptime = Program.StartTime - DateTime.Now;
+            return ReplyAsync($@"> ## Taco
 > **Developed by:** `owouwuvu` <@01EX40TVKYNV114H8Q8VWEGBWQ>
+> **Uptime:** {(uptime.Days == 0 ? "" : uptime.Days + " Days")} {uptime.Hours} Hours {uptime.Minutes} Minutes
 > **Latest update at:** {new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime.ToString("dd/MM/yyyy")}
 > **Groups count:** {Message.Client.ChannelsCache.OfType<GroupChannel>().Count()}");
+        }
 
         [Command("help")]
         [Summary("HELP ME")]

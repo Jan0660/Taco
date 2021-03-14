@@ -83,7 +83,7 @@ namespace RevoltBot.Modules
             authorPfp.Mutate(c => c.Resize(new Size(166, 166)));
             mentionPfp.Mutate(c => c.Resize(new Size(110, 110)));
             // todo: resource folder or some dumb shit
-            var image = await Image.LoadAsync(@"C:\Users\Jan\source\repos\ElseIfBot\Resources\Fuck.png");
+            var image = await Image.LoadAsync(@"./Resources/Fuck.png");
             image.Mutate(c =>
             {
                 c.DrawImage(authorPfp, new Point(117, 65), 1.0f);
@@ -91,6 +91,10 @@ namespace RevoltBot.Modules
             });
             await Message.Channel.SendPngAsync(image, "get fucked nerd");
         }
+
+        [Command("uber-fruit", "uber", "uberfruit")]
+        public Task UberFruit()
+            => Message.Channel.SendFileAsync("", "uber.png", "./Resources/UberFruit.png");
 
         // [Command("jan")]
         // public async Task Jan()

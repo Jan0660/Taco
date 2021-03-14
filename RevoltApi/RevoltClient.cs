@@ -9,6 +9,7 @@ using RestSharp;
 using RevoltApi.Channels;
 using Websocket.Client;
 using Console = Log73.Console;
+
 namespace RevoltApi
 {
     public class RevoltClient
@@ -67,7 +68,7 @@ namespace RevoltApi
             add => _messageUpdated.Add(value);
             remove => _messageUpdated.Remove(value);
         }
-        
+
         private List<Func<string, JObject, ResponseMessage, Task>> _packetReceived = new();
 
         /// <summary>
@@ -78,7 +79,7 @@ namespace RevoltApi
             add => _packetReceived.Add(value);
             remove => _packetReceived.Remove(value);
         }
-        
+
         private List<Func<string?, JObject?, ResponseMessage, Exception, Task>> _packetError = new();
 
         /// <summary>
@@ -89,7 +90,15 @@ namespace RevoltApi
             add => _packetError.Add(value);
             remove => _packetError.Remove(value);
         }
-        // todo: ChannelCreate
+
+        private List<Func<Channel, Task>> _channelCreate = new();
+
+        public event Func<Channel, Task> ChannelCreate
+        {
+            add => _channelCreate.Add(value);
+            remove => _channelCreate.Remove(value);
+        }
+
         // todo: ChannelUpdate
         private List<Func<string, string, Task>> _channelGroupJoin = new();
 
@@ -101,6 +110,7 @@ namespace RevoltApi
             add => _channelGroupJoin.Add(value);
             remove => _channelGroupJoin.Remove(value);
         }
+
         private List<Func<string, string, Task>> _channelGroupLeave = new();
 
         /// <summary>
@@ -111,8 +121,25 @@ namespace RevoltApi
             add => _channelGroupLeave.Add(value);
             remove => _channelGroupLeave.Remove(value);
         }
-        // todo: ChannelDelete
-        // todo: UserPresence
+
+        private List<Func<string, Task>> _channelDelete = new();
+
+        public event Func<string, Task> ChannelDelete
+        {
+            add => _channelDelete.Add(value);
+            remove => _channelDelete.Remove(value);
+        }
+
+        private List<Func<string, bool, Task>> _userPresence = new();
+
+        /// <summary>
+        /// UserId, Online
+        /// </summary>
+        public event Func<string, bool, Task> UserPresence
+        {
+            add => _userPresence.Add(value);
+            remove => _userPresence.Remove(value);
+        }
 
         #endregion
 
@@ -191,45 +218,53 @@ namespace RevoltApi
                         }
                         case "Ready":
                         {
-                            _pingTimer?.Stop();
-                            _pingTimer = new Timer(30000d);
-                            _pingTimer.Elapsed += (sender, args) =>
                             {
-                                _webSocket.Send(JsonConvert.SerializeObject(new
+                                _pingTimer?.Stop();
+                                _pingTimer = new Timer(30000d);
+                                _pingTimer.Elapsed += (sender, args) =>
                                 {
-                                    type = "Ping",
-                                    time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-                                }));
-                            };
-                            _pingTimer.Start();
-                            _users = new();
-                            _channels = new();
-                            foreach (var userToken in packet["users"]!)
-                            {
-                                var user = userToken.ToObject<User>();
-                                user!.Client = this;
-                                _users.Add(user);
-                            }
+                                    _webSocket.Send(JsonConvert.SerializeObject(new
+                                    {
+                                        type = "Ping",
+                                        time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                                    }));
+                                };
+                                _pingTimer.Start();
+                                _users = new();
+                                _channels = new();
+                                foreach (var userToken in packet["users"]!)
+                                {
+                                    var user = userToken.ToObject<User>();
+                                    user!.Client = this;
+                                    _users.Add(user);
+                                }
 
-                            foreach (var channelToken in packet["channels"]!)
-                            {
-                                var channel = _deserializeChannel((JObject) channelToken);
-                                if (channel is MessageChannel messageChannel)
-                                    messageChannel.LastMessage.Client = this;
-                                _channels.Add(channel);
-                            }
+                                foreach (var channelToken in packet["channels"]!)
+                                {
+                                    var channel = _deserializeChannel((JObject) channelToken);
+                                    if (channel is MessageChannel messageChannel)
+                                        messageChannel.LastMessage.Client = this;
+                                    _channels.Add(channel);
+                                }
 
-                            foreach (var handler in _onReady)
-                            {
-                                handler.Invoke();
+                                foreach (var handler in _onReady)
+                                {
+                                    handler.Invoke();
+                                }
                             }
-
                             break;
                         }
                         case "UserPresence":
                         {
-                            var user = Users.Get(packet.Value<string>("id"));
-                            user.Online = packet.Value<bool>("online");
+                            var userId = packet.Value<string>("id");
+                            var online = packet.Value<bool>("online");
+                            var user = Users.Get(userId);
+                            if(user != null)
+                                user.Online = packet.Value<bool>("online");
+                            foreach (var handler in _userPresence)
+                            {
+                                handler.Invoke(userId, online);
+                            }
                             break;
                         }
                         case "UserRelationship":
@@ -262,6 +297,7 @@ namespace RevoltApi
 
                             break;
                         case "ChannelGroupJoin":
+                        {
                             var groupId = packet.Value<string>("id");
                             var userId = packet.Value<string>("user");
                             foreach (var handler in _channelGroupJoin)
@@ -270,6 +306,25 @@ namespace RevoltApi
                             }
 
                             break;
+                        }
+                        case "ChannelDelete":
+                            var channelId = packet.Value<string>("id");
+                            foreach (var handler in _channelDelete)
+                            {
+                                handler.Invoke(channelId);
+                            }
+
+                            break;
+                        case "ChannelCreate":
+                        {
+                            var channel = packet.ToObject<Channel>();
+                            _channels.Add(channel);
+                            foreach (var handler in _channelCreate)
+                            {
+                                handler.Invoke(channel);
+                            }
+                            break;
+                        }
                     }
                 }
                 catch (Exception exc)

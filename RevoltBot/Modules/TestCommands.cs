@@ -79,7 +79,6 @@ namespace RevoltBot.Modules
                 await Image.LoadAsync(new MemoryStream(await web.DownloadDataTaskAsync(mention.AvatarUrl)));
             authorPfp.Mutate(c => c.Resize(new Size(166, 166)));
             mentionPfp.Mutate(c => c.Resize(new Size(110, 110)));
-            // todo: resource folder or some dumb shit
             var image = await Image.LoadAsync(@"./Resources/Fuck.png");
             image.Mutate(c =>
             {

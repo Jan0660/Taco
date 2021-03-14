@@ -56,13 +56,13 @@ namespace RevoltBot
         {
             var relevant = message.Content.Remove(0, prefixLength);
             // get command
-            var commands = Commands.Where(c => c.Aliases.Any(alias => relevant.ToLower() == alias.ToLower()))
-                .Concat(Commands.Where(c => c.Aliases.Any(alias => relevant.ToLower().StartsWith(alias.ToLower()))));
+            var commands = Commands.Where(c => c.Aliases.Any(a => relevant.ToLower() == a.ToLower()))
+                .Concat(Commands.Where(c => c.Aliases.Any(a => relevant.ToLower().StartsWith(a.ToLower()))));
             CommandInfo command = null;
             int longest = 0;
             foreach (var cmd in commands)
             {
-                foreach (var cmdAlias in cmd.Aliases.Where(alias => relevant.ToLower().StartsWith(alias.ToLower())))
+                foreach (var cmdAlias in cmd.Aliases.Where(a => relevant.ToLower().StartsWith(a.ToLower())))
                 {
                     if (longest < cmdAlias.Length)
                     {
@@ -74,7 +74,7 @@ namespace RevoltBot
 
             if (command == null)
                 throw new Exception("COMMAND_NOT_FOUND");
-            var alias = command.Aliases.First(alias => relevant.ToLower().StartsWith(alias.ToLower()));
+            var alias = command.Aliases.First(a => relevant.ToLower().StartsWith(a.ToLower()));
             var args = relevant.Remove(0, alias.Length + (alias.Length == relevant.Length ? 0 : 1));
             foreach (var precondition in command.Preconditions)
             {

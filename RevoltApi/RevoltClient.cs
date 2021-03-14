@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Timers;
 using Newtonsoft.Json;
@@ -10,16 +8,13 @@ using Newtonsoft.Json.Linq;
 using RestSharp;
 using RevoltApi.Channels;
 using Websocket.Client;
-using Channel = RevoltApi.Channels.Channel;
 using Console = Log73.Console;
-
 namespace RevoltApi
 {
     public class RevoltClient
     {
         internal RestClient _restClient = new("https://api.revolt.chat/");
         public string UserId;
-        private string _sessionToken;
         public RevoltApiInfo ApiInfo;
         internal WebsocketClient _webSocket;
         private Session _session;
@@ -110,7 +105,6 @@ namespace RevoltApi
         {
             _session = session;
             this.UserId = session.UserId;
-            this._sessionToken = session.SessionToken;
             _restClient.AddDefaultHeader("x-user-id", session.UserId);
             _restClient.AddDefaultHeader("x-session-token", session.SessionToken);
             this.ApiInfo = GetApiInfo().Result;

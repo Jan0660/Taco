@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Jan0660.AzurAPINet.Ships;
 using RevoltApi;
 using RevoltApi.Channels;
-using RevoltBot.Attributes;
 using SixLabors.ImageSharp;
 
 namespace RevoltBot

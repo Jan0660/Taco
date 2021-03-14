@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel.Design;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RevoltApi.Channels;
 
 namespace RevoltApi

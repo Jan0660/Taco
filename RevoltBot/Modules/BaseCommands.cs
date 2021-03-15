@@ -73,7 +73,8 @@ $"$\\color{{{((await precondition.Evaluate(Message)).IsSuccess ? "lime" : "red")
                     if(preconditions != "")
                         preconditions = preconditions.Remove(preconditions.Length - 2);
                     await ReplyAsync($@"> ## {command.Aliases.First()}
-> {command.Summary}" + (preconditions != "" ? "\n> **Preconditions:** " + preconditions : ""));
+> {command.Summary}" + (preconditions != "" ? "\n> **Preconditions:** " + preconditions : "")
+                        + (command.Aliases.Length != 1 ? $"\n> **Aliases:** {String.Join(", ", command.Aliases[1..])}" : ""));
                     return;
                 }
                 after_command: ;

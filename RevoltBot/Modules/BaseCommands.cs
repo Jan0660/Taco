@@ -22,7 +22,11 @@ namespace RevoltBot.Modules
 > **Developed by:** `owouwuvu` <@01EX40TVKYNV114H8Q8VWEGBWQ>
 > **Uptime:** {(uptime.Days == 0 ? "" : uptime.Days + " Days")} {uptime.Hours} Hours {uptime.Minutes} Minutes
 > **Latest update at:** {new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime.ToString("dd/MM/yyyy")}
-> **Groups count:** {Message.Client.ChannelsCache.OfType<GroupChannel>().Count()}");
+> **Groups count:** {Message.Client.ChannelsCache.OfType<GroupChannel>().Count()}"
+#if DEBUG
+                              + "\nDEBUG BUILD"
+#endif
+            );
         }
 
         [Command("help")]
@@ -32,7 +36,8 @@ namespace RevoltBot.Modules
             if (Args == "")
             {
                 // main help
-                var description = $@"Use `{Program.Prefix}help <name of module>` to get the list of commands in a module.
+                var description =
+                    $@"Use `{Program.Prefix}help <name of module>` to get the list of commands in a module.
 | Module | Description | Command count |
 |:------- |:------:|:-----:|
 ";
@@ -49,7 +54,8 @@ namespace RevoltBot.Modules
                 {
                     var module =
                         CommandHandler.ModuleInfos.FirstOrDefault(m =>
-                            m.Names?.AllNames.Any(a => a.ToLower() == Args.ToLower()) ?? m.Name.ToLower() == Args.ToLower());
+                            m.Names?.AllNames.Any(a => a.ToLower() == Args.ToLower()) ??
+                            m.Name.ToLower() == Args.ToLower());
                     if (module == null)
                         goto after_module;
                     var response = @$"> # {module.Name}
@@ -69,14 +75,16 @@ namespace RevoltBot.Modules
                         goto after_command;
                     var preconditions = "";
                     foreach (var precondition in command.Preconditions)
-                        preconditions += 
-$"$\\color{{{((await precondition.Evaluate(Message)).IsSuccess ? "lime" : "red")}}}\\text{{{precondition.GetType().Name.Replace("Attribute", "")}}}$, ";
-                    if(preconditions != "")
+                        preconditions +=
+                            $"$\\color{{{((await precondition.Evaluate(Message)).IsSuccess ? "lime" : "red")}}}\\text{{{precondition.GetType().Name.Replace("Attribute", "")}}}$, ";
+                    if (preconditions != "")
                         preconditions = preconditions.Remove(preconditions.Length - 2);
                     await ReplyAsync($@"> ## {command.Aliases.First()}
 > {command.Summary}" + (preconditions != "" ? "\n> **Preconditions:** " + preconditions : "")
-                        + (command.Aliases.Length != 1 ? $"\n> **Aliases:** {String.Join(", ", command.Aliases[1..])}" : "")
-                        + (command.Module != null ? $"\n> **Module:** {command.Module.Name}" : ""));
+                     + (command.Aliases.Length != 1
+                         ? $"\n> **Aliases:** {String.Join(", ", command.Aliases[1..])}"
+                         : "")
+                     + (command.Module != null ? $"\n> **Module:** {command.Module.Name}" : ""));
                     return;
                 }
                 after_command: ;

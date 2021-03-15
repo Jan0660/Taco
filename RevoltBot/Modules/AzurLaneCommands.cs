@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Jan0660.AzurAPINet;
+using Jan0660.AzurAPINet.Enums;
 using RevoltBot.Attributes;
 using RevoltBot.CommandHandling;
 
@@ -23,7 +24,7 @@ namespace RevoltBot.Modules
 > **Nationality:** {ship.Nationality}
 > **Class:** {ship.Class}
 > **Build Time:** {(ship.Construction.Constructable ? ship.Construction.ConstructionTime.ToString("hh\\:mm\\:ss") : "Cannot be constructed")}
-> **Rarity:** {ship.Rarity} **|** $\color{{orange}}\text{{{ship.Stars.StarsString}}}$
+> **Rarity:** $\color{{{GetRarityColor(ship.GetRarityEnum().ToGeneralRarity())}}}\text{{{ship.Rarity}}}$ **|** $\color{{orange}}\text{{{ship.Stars.StarsString}}}$
 > **Scrap Value:** {(ship.ScrapValue.CanScrap ? $@"{ship.ScrapValue.Coin} Coins; {ship.ScrapValue.Oil} Oil; {ship.ScrapValue.Medal} Medals;" : "Cannot be scraped")}
 > ${{\footnotesize Footer {{\hspace{{1mm}}}} when?}}$"); // , "bruh.png", data
         }
@@ -64,5 +65,19 @@ namespace RevoltBot.Modules
 
             await Message.Channel.SendMessageAsync(table); // , "bruh.png", data
         }
+
+        /// <summary>
+        /// Returns LaTeX color for the rarity.
+        /// </summary>
+        /// <returns></returns>
+        public string GetRarityColor(Rarity rarity)
+            => rarity switch
+            {
+                Rarity.Normal => "Grey",
+                Rarity.Rare => "Aquamarine",
+                Rarity.Elite => "Plum",
+                Rarity.SuperRare => "OrangeRed",
+                Rarity.UltraRare => "RubineRed"
+            };
     }
 }

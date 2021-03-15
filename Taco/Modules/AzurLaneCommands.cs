@@ -14,12 +14,14 @@ namespace RevoltBot.Modules
 
         [Command("ship")]
         [Summary("Basic information about a ship.")]
-        public async Task Ship()
+        public Task Ship()
         {
             var ship = Azurlane.getShip(Args);
+            if (ship == null)
+                return ReplyAsync("Ship not found.");
             // var web = new WebClient();
             // var data = await web.DownloadDataTaskAsync(ship.Skins.First().Image);
-            await Message.Channel.SendMessageAsync(
+            return Message.Channel.SendMessageAsync(
                 @$"> # [{ship.Names.en ?? ship.Names.code} [{ship.Id}]]({ship.WikiUrl})
 > **Nationality:** {ship.Nationality}
 > **Class:** {ship.Class}
@@ -31,9 +33,11 @@ namespace RevoltBot.Modules
 
         [Command("shipstats")]
         [Summary("Level 0, 100, 120 (retrofit?) stats for a ship.")]
-        public async Task ShipStats()
+        public Task ShipStats()
         {
             var ship = Azurlane.getShip(Args);
+            if (ship == null)
+                return ReplyAsync("Ship not found.");
             // var data = await web.DownloadDataTaskAsync(ship.Skins.First().Image);
             var table =
                 @"| Thing | Base | L.100 | L.120 |
@@ -63,7 +67,7 @@ namespace RevoltBot.Modules
                         '\n';
             }
 
-            await Message.Channel.SendMessageAsync(table); // , "bruh.png", data
+            return Message.Channel.SendMessageAsync(table); // , "bruh.png", data
         }
 
         /// <summary>
@@ -73,11 +77,11 @@ namespace RevoltBot.Modules
         public string GetRarityColor(Rarity rarity)
             => rarity switch
             {
-                Rarity.Normal => "Grey",
-                Rarity.Rare => "Aquamarine",
-                Rarity.Elite => "Plum",
+                Rarity.Normal => "919191",
+                Rarity.Rare => "51F3FF",
+                Rarity.Elite => "DB13DB",
                 Rarity.SuperRare => "OrangeRed",
-                Rarity.UltraRare => "RubineRed"
+                Rarity.UltraRare => "AAFFAA"
             };
     }
 }

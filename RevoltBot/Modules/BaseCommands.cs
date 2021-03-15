@@ -51,6 +51,13 @@ namespace RevoltBot.Modules
             }
             else
             {
+                // ManPages
+                {
+                    var page = ManPages.Get(Args);
+                    if (page != null)
+                        await ReplyAsync(page.Content);
+                }
+                // Module
                 {
                     var module =
                         CommandHandler.ModuleInfos.FirstOrDefault(m =>
@@ -68,6 +75,7 @@ namespace RevoltBot.Modules
                     return;
                 }
                 after_module: ;
+                // Command
                 {
                     var command =
                         CommandHandler.Commands.FirstOrDefault(c => c.Aliases.Any(a => a.ToLower() == Args.ToLower()));
@@ -88,10 +96,9 @@ namespace RevoltBot.Modules
                     return;
                 }
                 after_command: ;
-                // todo: special help pages
             }
 
-            await ReplyAsync("no");
+            await ReplyAsync("noone can help you, not even god");
         }
     }
 }

@@ -66,5 +66,10 @@ namespace RevoltBot.Modules
                 await ReplyAsync("no");
             }
         }
+
+        [Command("uber-fruit", "uber", "uberfruit")]
+        [Summary("Sends some nice uber fruit.")]
+        public Task UberFruit()
+            => Message.Channel.SendFileAsync("", "uber.png", "./Resources/UberFruit.png");
     }
 }

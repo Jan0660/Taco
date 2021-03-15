@@ -88,11 +88,6 @@ namespace RevoltBot.Modules
             await Message.Channel.SendPngAsync(image, "get fucked nerd");
         }
 
-        [Command("uber-fruit", "uber", "uberfruit")]
-        [Summary("Sends some nice uber fruit.")]
-        public Task UberFruit()
-            => Message.Channel.SendFileAsync("", "uber.png", "./Resources/UberFruit.png");
-
         // [Command("jan")]
         // public async Task Jan()
         // {

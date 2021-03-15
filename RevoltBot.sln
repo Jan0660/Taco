@@ -1,5 +1,5 @@
 ﻿Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevoltBot", "RevoltBot\RevoltBot.csproj", "{2C5CC3EB-37EC-4DEE-960F-56FA8DFA52B6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevoltBot", "Taco\Taco.csproj", "{2C5CC3EB-37EC-4DEE-960F-56FA8DFA52B6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevoltApi", "RevoltApi\RevoltApi.csproj", "{51307A35-3ABF-4899-9B20-CF91D1FCA323}"
 EndProject

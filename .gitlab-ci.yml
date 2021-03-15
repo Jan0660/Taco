@@ -24,7 +24,7 @@ restore-bot:
     - restore-wrapper
     - build-wrapper
   script:
-    - cd RevoltBot
+    - cd Taco
     - dotnet restore
 
 # Build the bot.
@@ -37,7 +37,7 @@ build-bot:
   dependencies:
     - restore-wrapper
   script:
-    - cd RevoltBot
+    - cd Taco
     - dotnet build --configuration release
 
 stages:

@@ -74,7 +74,8 @@ $"$\\color{{{((await precondition.Evaluate(Message)).IsSuccess ? "lime" : "red")
                         preconditions = preconditions.Remove(preconditions.Length - 2);
                     await ReplyAsync($@"> ## {command.Aliases.First()}
 > {command.Summary}" + (preconditions != "" ? "\n> **Preconditions:** " + preconditions : "")
-                        + (command.Aliases.Length != 1 ? $"\n> **Aliases:** {String.Join(", ", command.Aliases[1..])}" : ""));
+                        + (command.Aliases.Length != 1 ? $"\n> **Aliases:** {String.Join(", ", command.Aliases[1..])}" : "")
+                        + (command.Module != null ? $"\n> **Module:** {command.Module.Name}" : ""));
                     return;
                 }
                 after_command: ;

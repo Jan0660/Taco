@@ -11,6 +11,7 @@ namespace RevoltBot
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public class CommandInfo
     {
+        public ModuleInfo Module;
         public string[] Aliases;
         public MethodInfo Method;
         public PreconditionAttribute[] Preconditions;

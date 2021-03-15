@@ -43,7 +43,8 @@ namespace RevoltBot
                         {
                             Aliases = aliases, Method = method,
                             Preconditions = method.GetCustomAttributes<PreconditionAttribute>(true).ToArray(),
-                            Summary = method.GetCustomAttribute<SummaryAttribute>()?.Text
+                            Summary = method.GetCustomAttribute<SummaryAttribute>()?.Text,
+                            Module = module
                         };
                         Commands.Add(command);
                         module.Commands.Add(command);

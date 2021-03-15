@@ -10,6 +10,7 @@ using NuGet.Frameworks;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using RevoltBot.Attributes;
+using RevoltBot.CommandHandling;
 
 namespace RevoltBot.Modules
 {

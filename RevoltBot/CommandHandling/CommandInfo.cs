@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using RevoltApi;
 using RevoltBot.Attributes;
 
-namespace RevoltBot
+namespace RevoltBot.CommandHandling
 {
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public class CommandInfo

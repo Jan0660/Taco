@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using RestSharp;
 using RevoltApi;
 using RevoltBot.Attributes;
+using RevoltBot.CommandHandling;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using Console = Log73.Console;

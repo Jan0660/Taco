@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Owoify;
 using RevoltApi.Channels;
 using RevoltBot.Attributes;
+using RevoltBot.CommandHandling;
 
 namespace RevoltBot.Modules
 {

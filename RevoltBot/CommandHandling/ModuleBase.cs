@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using RevoltApi;
 
-namespace RevoltBot
+namespace RevoltBot.CommandHandling
 {
     public class ModuleBase
     {

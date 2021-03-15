@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using RevoltApi;
 using RevoltBot.Attributes;
 
-namespace RevoltBot
+namespace RevoltBot.CommandHandling
 {
     public static class CommandHandler
     {

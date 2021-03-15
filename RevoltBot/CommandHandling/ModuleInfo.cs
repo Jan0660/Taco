@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using RevoltBot.Attributes;
 
-namespace RevoltBot
+namespace RevoltBot.CommandHandling
 {
     public class ModuleInfo
     {

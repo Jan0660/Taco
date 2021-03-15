@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using RevoltApi;
 using RevoltApi.Channels;
+using RevoltBot.CommandHandling;
 
 namespace RevoltBot.Attributes
 {

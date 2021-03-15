@@ -1,4 +1,4 @@
-﻿namespace RevoltBot
+﻿namespace RevoltBot.CommandHandling
 {
     public class PreconditionResult
     {

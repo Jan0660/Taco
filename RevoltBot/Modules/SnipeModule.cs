@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using RevoltApi;
 using RevoltBot.Attributes;
+using RevoltBot.CommandHandling;
 
 namespace RevoltBot.Modules
 {

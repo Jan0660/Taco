@@ -9,6 +9,7 @@ using Log73.ColorSchemes;
 using Newtonsoft.Json;
 using RevoltApi;
 using RevoltApi.Channels;
+using RevoltBot.CommandHandling;
 using RevoltBot.Modules;
 using Console = Log73.Console;
 

@@ -56,6 +56,7 @@ namespace RevoltBot.Modules
                     var page = ManPages.Get(Args);
                     if (page != null)
                         await ReplyAsync(page.Content);
+                    return;
                 }
                 // Module
                 {

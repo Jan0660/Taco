@@ -30,7 +30,7 @@ namespace RevoltBot.Modules
         }
 
         [Command("shipstats")]
-        [Summary("Level 100, 120 (retrofit?) stats for a ship.")]
+        [Summary("Level 0, 100, 120 (retrofit?) stats for a ship.")]
         public async Task ShipStats()
         {
             var ship = Azurlane.getShip(Args);

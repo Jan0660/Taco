@@ -228,6 +228,7 @@ namespace RevoltApi
                                     }));
                                 };
                                 _pingTimer.Start();
+                                // initialize cache
                                 _users = new();
                                 _channels = new();
                                 foreach (var userToken in packet["users"]!)
@@ -271,11 +272,10 @@ namespace RevoltApi
                             // if (id == "01EXAG0ZFX02W7PNQE7W5MT339")
                             //     return;
                             var status = Enum.Parse<RelationshipStatus>(packet.Value<string>("status"));
+                            // update user if they're in cache
                             var user = _users.FirstOrDefault(u => u._id == id);
                             if (user != null)
-                            {
                                 user.Relationship = status;
-                            }
 
                             foreach (var handler in _userRelationshipUpdated)
                             {
@@ -314,7 +314,6 @@ namespace RevoltApi
                                 handler.Invoke(groupId, userId);
                             }
 
-                            break;
                             break;
                         }
                         case "ChannelDelete":

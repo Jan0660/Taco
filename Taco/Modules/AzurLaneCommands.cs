@@ -82,6 +82,8 @@ namespace RevoltBot.Modules
                 Rarity.Elite => "DB13DB",
                 Rarity.SuperRare => "OrangeRed",
                 Rarity.UltraRare => "AAFFAA"
+                //Rarity.UltraRare => "FFC0CB"
+                //Rarity.UltraRare => "FF6D88"
             };
     }
 }

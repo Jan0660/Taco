@@ -179,7 +179,7 @@ namespace RevoltBot.Modules
             // check for death response
             if (dyn.query == Args && dyn.country == null)
             {
-                await ReplyAsync(":x: Sorry, but I couldn't find anything for your input.");
+                await ReplyAsync(":x: I can't find that IP or domain.");
                 return;
             }
             await ReplyAsync(@$"> ## IP Lookup: {Args}

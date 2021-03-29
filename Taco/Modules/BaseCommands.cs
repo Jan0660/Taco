@@ -71,9 +71,11 @@ namespace RevoltBot.Modules
                     var response = @$"> # {module.Name}
 > **No. of commands:** {module.Commands.Count}
 > ## Commands:
+> > | Command | Description |
+> > |:------- |:------:|
 ";
                     foreach (var command in module.Commands)
-                        response += $"> > {command.Aliases.First()} • {command.Summary ?? "No summary"}\n";
+                        response += $"> > | {command.Aliases.First()} | {command.Summary ?? "No summary"} |\n";
                     await ReplyAsync(response);
                     return;
                 }

@@ -25,6 +25,7 @@ namespace RevoltApi
         private Timer _pingTimer;
         public string ApiUrl = "https://api.revolt.chat";
         public string AutumnUrl = "https://autumn.revolt.chat";
+        public string VosoUrl = "https://voso.revolt.chat";
 
         #region events
 
@@ -417,6 +418,24 @@ namespace RevoltApi
             var res = await _restClient.ExecuteGetAsync(req);
             return _deserialize<T>(res.Content);
         }
+
+        public async Task<VosoInformation> GetVosoInfo()
+        {
+            return JsonConvert.DeserializeObject<VosoInformation>(
+                (await (new RestClient(VosoUrl).ExecuteGetAsync(new RestRequest(VosoUrl)))).Content);
+        }
+    }
+
+    public class VosoInformation
+    {
+        [JsonProperty("voso")] public string Version;
+        [JsonProperty("ws")] public string WebsocketUrl;
+        [JsonProperty("features")] public VosoFeatures Features;
+    }
+
+    public class VosoFeatures
+    {
+        [JsonProperty("rtp")] public bool Rtp;
     }
 
     public class SendMessageRequest

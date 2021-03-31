@@ -11,6 +11,8 @@ namespace RevoltBot
         public string BingCoreClr;
         public string BingCoreFx;
         public List<string> BingReminderChannels = new();
+        public string MongoUrl;
+        public string DatabaseName;
 
         public Task Save()
             => File.WriteAllTextAsync("./config.json", JsonConvert.SerializeObject(this));

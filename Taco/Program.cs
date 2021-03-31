@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Log73;
 using Log73.ColorSchemes;
+using MongoDB.Driver;
 using Newtonsoft.Json;
 using RevoltApi;
 using RevoltApi.Channels;
@@ -31,7 +32,7 @@ namespace RevoltBot
         static async Task Main(string[] args)
         {
             var stopwatch = Stopwatch.StartNew();
-            Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"));
+            Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"))!;
 
             #region Logging configuration
 
@@ -107,6 +108,9 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             BingReminder.Init();
             StartTime = DateTime.Now;
             Console.Info($"Finished loading and connected in {stopwatch.ElapsedMilliseconds}ms.");
+            Console.Info("Connecting to MongoDB...");
+            await Mongo.Connect();
+            Console.Info("Connected to MongoDB.");
             await Task.Delay(-1);
         }
 

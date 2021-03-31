@@ -47,13 +47,24 @@ namespace RevoltBot.Modules
         {
             // todo: when https://voso.revolt.chat/
             var info = await Message.Client.GetApiInfo();
+            var voso = await Message.Client.GetVosoInfo();
             await ReplyAsync(@$"> ## Revolt info (for app.revolt.chat)
 > ### Versions
 > **Api:** {info.Version}
+> **Voso:** {voso.Version}
 > ### Features
-> **Email:** {info.Features.Email}
-> **Invite-only:** {info.Features.InviteOnly}
-> **Captcha:** {info.Features.Captcha.Enabled}");
+> **Email:** {StringBooled(info.Features.Email)}
+> **Invite-only:** {StringBooled(info.Features.InviteOnly)}
+> **Captcha:** {StringBooled(info.Features.Captcha.Enabled)}
+> **Voso.RTP:** {StringBooled(voso.Features.Rtp)}");
+        }
+
+        public string StringBooled(bool value)
+            => StringBooled(value, value.ToString());
+
+        public string StringBooled(bool value, string str)
+        {
+            return $@"$\color{{{(value ? "lime" : "red")}}}\text{{{str}}}$";
         }
 
         // [Command("discord")]

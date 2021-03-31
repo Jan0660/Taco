@@ -27,7 +27,8 @@ namespace RevoltBot.CommandHandling
         public async Task ExecuteAsync(Message message, string args)
         {
             var module = Activator.CreateInstance(Method.DeclaringType!) as ModuleBase;
-            module!.Message = message;
+            module!.SetContext(new CommandContext(message));
+            module.Message = message;
             module.Args = args;
             var val = Method.Invoke(module, null);
             if (val is Task task)

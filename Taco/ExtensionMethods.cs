@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Jan0660.AzurAPINet.Ships;
 using RevoltApi;
 using RevoltApi.Channels;
+using RevoltBot.Attributes;
+using RevoltBot.CommandHandling;
 using SixLabors.ImageSharp;
 
 namespace RevoltBot
@@ -51,6 +54,11 @@ namespace RevoltBot
             // ASW
             dict.Add("AntiSub", stats.AntiSubmarineWarfare.ToString());
             return dict;
+        }
+
+        public static bool IsHidden(this ModuleInfo module)
+        {
+            return module.Attributes.Any(att => att is HiddenAttribute);
         }
     }
 }

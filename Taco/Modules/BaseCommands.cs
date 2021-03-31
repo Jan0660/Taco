@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using RevoltApi.Channels;
 using RevoltBot.Attributes;
 using RevoltBot.CommandHandling;
+using Console = Log73.Console;
 
 namespace RevoltBot.Modules
 {
@@ -43,6 +44,8 @@ namespace RevoltBot.Modules
 ";
                 foreach (var module in CommandHandler.ModuleInfos)
                 {
+                    if(module.IsHidden())
+                        continue;
                     description += $"| {module.Name} | {module.Summary ?? "No summary"} | {module.Commands.Count} |\n";
                 }
 

@@ -12,5 +12,6 @@ namespace RevoltBot.CommandHandling
         public string Name => Names?.Text ?? Type.Name;
         public ModuleNameAttribute Names;
         public string Summary;
+        public Attribute[] Attributes;
     }
 }

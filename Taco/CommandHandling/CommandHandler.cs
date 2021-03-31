@@ -29,7 +29,8 @@ namespace RevoltBot.CommandHandling
                     {
                         Type = type,
                         Summary = type.GetCustomAttribute<SummaryAttribute>()?.Text,
-                        Names = type.GetCustomAttribute<ModuleNameAttribute>()
+                        Names = type.GetCustomAttribute<ModuleNameAttribute>(),
+                        Attributes = type.GetCustomAttributes().ToArray()
                     };
                     ModuleInfos.Add(module);
                     foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance))

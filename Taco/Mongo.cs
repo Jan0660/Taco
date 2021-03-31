@@ -42,14 +42,29 @@ namespace RevoltBot
         }
     }
 
+    public enum PermissionLevel : sbyte
+    {
+        BlacklistSilent = -2,
+        Blacklist = -1,
+        NotSpecial = 0,
+        Developer = 100
+    }
+
     [BsonIgnoreExtraElements]
     public class UserData
     {
         public string UserId;
+        public PermissionLevel PermissionLevel;
 
         public UserData(string userId)
         {
             UserId = userId;
+        }
+
+        public async Task UpdateAsync()
+        {
+            await Mongo.UserCollection.FindOneAndUpdateAsync(new BsonDocument("UserId", UserId),
+                new JsonUpdateDefinition<BsonDocument>(JsonConvert.SerializeObject(this)));
         }
     }
 }

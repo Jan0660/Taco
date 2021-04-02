@@ -252,5 +252,11 @@ Websocket Ping: doesnt exist");
             return ReplyAsync($@"> ## {Context.User.Username}
 > **Permission Level:** {Context.UserData.PermissionLevel} - {((sbyte) Context.UserData.PermissionLevel)}");
         }
+
+        [Command("donate")]
+        public Task Donate()
+            => ReplyAsync($@"> ## Donate
+> **ETC:** `0xDd2c32F8c25Ae6e7aFC590593f5Dfd34639e4F14`
+> **DONATE TO INSERT TOO UwU:** https://ko-fi.com/insertish");
     }
 }

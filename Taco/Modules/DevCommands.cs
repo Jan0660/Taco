@@ -17,6 +17,11 @@ namespace RevoltBot.Modules
         {
             var args = Args.Split(' ');
             var userId = args[0];
+            if (userId == Program.BotOwnerId)
+            {
+                await ReplyAsync("Sussus amogus.");
+                return;
+            }
             sbyte level;
             if (!sbyte.TryParse(args.Last(), out level))
             {

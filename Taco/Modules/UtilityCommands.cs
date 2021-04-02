@@ -5,18 +5,21 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using RestSharp;
+using RevoltApi.Channels;
 using RevoltBot.Attributes;
 using RevoltBot.CommandHandling;
 
 namespace RevoltBot.Modules
 {
-    [ModuleName("Code", "Programmer", "Nerd")]
-    [Summary("Utilities for programmers.")]
-    public class ProgrammerCommands : ModuleBase
+    [ModuleName("Utility", "Programmer", "Nerd")]
+    [Summary("Utilities")]
+    public class UtilityCommands : ModuleBase
     {
         private static readonly SourceCacheContext Cache = new SourceCacheContext();
         private static readonly ILogger Logger = NullLogger.Instance;
@@ -122,6 +125,44 @@ namespace RevoltBot.Modules
             [JsonProperty("description")] public string Description;
             // spec_title
             // spec_href
+        }
+
+        [Command("group", "groupinfo")]
+        public Task GroupInfo()
+        {
+            var group = (GroupChannel) Message.Channel;
+            return ReplyAsync($@"> ## {group.Name}
+> {group.Description}
+> **Owner:** <@{group.OwnerId}> [`{group.OwnerId}`]
+> **ID:** `{group._id}`
+> {group.RecipientIds.Length} Recipients");
+        }
+
+        [Command("iplookup", "hack", "ip", "nslookup")]
+        [Summary("Retrieve information about an IP or domain.")]
+        public async Task Hack()
+        {
+            // todo: filter out http://(.+)/ ??? and hrafegtjyku
+            var obj = JObject.Parse(
+                (await new RestClient().ExecuteGetAsync(new RestRequest("http://ip-api.com/json/" + Args))).Content);
+            // query, country, countryCode, regionName, city, zip, timezone, isp, org
+            dynamic dyn = obj;
+            // check for death response
+            if (dyn.query == Args && dyn.country == null)
+            {
+                await ReplyAsync(":x: I can't find that IP or domain.");
+                return;
+            }
+
+            await ReplyAsync(@$"> ## IP Lookup: {Args}
+> **IP:** {dyn.query}
+> **Country:** {dyn.country} [{dyn.countryCode}]
+> **Region:** {dyn.regionName}
+> **City:** {dyn.city}
+> **Zip:** {dyn.zip}
+> **Time zone:** {dyn.timezone}
+> **ISP:** {dyn.isp}
+> **Organization:** {dyn.org}");
         }
     }
 }

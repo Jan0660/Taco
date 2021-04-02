@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using RevoltApi.Channels;
@@ -10,9 +12,9 @@ using Console = Log73.Console;
 
 namespace RevoltBot.Modules
 {
-    [ModuleName("Basic", "base", "core")]
-    [Summary("Basic commands like `info` and `help`.")]
-    public class BaseCommands : ModuleBase
+    [ModuleName("Core", "base", "basic")]
+    [Summary("Core commands like `info` and `help`.")]
+    public class CoreCommands : ModuleBase
     {
         [Command("info")]
         [Summary("General information about the bot.")]
@@ -44,7 +46,7 @@ namespace RevoltBot.Modules
 ";
                 foreach (var module in CommandHandler.ModuleInfos)
                 {
-                    if(module.IsHidden())
+                    if (module.IsHidden())
                         continue;
                     description += $"| {module.Name} | {module.Summary ?? "No summary"} | {module.Commands.Count} |\n";
                 }
@@ -107,6 +109,39 @@ namespace RevoltBot.Modules
             }
 
             await ReplyAsync("noone can help you, not even god");
+        }
+
+        [Command("me")]
+        [Summary("Shows your current information with this bot.")]
+        public Task Me()
+        {
+            return ReplyAsync($@"> ## {Context.User.Username}
+> **Permission Level:** {Context.UserData.PermissionLevel} - {((sbyte) Context.UserData.PermissionLevel)}");
+        }
+
+        [Command("donate")]
+        public Task Donate()
+            => ReplyAsync($@"> ## Donate
+> **ETC:** `0xDd2c32F8c25Ae6e7aFC590593f5Dfd34639e4F14`
+> **DONATE TO INSERT TOO UwU:** https://ko-fi.com/insertish");
+
+        [Command("ping")]
+        [Summary("Ping!")]
+        public Task Ping()
+        {
+            var web = new WebClient();
+            var stopwatch = Stopwatch.StartNew();
+            web.DownloadString(Message.Client.ApiUrl);
+            var restPing = stopwatch.ElapsedMilliseconds;
+            return ReplyAsync(@$"REST API Ping: {restPing}ms
+Websocket Ping: doesnt exist");
+        }
+
+        [Command("test", "test-alias")]
+        [Summary("Test command.")]
+        public async Task TestCommand()
+        {
+            await ReplyAsync("test");
         }
     }
 }

@@ -40,5 +40,34 @@ namespace RevoltBot.Modules
             await userData.UpdateAsync();
             await ReplyAsync($"<@{userId}> [`{userId}`] permission level changed to `{level}`");
         }
+
+        [Command("edittest")]
+        [RequireDeveloper]
+        public async Task EditTest()
+        {
+            var msg = await ReplyAsync("hell");
+            for (int i = 0; i < 300; i++)
+            {
+                await msg.EditAsync(i.ToString());
+                //await Task.Delay(100);
+            }
+
+            await msg.EditAsync("ok cool");
+        }
+
+        [Command("druh")]
+        [Summary("rape webcocket")]
+        [RequireBotOwner]
+        public async Task Druh()
+        {
+            var delay = 30;
+            while (true)
+            {
+                await Message.Channel.BeginTypingAsync();
+                await Task.Delay(delay);
+                await Message.Channel.EndTypingAsync();
+                await Task.Delay(delay);
+            }
+        }
     }
 }

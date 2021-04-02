@@ -7,7 +7,7 @@ using RevoltBot.CommandHandling;
 
 namespace RevoltBot.Modules
 {
-    [Summary("Snipe")]
+    [Summary("Snipe command")]
     [ModuleName("Snipe")]
     public class SnipeModule : ModuleBase
     {

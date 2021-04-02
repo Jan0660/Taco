@@ -15,15 +15,9 @@ using Console = Log73.Console;
 
 namespace RevoltBot.Modules
 {
+    [Summary(":flushed:")]
     public class TestModule : ModuleBase
     {
-        [Command("test", "test-alias")]
-        [Summary("Test command.")]
-        public async Task TestCommand()
-        {
-            await ReplyAsync("test");
-        }
-
         [Command("whois")]
         [Summary("Retrieve information about a user.")]
         public async Task WhoIs()
@@ -116,30 +110,6 @@ namespace RevoltBot.Modules
                    Message.Client.UsersCache.FirstOrDefault(u => u._id == mention.Replace("<@", "").Replace(">", "")) ??
                    Message.Client.Users.Get(mention);
         }
-
-        [Command("retard")]
-        public async Task Retard()
-        {
-            await Message.Channel.BeginTypingAsync();
-            await Task.Delay(7000);
-            await ReplyAsync("<@01EXAG0ZFX02W7PNQE7W5MT339> retard");
-            await Message.Channel.EndTypingAsync();
-        }
-
-        [Command("druh")]
-        [Summary("rape webcocket")]
-        [RequireBotOwner]
-        public async Task Druh()
-        {
-            var delay = 30;
-            while (true)
-            {
-                await Message.Channel.BeginTypingAsync();
-                await Task.Delay(delay);
-                await Message.Channel.EndTypingAsync();
-                await Task.Delay(delay);
-            }
-        }
         //
         // [Command("unfriend")]
         // public async Task UnfriendMePls()
@@ -177,86 +147,5 @@ namespace RevoltBot.Modules
         //
         //     await ReplyAsync(text);
         // }
-
-        [Command("iplookup", "hack", "ip", "nslookup")]
-        [Summary("Retrieve information about an IP or domain.")]
-        public async Task Hack()
-        {
-            // todo: filter out http://(.+)/ ??? and hrafegtjyku
-            var obj = JObject.Parse(
-                (await new RestClient().ExecuteGetAsync(new RestRequest("http://ip-api.com/json/" + Args))).Content);
-            // query, country, countryCode, regionName, city, zip, timezone, isp, org
-            dynamic dyn = obj;
-            // check for death response
-            if (dyn.query == Args && dyn.country == null)
-            {
-                await ReplyAsync(":x: I can't find that IP or domain.");
-                return;
-            }
-
-            await ReplyAsync(@$"> ## IP Lookup: {Args}
-> **IP:** {dyn.query}
-> **Country:** {dyn.country} [{dyn.countryCode}]
-> **Region:** {dyn.regionName}
-> **City:** {dyn.city}
-> **Zip:** {dyn.zip}
-> **Time zone:** {dyn.timezone}
-> **ISP:** {dyn.isp}
-> **Organization:** {dyn.org}");
-        }
-
-        [Command("ping")]
-        [Summary("Ping!")]
-        public Task Ping()
-        {
-            var web = new WebClient();
-            var stopwatch = Stopwatch.StartNew();
-            web.DownloadString(Message.Client.ApiUrl);
-            var restPing = stopwatch.ElapsedMilliseconds;
-            return ReplyAsync(@$"REST API Ping: {restPing}ms
-Websocket Ping: doesnt exist");
-        }
-
-        [Command("edittest")]
-        [RequireDeveloper]
-        public async Task EditTest()
-        {
-            var msg = await ReplyAsync("hell");
-            for (int i = 0; i < 300; i++)
-            {
-                await msg.EditAsync(i.ToString());
-                //await Task.Delay(100);
-            }
-
-            await msg.EditAsync("ok cool");
-        }
-
-        [Command("group", "groupinfo")]
-        public Task GroupInfo()
-        {
-            var group = (GroupChannel) Message.Channel;
-            return ReplyAsync($@"> ## {group.Name}
-> {group.Description}
-> **Owner:** <@{group.OwnerId}> [`{group.OwnerId}`]
-> **ID:** `{group._id}`
-> {group.RecipientIds.Length} Recipients");
-        }
-
-        [Command("flush", "flushed")]
-        public Task Flushed()
-            => ReplyAsync("# $\\huge\\text{😳}$");
-
-        [Command("me")]
-        public Task Me()
-        {
-            return ReplyAsync($@"> ## {Context.User.Username}
-> **Permission Level:** {Context.UserData.PermissionLevel} - {((sbyte) Context.UserData.PermissionLevel)}");
-        }
-
-        [Command("donate")]
-        public Task Donate()
-            => ReplyAsync($@"> ## Donate
-> **ETC:** `0xDd2c32F8c25Ae6e7aFC590593f5Dfd34639e4F14`
-> **DONATE TO INSERT TOO UwU:** https://ko-fi.com/insertish");
     }
 }

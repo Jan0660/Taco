@@ -72,5 +72,18 @@ namespace RevoltBot.Modules
         [Summary("Sends some nice uber fruit.")]
         public Task UberFruit()
             => Message.Channel.SendFileAsync("", "uber.png", "./Resources/UberFruit.png");
+
+        [Command("flush", "flushed")]
+        public Task Flushed()
+            => ReplyAsync("# $\\huge\\text{😳}$");
+
+        [Command("retard")]
+        public async Task Retard()
+        {
+            await Message.Channel.BeginTypingAsync();
+            await Task.Delay(7000);
+            await ReplyAsync("<@01EXAG0ZFX02W7PNQE7W5MT339> retard");
+            await Message.Channel.EndTypingAsync();
+        }
     }
 }

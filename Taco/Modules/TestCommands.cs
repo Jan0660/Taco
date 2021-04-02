@@ -45,7 +45,6 @@ namespace RevoltBot.Modules
         [Summary("Information about revolt instance.")]
         public async Task RevoltInfo()
         {
-            // todo: when https://voso.revolt.chat/
             var info = await Message.Client.GetApiInfo();
             var voso = await Message.Client.GetVosoInfo();
             await ReplyAsync(@$"> ## Revolt info (for app.revolt.chat)

@@ -54,8 +54,9 @@ namespace RevoltBot.CommandHandling
             }
         }
 
-        public static async Task ExecuteCommandAsync(Message message, int prefixLength)
+        public static async Task ExecuteCommandAsync(CommandContext context, int prefixLength)
         {
+            var message = context.Message;
             var relevant = message.Content.Remove(0, prefixLength);
             // get command
             var commands = Commands.Where(c => c.Aliases.Any(a => relevant.ToLower() == a.ToLower()))
@@ -88,7 +89,7 @@ namespace RevoltBot.CommandHandling
                 }
             }
 
-            await command.ExecuteAsync(message, args);
+            await command.ExecuteAsync(context, args);
         }
     }
 }

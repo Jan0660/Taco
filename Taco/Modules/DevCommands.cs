@@ -27,7 +27,7 @@ namespace RevoltBot.Modules
             var userData = Mongo.GetOrCreateUserData(userId);
             userData.PermissionLevel = (PermissionLevel)level;
             await userData.UpdateAsync();
-            await ReplyAsync("Kek'd");
+            await ReplyAsync($"<@{userId}> [`{userId}`] permission level changed to `{level}`");
         }
     }
 }

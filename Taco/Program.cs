@@ -124,7 +124,14 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                 {
                     try
                     {
-                        await CommandHandler.ExecuteCommandAsync(message, Prefix.Length);
+                        var context = new CommandContext(message);
+                        if (context.UserData.PermissionLevel == PermissionLevel.Blacklist)
+                        {
+                            return message.Channel.SendMessageAsync($"<@{message.AuthorId}> why are you black.");
+                        }
+                        else if (context.UserData.PermissionLevel == PermissionLevel.BlacklistSilent)
+                            return Task.CompletedTask;
+                        await CommandHandler.ExecuteCommandAsync(context, Prefix.Length);
                     }
                     catch (Exception exception)
                     {

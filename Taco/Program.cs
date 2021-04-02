@@ -34,21 +34,7 @@ namespace RevoltBot
             var stopwatch = Stopwatch.StartNew();
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"))!;
 
-            #region Logging configuration
-
-#if DEBUG
-            Console.Options.UseAnsi = false;
-            Console.Options.ColorScheme = new RiderDarkMelonColorScheme();
-#endif
-#if DEBUG
-            MessageTypes.Debug.Style.Color = Color.Pink;
-#else
-            MessageTypes.Debug.Style.Color = Color.FromArgb(255, 191, 254);
-#endif
-            Console.Options.LogLevel = LogLevel.Debug;
-            Console.Options.ObjectSerialization = ConsoleOptions.ObjectSerializationMethod.Json;
-
-            #endregion
+            _configureLogging();
 
             _client =
                 new RevoltClient(JsonConvert.DeserializeObject<Session>(await File.ReadAllTextAsync("./session.json")));
@@ -131,6 +117,7 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                         }
                         else if (context.UserData.PermissionLevel == PermissionLevel.BlacklistSilent)
                             return Task.CompletedTask;
+
                         await CommandHandler.ExecuteCommandAsync(context, Prefix.Length);
                     }
                     catch (Exception exception)
@@ -155,5 +142,29 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
 
         public static Task SaveConfig()
             => File.WriteAllTextAsync("./config.json", JsonConvert.SerializeObject(Config));
+
+        private static void _configureLogging()
+        {
+#if DEBUG
+            Console.Options.UseAnsi = false;
+            Console.Options.ColorScheme = new RiderDarkMelonColorScheme();
+#endif
+#if DEBUG
+            MessageTypes.Debug.Style.Color = Color.Pink;
+#else
+            MessageTypes.Debug.Style.Color = Color.FromArgb(255, 191, 254);
+#endif
+            Console.Options.LogLevel = LogLevel.Debug;
+            Console.Options.ObjectSerialization = ConsoleOptions.ObjectSerializationMethod.Json;
+            var msgTypes = MessageTypes.AsArray();
+            var timeLogInfo = new TimeLogInfo()
+            {
+                Style = new() {Color = Color.Gold}
+            };
+            foreach (var msgType in msgTypes)
+            {
+                msgType.LogInfos.Add(timeLogInfo);
+            }
+        }
     }
 }

@@ -66,11 +66,11 @@ namespace RevoltApi
             => Client._restClient.ExecuteAsync(new RestRequest($"/channels/{channelId}", Method.DELETE));
 
         public Task AddGroupMemberAsync(string channelId, string userId)
-            => Client._restClient.ExecuteGetAsync(new RestRequest($"/channels/{channelId}/recipients/{userId}",
+            => Client._restClient.ExecuteAsync(new RestRequest($"/channels/{channelId}/recipients/{userId}",
                 Method.PUT));
 
         public Task RemoveGroupMemberAsync(string channelId, string userId)
-            => Client._restClient.ExecuteGetAsync(new RestRequest($"/channels/{channelId}/recipients/{userId}",
+            => Client._restClient.ExecuteAsync(new RestRequest($"/channels/{channelId}/recipients/{userId}",
                 Method.DELETE));
     }
 }

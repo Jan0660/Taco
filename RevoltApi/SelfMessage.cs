@@ -14,5 +14,8 @@ namespace RevoltApi
             });
             return Client._restClient.ExecuteAsync(req, Method.PATCH);
         }
+
+        public Task DeleteAsync()
+            => Client._restClient.ExecuteAsync(new RestRequest($"/channels/{ChannelId}/messages/{_id}"), Method.DELETE);
     }
 }

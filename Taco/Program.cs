@@ -113,7 +113,9 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                         var context = new CommandContext(message);
                         if (context.UserData.PermissionLevel == PermissionLevel.Blacklist)
                         {
-                            return message.Channel.SendMessageAsync($"<@{message.AuthorId}> why are you black.");
+                            return message.Channel.SendMessageAsync(context.UserData.BlacklistedMessage == null
+                                ? $"<@{message.AuthorId}> why are you black."
+                                : String.Format(context.UserData.BlacklistedMessage, context.UserData.UserId));
                         }
                         else if (context.UserData.PermissionLevel == PermissionLevel.BlacklistSilent)
                             return Task.CompletedTask;

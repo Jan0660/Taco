@@ -55,6 +55,7 @@ namespace RevoltBot
     {
         public string UserId;
         public PermissionLevel PermissionLevel;
+        public string BlacklistedMessage;
 
         public UserData(string userId)
         {

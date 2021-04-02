@@ -31,4 +31,16 @@ namespace RevoltApi
         [JsonProperty("enabled")] public bool Enabled;
         [JsonProperty("url")] public string Url;
     }
+
+    public class VosoInformation
+    {
+        [JsonProperty("voso")] public string Version;
+        [JsonProperty("ws")] public string WebsocketUrl;
+        [JsonProperty("features")] public VosoFeatures Features;
+    }
+
+    public class VosoFeatures
+    {
+        [JsonProperty("rtp")] public bool Rtp;
+    }
 }

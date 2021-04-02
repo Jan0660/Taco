@@ -426,18 +426,6 @@ namespace RevoltApi
         }
     }
 
-    public class VosoInformation
-    {
-        [JsonProperty("voso")] public string Version;
-        [JsonProperty("ws")] public string WebsocketUrl;
-        [JsonProperty("features")] public VosoFeatures Features;
-    }
-
-    public class VosoFeatures
-    {
-        [JsonProperty("rtp")] public bool Rtp;
-    }
-
     public class SendMessageRequest
     {
         [JsonProperty("content")] public string Content;

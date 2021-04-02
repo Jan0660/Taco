@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using RevoltApi;
+using RevoltApi.Channels;
 using RevoltBot.Attributes;
 using RevoltBot.CommandHandling;
 using SixLabors.ImageSharp;
@@ -213,6 +214,30 @@ namespace RevoltBot.Modules
             var restPing = stopwatch.ElapsedMilliseconds;
             return ReplyAsync(@$"REST API Ping: {restPing}ms
 Websocket Ping: doesnt exist");
+        }
+
+        [Command("edittest")]
+        public async Task EditTest()
+        {
+            var msg = await ReplyAsync("hell");
+            for (int i = 0; i < 30; i++)
+            {
+                await msg.EditAsync(i.ToString());
+                //await Task.Delay(100);
+            }
+
+            await msg.EditAsync("ok cool");
+        }
+
+        [Command("group", "groupinfo")]
+        public Task GroupInfo()
+        {
+            var group = (GroupChannel) Message.Channel;
+            return ReplyAsync($@"> ## {group.Name}
+> {group.Description}
+> **Owner:** <@{group.OwnerId}> [`{group.OwnerId}`]
+> **ID:** `{group._id}`
+> {group.RecipientIds.Length} Recipients");
         }
     }
 }

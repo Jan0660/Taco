@@ -2,7 +2,7 @@
 
 namespace RevoltBot.Attributes
 {
-    // todo: add applicable to
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class SummaryAttribute : Attribute
     {
         public string Text;

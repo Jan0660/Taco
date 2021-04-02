@@ -14,7 +14,7 @@ namespace RevoltBot.CommandHandling
             Context = context;
         }
 
-        public Task<Message> ReplyAsync(string content)
+        public Task<SelfMessage> ReplyAsync(string content)
             => Message.Channel.SendMessageAsync(content);
     }
 }

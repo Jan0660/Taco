@@ -10,13 +10,13 @@ namespace RevoltApi
     public class RevoltClientChannels
     {
         public RevoltClient Client { get; }
-        
+
         public RevoltClientChannels(RevoltClient client)
         {
             this.Client = client;
         }
-        
-        
+
+
         public Channel Get(string id)
         {
             Channel channel = Client.ChannelsCache.FirstOrDefault(u => u._id == id);
@@ -24,8 +24,8 @@ namespace RevoltApi
                 return channel;
             return Client._deserializeChannel(Client._restClient.Get(new RestRequest($"/channels/{id}/")).Content);
         }
-        
-        public async Task<Message> SendMessageAsync(string channelId, string content, string attachmentId = null)
+
+        public async Task<SelfMessage> SendMessageAsync(string channelId, string content, string attachmentId = null)
         {
             if ((content == "" | content == null) && (attachmentId == null | attachmentId == ""))
                 throw new Exception("Cannot send empty message without an attachment.");
@@ -36,9 +36,9 @@ namespace RevoltApi
                 AttachmentId = attachmentId
             }));
             var res = await Client._restClient.ExecutePostAsync(req);
-            return Client._deserialize<Message>(res.Content);
+            return Client._deserialize<SelfMessage>(res.Content);
         }
-        
+
         public Task BeginTypingAsync(string channelId)
         {
             return Client._webSocket.SendInstant(JsonConvert.SerializeObject(new
@@ -64,5 +64,13 @@ namespace RevoltApi
         /// <returns></returns>
         public Task LeaveAsync(string channelId)
             => Client._restClient.ExecuteAsync(new RestRequest($"/channels/{channelId}", Method.DELETE));
+
+        public Task AddGroupMemberAsync(string channelId, string userId)
+            => Client._restClient.ExecuteGetAsync(new RestRequest($"/channels/{channelId}/recipients/{userId}",
+                Method.PUT));
+
+        public Task RemoveGroupMemberAsync(string channelId, string userId)
+            => Client._restClient.ExecuteGetAsync(new RestRequest($"/channels/{channelId}/recipients/{userId}",
+                Method.DELETE));
     }
 }

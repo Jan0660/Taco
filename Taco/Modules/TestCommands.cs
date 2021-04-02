@@ -240,5 +240,9 @@ Websocket Ping: doesnt exist");
 > **ID:** `{group._id}`
 > {group.RecipientIds.Length} Recipients");
         }
+
+        [Command("flush", "flushed")]
+        public Task Flushed()
+            => ReplyAsync("# $\\huge\\text{😳}$");
     }
 }

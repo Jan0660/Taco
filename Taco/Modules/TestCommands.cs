@@ -217,11 +217,12 @@ Websocket Ping: doesnt exist");
         }
 
         [Command("edittest")]
+        [RequireDeveloper]
         public async Task EditTest()
         {
             var msg = await ReplyAsync("hell");
-            for (int i = 0; i < 30; i++)
-            {
+            for (int i = 0; i < 300; i++)
+            { 
                 await msg.EditAsync(i.ToString());
                 //await Task.Delay(100);
             }

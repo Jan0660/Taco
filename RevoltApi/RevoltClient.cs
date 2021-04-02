@@ -141,6 +141,14 @@ namespace RevoltApi
             remove => _userPresence.Remove(value);
         }
 
+        private List<Func<Channel, Task>> _channelUpdate = new();
+
+        public event Func<Channel, Task> ChannelUpdate
+        {
+            add => _channelUpdate.Add(value);
+            remove => _channelUpdate.Remove(value);
+        }
+
         #endregion
 
         public RevoltClientChannels Channels { get; private set; }
@@ -259,12 +267,13 @@ namespace RevoltApi
                             var userId = packet.Value<string>("id");
                             var online = packet.Value<bool>("online");
                             var user = Users.Get(userId);
-                            if(user != null)
+                            if (user != null)
                                 user.Online = packet.Value<bool>("online");
                             foreach (var handler in _userPresence)
                             {
                                 handler.Invoke(userId, online);
                             }
+
                             break;
                         }
                         case "UserRelationship":
@@ -333,6 +342,25 @@ namespace RevoltApi
                             {
                                 handler.Invoke(channel);
                             }
+
+                            break;
+                        }
+                        case "ChannelUpdate":
+                        {
+                            var id = packet.Value<string>("id");
+                            var channel = _channels.FirstOrDefault(c => c._id == id);
+                            var newChannel = _deserializeChannel(packet.Value<JObject>("data"));
+                            if (channel != null)
+                            {
+                                _channels.Remove(channel);
+                                _channels.Add(newChannel);
+                            }
+
+                            foreach (var handler in _channelUpdate)
+                            {
+                                handler.Invoke(newChannel);
+                            }
+
                             break;
                         }
                     }

@@ -138,7 +138,7 @@ namespace RevoltBot.Modules
                 await Task.Delay(delay);
                 await Message.Channel.EndTypingAsync();
                 await Task.Delay(delay);
-            } 
+            }
         }
         //
         // [Command("unfriend")]
@@ -193,6 +193,7 @@ namespace RevoltBot.Modules
                 await ReplyAsync(":x: I can't find that IP or domain.");
                 return;
             }
+
             await ReplyAsync(@$"> ## IP Lookup: {Args}
 > **IP:** {dyn.query}
 > **Country:** {dyn.country} [{dyn.countryCode}]
@@ -222,7 +223,7 @@ Websocket Ping: doesnt exist");
         {
             var msg = await ReplyAsync("hell");
             for (int i = 0; i < 300; i++)
-            { 
+            {
                 await msg.EditAsync(i.ToString());
                 //await Task.Delay(100);
             }
@@ -244,5 +245,12 @@ Websocket Ping: doesnt exist");
         [Command("flush", "flushed")]
         public Task Flushed()
             => ReplyAsync("# $\\huge\\text{😳}$");
+
+        [Command("me")]
+        public Task Me()
+        {
+            return ReplyAsync($@"> ## {Context.User.Username}
+> **Permission Level:** {Context.UserData.PermissionLevel} - {((sbyte) Context.UserData.PermissionLevel)}");
+        }
     }
 }

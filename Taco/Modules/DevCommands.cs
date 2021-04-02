@@ -24,6 +24,12 @@ namespace RevoltBot.Modules
                 level = (sbyte)lvl;
             }
 
+            if ((sbyte) Context.UserData.PermissionLevel <= level && Context.User._id != Program.BotOwnerId)
+            {
+                await ReplyAsync("Can't set higher or same permission level.");
+                return;
+            }
+
             var userData = Mongo.GetOrCreateUserData(userId);
             userData.PermissionLevel = (PermissionLevel)level;
             await userData.UpdateAsync();

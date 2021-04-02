@@ -1,17 +1,10 @@
-﻿using System.Diagnostics;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using RestSharp;
-using RevoltApi;
-using RevoltApi.Channels;
 using RevoltBot.Attributes;
 using RevoltBot.CommandHandling;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using Console = Log73.Console;
 
 namespace RevoltBot.Modules
 {
@@ -43,10 +36,10 @@ namespace RevoltBot.Modules
             var info = await Message.Client.GetApiInfo();
             var voso = await Message.Client.GetVosoInfo();
             await ReplyAsync(@$"> ## Revolt info (for app.revolt.chat)
-> ### Versions
+> ## Versions
 > **Api:** {info.Version}
 > **Voso:** {voso.Version}
-> ### Features
+> ## Features
 > **Email:** {StringBooled(info.Features.Email)}
 > **Invite-only:** {StringBooled(info.Features.InviteOnly)}
 > **Captcha:** {StringBooled(info.Features.Captcha.Enabled)}
@@ -102,14 +95,6 @@ namespace RevoltBot.Modules
         //         await web.DownloadDataTaskAsync(
         //             "https://cdn.discordapp.com/attachments/803693023661522966/816394428176138250/motivate.png"));
         // }
-
-        public User GetMention(string mention)
-        {
-            return Message.Client.UsersCache.FirstOrDefault(u => u._id == mention) ??
-                   Message.Client.UsersCache.FirstOrDefault(u => u.Username.ToLower() == mention.ToLower()) ??
-                   Message.Client.UsersCache.FirstOrDefault(u => u._id == mention.Replace("<@", "").Replace(">", "")) ??
-                   Message.Client.Users.Get(mention);
-        }
         //
         // [Command("unfriend")]
         // public async Task UnfriendMePls()

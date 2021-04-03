@@ -101,7 +101,8 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             {
                 Status = new()
                 {
-                    Text = "nerd"
+                    Text = "nerd",
+                    Presence = "Busy"
                 },
                 Profile = new()
                 {

@@ -47,7 +47,8 @@ namespace RevoltBot
                         Status = new()
                         {
                             Text = hardwareInfo.MemoryStatus.AvailablePhysical / h / h + "MB free of " +
-                                   hardwareInfo.MemoryStatus.TotalPhysical / h / h + "MB"
+                                   hardwareInfo.MemoryStatus.TotalPhysical / h / h + "MB",
+                            Presence = "Busy"
                         },
                         Profile = new()
                         {

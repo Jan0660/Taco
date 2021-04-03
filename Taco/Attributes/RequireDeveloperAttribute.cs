@@ -8,7 +8,8 @@ namespace RevoltBot.Attributes
     {
         public override Task<PreconditionResult> Evaluate(Message message)
         {
-            if (Mongo.GetOrCreateUserData(message.AuthorId).PermissionLevel == (PermissionLevel)100)
+            var data = Mongo.GetUserData(message.AuthorId);
+            if (data is {PermissionLevel: (PermissionLevel)100})
                 return Task.FromResult(PreconditionResult.FromSuccess());
             return Task.FromResult(PreconditionResult.FromError("You suck."));
         }

@@ -10,12 +10,36 @@ namespace RevoltBot
         public static async Task Run()
         {
             HardwareInfo hardwareInfo = new HardwareInfo();
+            hardwareInfo.RefreshAll();
+            hardwareInfo.RefreshMotherboardList();
+            hardwareInfo.RefreshCPUList();
+            hardwareInfo.RefreshNetworkAdapterList();
+            hardwareInfo.RefreshMemoryList();
+            var cpu = hardwareInfo.CpuList.First();
+            ulong h = 1024;
+            string networks = "";
+            foreach (var network in hardwareInfo.NetworkAdapterList)
+            {
+                networks += $@"> {network.Name} @ {network.IPAddressList.FirstOrDefault()}
+";
+            }
+
+            string ramSticks = "";
+            foreach (var ramStick in hardwareInfo.MemoryList)
+            {
+                ramSticks += $@"> {ramStick.Manufacturer} {ramStick.FormFactor} {ramStick.Capacity / h / h}MB @ {ramStick.Speed}Mhz
+";
+            }
+
+            string drives = "";
+            foreach (var drive in hardwareInfo.DriveList)
+            {
+                drives += $@"> {drive.Model} @ {drive.Name} {drive.Size / h / h / h}GB
+";
+            }
             while (true)
             {
                 hardwareInfo.RefreshMemoryStatus();
-                hardwareInfo.RefreshCPUList();
-                ulong h = 1024;
-                var cpu = hardwareInfo.CpuList.First();
                 await Program.Client.Self.EditProfileAsync(new UserInfo()
                 {
                     Status = new()
@@ -26,11 +50,17 @@ namespace RevoltBot
                     Profile = new()
                     {
                         Content = $@"# Compute
+**Cpu:** {cpu.Name}
 **Physical Ram:** {hardwareInfo.MemoryStatus.AvailablePhysical / h / h}MB free of {hardwareInfo.MemoryStatus.TotalPhysical / h / h}MB
-**Cpu:** {cpu.Name}"
+### Ram Sticks:
+{ramSticks}
+### Networks:
+{networks}
+### Drives:
+{drives}"
                     }
                 });
-                await Task.Delay(1000);
+                await Task.Delay(6000);
             }
         }
     }

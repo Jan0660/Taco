@@ -153,6 +153,7 @@ namespace RevoltApi
 
         public RevoltClientChannels Channels { get; private set; }
         public RevoltClientUsers Users { get; private set; }
+        public RevoltClientSelf Self { get; private set; }
 
         public RevoltClient(Session session)
         {
@@ -163,6 +164,7 @@ namespace RevoltApi
             _webSocket = new(new Uri(ApiInfo.WebsocketUrl));
             this.Channels = new RevoltClientChannels(this);
             this.Users = new RevoltClientUsers(this);
+            this.Self = new RevoltClientSelf(this);
         }
 
         /// <summary>

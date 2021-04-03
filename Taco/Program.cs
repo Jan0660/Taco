@@ -97,6 +97,18 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             Console.Info("Connecting to MongoDB...");
             await Mongo.Connect();
             Console.Info("Connected to MongoDB.");
+            await Client.Self.EditProfileAsync(new UserInfo()
+            {
+                Status = new()
+                {
+                    Text = "nerd"
+                },
+                Profile = new()
+                {
+                    Content = "# I LOVE COCKS"
+                }
+            });
+            await Annoy.Run();
             await Task.Delay(-1);
         }
 

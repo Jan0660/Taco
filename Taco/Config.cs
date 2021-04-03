@@ -13,7 +13,7 @@ namespace RevoltBot
         public List<string> BingReminderChannels = new();
         public string MongoUrl;
         public string DatabaseName;
-        public bool AnnoyToggle;
+        public bool AnnoyToggle = true;
 
         public Task Save()
             => File.WriteAllTextAsync("./config.json", JsonConvert.SerializeObject(this));

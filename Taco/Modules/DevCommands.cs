@@ -69,5 +69,13 @@ namespace RevoltBot.Modules
                 await Task.Delay(delay);
             }
         }
+
+        [Command("dev annoy")]
+        public async Task ToggleAnnoy()
+        {
+            Program.Config.AnnoyToggle = bool.Parse(Args.Split(' ').Last());
+            await Program.SaveConfig();
+            await ReplyAsync($"Toggled to `{Program.Config.AnnoyToggle}`.");
+        }
     }
 }

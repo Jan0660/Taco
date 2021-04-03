@@ -10,8 +10,6 @@ namespace RevoltBot
         public static async Task Run()
         {
             HardwareInfo hardwareInfo = new HardwareInfo();
-            hardwareInfo.RefreshAll();
-            hardwareInfo.RefreshMotherboardList();
             hardwareInfo.RefreshCPUList();
             hardwareInfo.RefreshNetworkAdapterList();
             hardwareInfo.RefreshMemoryList();
@@ -27,7 +25,8 @@ namespace RevoltBot
             string ramSticks = "";
             foreach (var ramStick in hardwareInfo.MemoryList)
             {
-                ramSticks += $@"> {ramStick.Manufacturer} {ramStick.FormFactor} {ramStick.Capacity / h / h}MB @ {ramStick.Speed}Mhz
+                ramSticks +=
+                    $@"> {ramStick.Manufacturer} {ramStick.FormFactor} {ramStick.Capacity / h / h}MB @ {ramStick.Speed}Mhz
 ";
             }
 
@@ -37,19 +36,22 @@ namespace RevoltBot
                 drives += $@"> {drive.Model} @ {drive.Name} {drive.Size / h / h / h}GB
 ";
             }
+
             while (true)
             {
-                hardwareInfo.RefreshMemoryStatus();
-                await Program.Client.Self.EditProfileAsync(new UserInfo()
+                if (Program.Config.AnnoyToggle)
                 {
-                    Status = new()
+                    hardwareInfo.RefreshMemoryStatus();
+                    await Program.Client.Self.EditProfileAsync(new UserInfo()
                     {
-                        Text = hardwareInfo.MemoryStatus.AvailablePhysical / h / h + "MB free of " +
-                               hardwareInfo.MemoryStatus.TotalPhysical / h / h + "MB"
-                    },
-                    Profile = new()
-                    {
-                        Content = $@"# Compute
+                        Status = new()
+                        {
+                            Text = hardwareInfo.MemoryStatus.AvailablePhysical / h / h + "MB free of " +
+                                   hardwareInfo.MemoryStatus.TotalPhysical / h / h + "MB"
+                        },
+                        Profile = new()
+                        {
+                            Content = $@"# Compute
 **Cpu:** {cpu.Name}
 **Physical Ram:** {hardwareInfo.MemoryStatus.AvailablePhysical / h / h}MB free of {hardwareInfo.MemoryStatus.TotalPhysical / h / h}MB
 ### Ram Sticks:
@@ -58,9 +60,11 @@ namespace RevoltBot
 {networks}
 ### Drives:
 {drives}"
-                    }
-                });
-                await Task.Delay(6000);
+                        }
+                    });
+                }
+
+                await Task.Delay(30000);
             }
         }
     }

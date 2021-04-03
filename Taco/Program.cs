@@ -111,14 +111,18 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                     try
                     {
                         var context = new CommandContext(message);
-                        if (context.UserData.PermissionLevel == PermissionLevel.Blacklist)
+                        var userData = context.GetUserData();
+                        if (userData != null)
                         {
-                            return message.Channel.SendMessageAsync(context.UserData.BlacklistedMessage == null
-                                ? $"<@{message.AuthorId}> why are you black."
-                                : String.Format(context.UserData.BlacklistedMessage, context.UserData.UserId));
+                            if (context.UserData.PermissionLevel == PermissionLevel.Blacklist)
+                            {
+                                return message.Channel.SendMessageAsync(context.UserData.BlacklistedMessage == null
+                                    ? $"<@{message.AuthorId}> why are you black."
+                                    : String.Format(context.UserData.BlacklistedMessage, context.UserData.UserId));
+                            }
+                            else if (context.UserData.PermissionLevel == PermissionLevel.BlacklistSilent)
+                                return Task.CompletedTask;
                         }
-                        else if (context.UserData.PermissionLevel == PermissionLevel.BlacklistSilent)
-                            return Task.CompletedTask;
 
                         await CommandHandler.ExecuteCommandAsync(context, Prefix.Length);
                     }

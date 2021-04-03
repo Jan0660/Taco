@@ -25,5 +25,13 @@ namespace RevoltBot
         {
             Message = message;
         }
+
+        public UserData GetUserData()
+        {
+            var data = Mongo.GetUserData(Message.AuthorId);
+            if (data != null)
+                _cachedUserData = data;
+            return data;
+        }
     }
 }

@@ -18,15 +18,14 @@ namespace RevoltBot.Modules
         [Summary("Retrieves deleted messages in current group.")]
         public async Task Snipe()
         {
-            var sniped = _snipedMessages.Where(m => m.ChannelId == Message.ChannelId);
-            var enumerable = sniped.ToList();
-            if (enumerable.Count == 0)
+            var sniped = _snipedMessages.Where(m => m.ChannelId == Message.ChannelId).ToList();
+            if (sniped.Count == 0)
             {
                 await ReplyAsync("Nothing to snipe here.");
                 return;
             }
 
-            sniped = enumerable.Count() > 5 ? enumerable.TakeLast(5) : enumerable;
+            sniped = sniped.Count > 5 ? sniped.TakeLast(5).ToList() : sniped;
             int i = 0;
             var msg = "";
             foreach (var snipe in sniped)

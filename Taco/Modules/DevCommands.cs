@@ -90,6 +90,7 @@ namespace RevoltBot.Modules
         {
             Program.Config.Status = _nullableArgs(Args);
             await Annoy.Update();
+            await Program.SaveConfig();
             await ReplyAsync("UPdated le staustm,.");
         }
 
@@ -98,6 +99,7 @@ namespace RevoltBot.Modules
         {
             Program.Config.Presence = Args;
             await Annoy.Update();
+            await Program.SaveConfig();
             await ReplyAsync("updated le presenc");
         }
 
@@ -106,14 +108,16 @@ namespace RevoltBot.Modules
         {
             Program.Config.Profile = _nullableArgs(Args);
             await Annoy.Update();
+            await Program.SaveConfig();
             await ReplyAsync("profiel set!!!");
         }
 
         [Command("dev settimer")]
-        public Task SetTimer()
+        public async Task SetTimer()
         {
             Program.Config.UpdateTime = int.Parse(Args);
-            return ReplyAsync($"Set le tiemr to `{Program.Config.UpdateTime}`,");
+            await Program.SaveConfig();
+            await ReplyAsync($"Set le tiemr to `{Program.Config.UpdateTime}`,");
         }
 
         private string _nullableArgs(string str) => str == "null" ? null : str;

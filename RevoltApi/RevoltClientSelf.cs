@@ -35,6 +35,7 @@ namespace RevoltApi
     public class Status
     {
         [JsonProperty("text")] public string Text;
+        // todo: presence enum
         [JsonProperty("presence")] public string Presence;
     }
 

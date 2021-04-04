@@ -77,5 +77,38 @@ namespace RevoltBot.Modules
             await Program.SaveConfig();
             await ReplyAsync($"Toggled to `{Program.Config.AnnoyToggle}`.");
         }
+
+        [Command("dev updatestatus")]
+        public async Task UpdateStatus()
+        {
+            await Annoy.Update();
+            await ReplyAsync("Updated status and soige,o.");
+        }
+
+        [Command("dev setstatus")]
+        public async Task SetStatus()
+        {
+            Program.Config.Status = _nullableArgs(Args);
+            await Annoy.Update();
+            await ReplyAsync("UPdated le staustm,.");
+        }
+
+        [Command("dev setpresence")]
+        public async Task SetPresence()
+        {
+            Program.Config.Presence = Args;
+            await Annoy.Update();
+            await ReplyAsync("updated le presenc");
+        }
+
+        [Command("dev setprofile")]
+        public async Task SetProfile()
+        {
+            Program.Config.Profile = _nullableArgs(Args);
+            await Annoy.Update();
+            await ReplyAsync("profiel set!!!");
+        }
+
+        private string _nullableArgs(string str) => str == "null" ? null : str;
     }
 }

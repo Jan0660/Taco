@@ -101,12 +101,12 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             {
                 Status = new()
                 {
-                    Text = "nerd",
-                    Presence = "Busy"
+                    Text = Config.Status,
+                    Presence = Config.Presence
                 },
                 Profile = new()
                 {
-                    Content = "# I LOVE COCKS"
+                    Content = Config.Profile
                 }
             });
             await Annoy.Run();

@@ -47,7 +47,7 @@ namespace RevoltApi
             get => content;
             set
             {
-                if (value.Length >= ContentMaxLength)
+                if (value?.Length >= ContentMaxLength)
                     throw new InvalidOperationException("sussus");
                 content = value;
             }

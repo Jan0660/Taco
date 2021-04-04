@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -128,6 +129,8 @@ namespace RevoltBot.Modules
         }
 
         [Command("group", "groupinfo")]
+        [Summary("Retrieves information about current group.")]
+        [GroupOnly]
         public Task GroupInfo()
         {
             var group = (GroupChannel) Message.Channel;
@@ -143,6 +146,10 @@ namespace RevoltBot.Modules
         public async Task Hack()
         {
             // todo: filter out http://(.+)/ ??? and hrafegtjyku
+            if (new Regex("http(s?)://(.+)(/?.?)").IsMatch(Args))
+            {
+                
+            }
             var obj = JObject.Parse(
                 (await new RestClient().ExecuteGetAsync(new RestRequest("http://ip-api.com/json/" + Args))).Content);
             // query, country, countryCode, regionName, city, zip, timezone, isp, org

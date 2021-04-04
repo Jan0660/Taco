@@ -79,6 +79,7 @@ namespace RevoltBot.Modules
         }
 
         [Command("dev updatestatus")]
+        [Summary("Force update status.")]
         public async Task UpdateStatus()
         {
             await Annoy.Update();

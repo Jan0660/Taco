@@ -74,6 +74,7 @@ namespace RevoltBot.Modules
             => Message.Channel.SendFileAsync("", "uber.png", "./Resources/UberFruit.png");
 
         [Command("flush", "flushed")]
+        [Summary(":flushed:")]
         public Task Flushed()
             => ReplyAsync("# $\\huge\\text{😳}$");
 

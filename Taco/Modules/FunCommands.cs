@@ -85,5 +85,27 @@ namespace RevoltBot.Modules
             await ReplyAsync("<@01EXAG0ZFX02W7PNQE7W5MT339> retard");
             await Message.Channel.EndTypingAsync();
         }
+
+        [Command("gaytext", "gay")]
+        [Summary("Converts h*terosexual text to the gay.")]
+        public Task GayText()
+        {
+            var cycle = new[]
+            {
+                "F66", "FC6", "CF6", "6F6", "6FC", "6CF", "66F", "C6F"
+            };
+            var h = @"$\text{\color{#F66}g\color{#FC6}a\color{#CF6}y\color{#6F6} \color{#6FC}t\color{#6CF}e\color{#66F}x\color{#C6F}t}$";
+            var res = @"$\text{";
+            int i = 0;
+            foreach (char ch in Args)
+            {
+                res += $"\\color{{#{cycle[i]}}}{ch}";
+                i++;
+                if (i == cycle.Length)
+                    i = 0;
+            }
+            res += "}$";
+            return ReplyAsync(res);
+        }
     }
 }

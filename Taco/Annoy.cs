@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Hardware.Info;
 using MongoDB.Driver;
@@ -52,19 +55,37 @@ namespace RevoltBot
         {
             var cpu = HardwareInfo.CpuList.First();
             HardwareInfo.RefreshMemoryStatus();
+            string memory;
+            if (Environment.OSVersion.Platform != PlatformID.Unix)
+            {
+                memory = HardwareInfo.MemoryStatus.AvailablePhysical / h / h + "MB free of " +
+                         HardwareInfo.MemoryStatus.TotalPhysical / h / h + "MB";
+            }
+            else
+            {
+                var process = Process.Start(new ProcessStartInfo()
+                {
+                    FileName = "free",
+                    RedirectStandardOutput = true
+                });
+                await process!.WaitForExitAsync();
+                var output = await process.StandardOutput.ReadToEndAsync();
+                var rgx = new Regex("[0-9]+");
+                var matches = rgx.Matches(output);
+                memory = $"{ulong.Parse(matches[5].Value) / h}MB free of {ulong.Parse(matches[0].Value) / h}MB";
+            }
             await Program.Client.Self.EditProfileAsync(new UserInfo()
             {
                 Status = new()
                 {
-                    Text = Program.Config.Status ?? HardwareInfo.MemoryStatus.AvailablePhysical / h / h + "MB free of " +
-                           HardwareInfo.MemoryStatus.TotalPhysical / h / h + "MB",
+                    Text = Program.Config.Status ?? memory,
                     Presence = Program.Config.Presence
                 },
                 Profile = new()
                 {
                     Content = Program.Config.Profile ?? $@"# Compute
 **Cpu:** {cpu.Name}
-**Physical Ram:** {HardwareInfo.MemoryStatus.AvailablePhysical / h / h}MB free of {HardwareInfo.MemoryStatus.TotalPhysical / h / h}MB
+**Physical Ram:** {memory}
 ### Ram Sticks:
 {ramSticks}
 ### Networks:

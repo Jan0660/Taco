@@ -47,7 +47,7 @@ namespace RevoltBot
                     await Update();
                 }
 
-                await Task.Delay(30000);
+                await Task.Delay(Program.Config.UpdateTime);
             }
         }
 

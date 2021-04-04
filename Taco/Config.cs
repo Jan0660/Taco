@@ -17,6 +17,7 @@ namespace RevoltBot
         public string Presence = "Idle";
         public string Profile = "Cry about it nerd.";
         public string Status = "Amogus";
+        public int UpdateTime = 20000;
 
         public Task Save()
             => File.WriteAllTextAsync("./config.json", JsonConvert.SerializeObject(this));

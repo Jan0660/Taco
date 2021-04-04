@@ -109,6 +109,13 @@ namespace RevoltBot.Modules
             await ReplyAsync("profiel set!!!");
         }
 
+        [Command("dev settimer")]
+        public Task SetTimer()
+        {
+            Program.Config.UpdateTime = int.Parse(Args);
+            return ReplyAsync($"Set le tiemr to `{Program.Config.UpdateTime}`,");
+        }
+
         private string _nullableArgs(string str) => str == "null" ? null : str;
     }
 }

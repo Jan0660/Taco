@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RestSharp;
 using RevoltApi.Channels;
+using Console = Log73.Console;
 
 namespace RevoltApi
 {

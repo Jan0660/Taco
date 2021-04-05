@@ -458,8 +458,9 @@ namespace RevoltApi
 
     public class SendMessageRequest
     {
+        private static Random rng = new();
         [JsonProperty("content")] public string Content;
-        [JsonProperty("nonce")] public string Nonce = DateTimeOffset.Now.ToString();
+        [JsonProperty("nonce")] public string Nonce = DateTimeOffset.Now.ToUnixTimeSeconds() + rng.Next().ToString();
         [JsonProperty("attachment")] public string AttachmentId = null;
     }
 }

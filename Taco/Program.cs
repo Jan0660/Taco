@@ -30,24 +30,23 @@ namespace RevoltBot
         private static RevoltClient _client;
         public static RevoltClient Client => _client;
         public const int RateLimitTriggerDuration = 3000;
+
         /// <summary>
         /// Number of messages to trigger rate limit in <see cref="RateLimitTriggerDuration"/> milliseconds.
         /// </summary>
         public const int ToTriggerRateLimit = 3;
+
         /// <summary>
         /// Rate limit duration in milliseconds.
         /// </summary>
         public const int RateLimitDuration = 30000;
 
         public static Dictionary<string, DateTime> RateLimited = new();
-        public static Dictionary<string, (DateTime Start, int Times)> RateLimit = new ();
+        public static Dictionary<string, (DateTime Start, int Times)> RateLimit = new();
 
         static async Task Main(string[] args)
         {
-            TaskScheduler.UnobservedTaskException += (sender, eventArgs) =>
-            {
-                Console.Exception(eventArgs.Exception);
-            };
+            TaskScheduler.UnobservedTaskException += (sender, eventArgs) => { Console.Exception(eventArgs.Exception); };
             var stopwatch = Stopwatch.StartNew();
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"))!;
 
@@ -62,7 +61,7 @@ namespace RevoltBot
 
             _client.PacketReceived += (packetType, packet, message) =>
             {
-                Console.Debug($"Message receive: Length: {message.Text.Length}; Type: {packetType};");
+                //Console.Debug($"Packet receive: Length: {message.Text.Length}; Type: {packetType};");
                 return Task.CompletedTask;
             };
             _client.PacketError += (packetType, packet, message, exception) =>
@@ -139,87 +138,83 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
 
 salty");
             }
+
             return Task.CompletedTask;
         }
 
-        private static Task ClientOnMessageReceived(Message message)
+        private static async Task ClientOnMessageReceived(Message message)
         {
             Console.Debug(
                 $"{message.Author.Username}[{message.AuthorId}] at [{message.ChannelId}] => {message.Content}");
             if (message.Content.StartsWith(Prefix))
             {
-                Task.Factory.StartNew(async () =>
+                try
                 {
-                    try
+                    if (RateLimit.TryGetValue(message.AuthorId, out var limit))
                     {
-                        if (RateLimit.TryGetValue(message.AuthorId, out var limit))
+                        if (limit.Start.AddMilliseconds(RateLimitTriggerDuration) > DateTime.Now)
                         {
-                            Console.Error(limit.Times);
-                            if (limit.Start.AddMilliseconds(RateLimitTriggerDuration) > DateTime.Now)
-                            {
-                                // le h'ing
-                                limit.Times++;
-                                RateLimit[message.AuthorId] = limit;
-                                Console.Error("add");
-                            }
-                            else
-                            {
-                                RateLimit.Remove(message.AuthorId);
-                                limit.Times = 0;
-                                Console.Error("reset");
-                            }
-
-                            if (limit.Times == ToTriggerRateLimit)
-                            {
-                                // get fucked
-                                RateLimited.Add(message.AuthorId, DateTime.Now);
-                                message.Channel.SendMessageAsync($"<@{message.AuthorId}> fuck you, rate limited, get fucked, cry about it.").Wait();
-                            }
+                            // le h'ing
+                            limit.Times++;
+                            RateLimit[message.AuthorId] = limit;
                         }
                         else
                         {
-                            RateLimit.Add(message.AuthorId, (DateTime.Now, 1));
-                        }
-                        //_rateLimited.Add(message.AuthorId, DateTime.Now);
-                        if (RateLimited.ContainsKey(message.AuthorId))
-                        {
-                            // fucked
-                            return Task.CompletedTask;
-                        }
-                        var context = new CommandContext(message);
-                        var userData = context.GetUserData();
-                        if (userData != null)
-                        {
-                            if (context.UserData.PermissionLevel == PermissionLevel.Blacklist)
-                            {
-                                return message.Channel.SendMessageAsync(context.UserData.BlacklistedMessage == null
-                                    ? $"<@{message.AuthorId}> why are you black."
-                                    : String.Format(context.UserData.BlacklistedMessage, context.UserData.UserId));
-                            }
-                            else if (context.UserData.PermissionLevel == PermissionLevel.BlacklistSilent)
-                                return Task.CompletedTask;
+                            RateLimit.Remove(message.AuthorId);
+                            limit.Times = 0;
                         }
 
-                        await CommandHandler.ExecuteCommandAsync(context, Prefix.Length);
+                        if (limit.Times == ToTriggerRateLimit)
+                        {
+                            // get fucked
+                            RateLimited.Add(message.AuthorId, DateTime.Now);
+                            message.Channel
+                                .SendMessageAsync(
+                                    $"<@{message.AuthorId}> fuck you, rate limited, get fucked, cry about it.").Wait();
+                        }
                     }
-                    catch (Exception exception)
+                    else
                     {
-                        if (exception.Message == "One or more errors occurred. (COMMAND_NOT_FOUND)" |
-                            exception.Message == "COMMAND_NOT_FOUND")
-                            return Task.CompletedTask;
-                        Console.Exception(exception);
-                        await message.Channel.SendMessageAsync($@"> ## Death occurred
+                        RateLimit.Add(message.AuthorId, (DateTime.Now, 1));
+                    }
+
+                    //_rateLimited.Add(message.AuthorId, DateTime.Now);
+                    if (RateLimited.ContainsKey(message.AuthorId))
+                    {
+                        // fucked
+                        return;
+                    }
+
+                    var context = new CommandContext(message);
+                    var userData = context.GetUserData();
+                    if (userData != null)
+                    {
+                        if (context.UserData.PermissionLevel == PermissionLevel.Blacklist)
+                        {
+                            await message.Channel.SendMessageAsync(context.UserData.BlacklistedMessage == null
+                                ? $"<@{message.AuthorId}> why are you black."
+                                : String.Format(context.UserData.BlacklistedMessage, context.UserData.UserId));
+                            return;
+                        }
+                        else if (context.UserData.PermissionLevel == PermissionLevel.BlacklistSilent)
+                            return;
+                    }
+
+                    await CommandHandler.ExecuteCommandAsync(context, Prefix.Length);
+                }
+                catch (Exception exception)
+                {
+                    if (exception.Message == "One or more errors occurred. (COMMAND_NOT_FOUND)" |
+                        exception.Message == "COMMAND_NOT_FOUND")
+                        return;
+                    Console.Exception(exception);
+                    await message.Channel.SendMessageAsync($@"> ## Death occurred
 > 
 > ```csharp
 > {exception.Message.Replace("\n", "\n> ")}
 > ```");
-                    }
-
-                    return Task.CompletedTask;
-                });
+                }
             }
-
-            return Task.CompletedTask;
         }
 
         public static Task SaveConfig()
@@ -236,8 +231,7 @@ salty");
 #else
             MessageTypes.Debug.Style.Color = Color.FromArgb(255, 191, 254);
 #endif
-            //Console.Options.LogLevel = LogLevel.Debug;
-            Console.Options.LogLevel = LogLevel.Standard;
+            Console.Options.LogLevel = LogLevel.Debug;
             Console.Options.ObjectSerialization = ConsoleOptions.ObjectSerializationMethod.Json;
             var msgTypes = MessageTypes.AsArray();
             var timeLogInfo = new TimeLogInfo()

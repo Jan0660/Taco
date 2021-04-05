@@ -61,7 +61,7 @@ namespace RevoltBot
 
             _client.PacketReceived += (packetType, packet, message) =>
             {
-                //Console.Debug($"Packet receive: Length: {message.Text.Length}; Type: {packetType};");
+                Console.Debug($"Packet receive: Length: {message.Text.Length}; Type: {packetType};");
                 return Task.CompletedTask;
             };
             _client.PacketError += (packetType, packet, message, exception) =>

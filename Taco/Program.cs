@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -28,9 +29,25 @@ namespace RevoltBot
         public static DateTime StartTime { get; private set; }
         private static RevoltClient _client;
         public static RevoltClient Client => _client;
+        public const int RateLimitTriggerDuration = 3000;
+        /// <summary>
+        /// Number of messages to trigger rate limit in <see cref="RateLimitTriggerDuration"/> milliseconds.
+        /// </summary>
+        public const int ToTriggerRateLimit = 3;
+        /// <summary>
+        /// Rate limit duration in milliseconds.
+        /// </summary>
+        public const int RateLimitDuration = 30000;
+
+        public static Dictionary<string, DateTime> RateLimited = new();
+        public static Dictionary<string, (DateTime Start, int Times)> RateLimit = new ();
 
         static async Task Main(string[] args)
         {
+            TaskScheduler.UnobservedTaskException += (sender, eventArgs) =>
+            {
+                Console.Exception(eventArgs.Exception);
+            };
             var stopwatch = Stopwatch.StartNew();
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"))!;
 
@@ -135,6 +152,40 @@ salty");
                 {
                     try
                     {
+                        if (RateLimit.TryGetValue(message.AuthorId, out var limit))
+                        {
+                            Console.Error(limit.Times);
+                            if (limit.Start.AddMilliseconds(RateLimitTriggerDuration) > DateTime.Now)
+                            {
+                                // le h'ing
+                                limit.Times++;
+                                RateLimit[message.AuthorId] = limit;
+                                Console.Error("add");
+                            }
+                            else
+                            {
+                                RateLimit.Remove(message.AuthorId);
+                                limit.Times = 0;
+                                Console.Error("reset");
+                            }
+
+                            if (limit.Times == ToTriggerRateLimit)
+                            {
+                                // get fucked
+                                RateLimited.Add(message.AuthorId, DateTime.Now);
+                                message.Channel.SendMessageAsync($"<@{message.AuthorId}> fuck you, rate limited, get fucked, cry about it.").Wait();
+                            }
+                        }
+                        else
+                        {
+                            RateLimit.Add(message.AuthorId, (DateTime.Now, 1));
+                        }
+                        //_rateLimited.Add(message.AuthorId, DateTime.Now);
+                        if (RateLimited.ContainsKey(message.AuthorId))
+                        {
+                            // fucked
+                            return Task.CompletedTask;
+                        }
                         var context = new CommandContext(message);
                         var userData = context.GetUserData();
                         if (userData != null)
@@ -185,7 +236,8 @@ salty");
 #else
             MessageTypes.Debug.Style.Color = Color.FromArgb(255, 191, 254);
 #endif
-            Console.Options.LogLevel = LogLevel.Debug;
+            //Console.Options.LogLevel = LogLevel.Debug;
+            Console.Options.LogLevel = LogLevel.Standard;
             Console.Options.ObjectSerialization = ConsoleOptions.ObjectSerializationMethod.Json;
             var msgTypes = MessageTypes.AsArray();
             var timeLogInfo = new TimeLogInfo()

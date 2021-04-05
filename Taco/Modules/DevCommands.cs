@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using RevoltBot.Attributes;
 using RevoltBot.CommandHandling;
@@ -120,6 +121,27 @@ namespace RevoltBot.Modules
             Program.Config.UpdateTime = int.Parse(Args);
             await Program.SaveConfig();
             await ReplyAsync($"Set le tiemr to `{Program.Config.UpdateTime}`,");
+        }
+
+        [Command("dev rateLimited")]
+        [Summary("List people that got rate limited.")]
+        public Task ListRateLimited()
+        {
+            var str = new StringBuilder();
+            foreach (var retard in Program.RateLimited)
+            {
+                str.AppendLine($"> <@{retard.Key}>");
+            }
+
+            return ReplyAsync(str.ToString());
+        }
+
+        [Command("dev unRateLimit")]
+        [Summary("Remove someone from the rate limit list.")]
+        public Task RemoveRateLimited()
+        {
+            Program.RateLimited.Remove(Args);
+            return ReplyAsync($"<@{Args}> has been removed from the rate limit list.");
         }
 
         private string _nullableArgs(string str) => str == "null" ? null : str;

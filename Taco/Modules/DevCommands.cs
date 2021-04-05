@@ -8,6 +8,7 @@ namespace RevoltBot.Modules
 {
     [ModuleName("Fuck you.")]
     [Summary("Fuck you.")]
+    [RequireDeveloper]
     [Hidden]
     public class DevCommands : ModuleBase
     {

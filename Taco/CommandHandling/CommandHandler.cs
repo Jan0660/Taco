@@ -23,7 +23,7 @@ namespace RevoltBot.CommandHandling
                 // https://stackoverflow.com/questions/4963160/how-to-determine-if-a-type-implements-an-interface-with-c-sharp-reflection
                 if (typeof(ModuleBase).IsAssignableFrom(type))
                 {
-                    if(type == typeof(ModuleBase))
+                    if (type == typeof(ModuleBase))
                         continue;
                     var module = new ModuleInfo()
                     {
@@ -43,7 +43,8 @@ namespace RevoltBot.CommandHandling
                         var command = new CommandInfo
                         {
                             Aliases = aliases, Method = method,
-                            Preconditions = method.GetCustomAttributes<PreconditionAttribute>(true).ToArray(),
+                            Preconditions = method.GetCustomAttributes<PreconditionAttribute>(true)
+                                .Concat(type.GetCustomAttributes<PreconditionAttribute>(true)).ToArray(),
                             Summary = method.GetCustomAttribute<SummaryAttribute>()?.Text,
                             Module = module
                         };

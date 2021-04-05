@@ -109,7 +109,7 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                     Content = Config.Profile
                 }
             });
-            Client.MessageReceived += AutoSalty;
+            //Client.MessageReceived += AutoSalty;
             await Annoy.Run();
             await Task.Delay(-1);
         }

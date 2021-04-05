@@ -73,6 +73,11 @@ namespace RevoltBot.Modules
         public Task UberFruit()
             => Message.Channel.SendFileAsync("", "uber.png", "./Resources/UberFruit.png");
 
+        [Command("flooshed", "floosh")]
+        [Summary(":flushed:")]
+        public Task Flooshed()
+            => Message.Channel.SendFileAsync("", "flooshed.png", "./Resources/flooshed.png");
+
         [Command("flush", "flushed")]
         [Summary(":flushed:")]
         public Task Flushed()

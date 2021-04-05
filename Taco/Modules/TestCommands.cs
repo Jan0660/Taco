@@ -51,7 +51,7 @@ namespace RevoltBot.Modules
 
         public string StringBooled(bool value, string str)
         {
-            return $@"$\color{{{(value ? "lime" : "red")}}}\text{{{str}}}$";
+            return $@"$\color{{{(value ? "lime" : "red")}}}\textsf{{{str}}}$";
         }
 
         // [Command("discord")]

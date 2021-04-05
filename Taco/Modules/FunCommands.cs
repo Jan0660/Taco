@@ -95,8 +95,8 @@ namespace RevoltBot.Modules
             {
                 "F66", "FC6", "CF6", "6F6", "6FC", "6CF", "66F", "C6F"
             };
-            var h = @"$\text{\color{#F66}g\color{#FC6}a\color{#CF6}y\color{#6F6} \color{#6FC}t\color{#6CF}e\color{#66F}x\color{#C6F}t}$";
-            var res = @"$\text{";
+            //var h = @"$\textsf{\color{#F66}g\color{#FC6}a\color{#CF6}y\color{#6F6} \color{#6FC}t\color{#6CF}e\color{#66F}x\color{#C6F}t}$";
+            var res = @"$\textsf{";
             int i = 0;
             foreach (char ch in Args)
             {

@@ -26,7 +26,7 @@ namespace RevoltBot.Modules
 > **Nationality:** {ship.Nationality}
 > **Class:** {ship.Class}
 > **Build Time:** {(ship.Construction.Constructable ? ship.Construction.ConstructionTime.ToString("hh\\:mm\\:ss") : "Cannot be constructed")}
-> **Rarity:** $\color{{{GetRarityColor(ship.GetRarityEnum().ToGeneralRarity())}}}\text{{{ship.Rarity}}}$ **|** $\color{{orange}}\text{{{ship.Stars.StarsString}}}$
+> **Rarity:** $\color{{{GetRarityColor(ship.GetRarityEnum().ToGeneralRarity())}}}\textsf{{{ship.Rarity}}}$ **|** $\color{{orange}}\textsf{{{ship.Stars.StarsString}}}$
 > **Scrap Value:** {(ship.ScrapValue.CanScrap ? $@"{ship.ScrapValue.Coin} Coins; {ship.ScrapValue.Oil} Oil; {ship.ScrapValue.Medal} Medals;" : "Cannot be scraped")}
 > ${{\footnotesize Footer {{\hspace{{1mm}}}} when?}}$"); // , "bruh.png", data
         }

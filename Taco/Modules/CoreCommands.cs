@@ -133,8 +133,9 @@ namespace RevoltBot.Modules
             var stopwatch = Stopwatch.StartNew();
             web.DownloadString(Message.Client.ApiUrl);
             var restPing = stopwatch.ElapsedMilliseconds;
-            return ReplyAsync(@$"REST API Ping: {restPing}ms
-Websocket Ping: doesnt exist");
+            return ReplyAsync(@$"**REST API Ping:** `{restPing}`ms
+**MongoDB:** `{Mongo.Ping().Result}`ms
+**Websocket Ping:** doesnt exist");
         }
 
         [Command("test", "test-alias")]

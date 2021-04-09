@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -39,6 +40,13 @@ namespace RevoltBot
             data = new UserData(userId);
             UserCollection.InsertOne(data.ToBsonDocument());
             return data;
+        }
+
+        public static async Task<long> Ping()
+        {
+            var stopwatch = Stopwatch.StartNew();
+            await Database.RunCommandAsync((Command<BsonDocument>)"{ping:1}");
+            return stopwatch.ElapsedMilliseconds;
         }
     }
 

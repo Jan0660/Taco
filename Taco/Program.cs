@@ -53,7 +53,7 @@ namespace RevoltBot
             _configureLogging();
 
             _client =
-                new RevoltClient(JsonConvert.DeserializeObject<Session>(await File.ReadAllTextAsync("./session.json")));
+                new RevoltClient(JsonConvert.DeserializeObject<Session>(await File.ReadAllTextAsync("./session.json"))!);
             var info = _client.ApiInfo;
             Console.Info($"API Version: {info.Version}");
 
@@ -113,6 +113,7 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             Console.Info("Connecting to MongoDB...");
             await Mongo.Connect();
             Console.Info("Connected to MongoDB.");
+            await _client.Channels.Get("01EXA9VX0606E4T65TQYJ4CFPQ").EndTypingAsync();
             await Client.Self.EditProfileAsync(new UserInfo()
             {
                 Status = new()

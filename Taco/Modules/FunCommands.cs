@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -71,7 +72,9 @@ namespace RevoltBot.Modules
         [Command("uber-fruit", "uber", "uberfruit")]
         [Summary("Sends some nice uber fruit.")]
         public Task UberFruit()
-            => Message.Channel.SendFileAsync("", "uber.png", "./Resources/UberFruit.png");
+            => (new Random().Next(10) > 7)
+                ? Message.Channel.SendFileAsync("", "epic-uber.gif", "./Resources/EpicUberFruit.gif")
+                : Message.Channel.SendFileAsync("", "uber.png", "./Resources/UberFruit.png");
 
         [Command("flooshed", "floosh")]
         [Summary(":flushed:")]
@@ -110,6 +113,7 @@ namespace RevoltBot.Modules
                 if (i == cycle.Length)
                     i = 0;
             }
+
             res += "}$";
             return ReplyAsync(res);
         }

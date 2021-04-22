@@ -123,7 +123,7 @@ namespace RevoltBot.Modules
         public Task Donate()
             => ReplyAsync($@"> ## Donate
 > **ETC:** `0xDd2c32F8c25Ae6e7aFC590593f5Dfd34639e4F14`
-> **DONATE TO INSERT TOO UwU:** https://ko-fi.com/insertish");
+> **DONATE TO INSERT TOO h:** https://ko-fi.com/insertish");
 
         [Command("ping")]
         [Summary("Ping!")]

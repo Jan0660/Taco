@@ -145,13 +145,17 @@ namespace RevoltBot.Modules
         [Summary("Retrieve information about an IP or domain.")]
         public async Task Hack()
         {
-            // todo: filter out http://(.+)/ ??? and hrafegtjyku
+            string domain = Args;
             if (new Regex("http(s?)://(.+)(/?.?)").IsMatch(Args))
             {
-                
+                // todo: bro
+                domain = domain.Replace("http://", "").Replace("https://", "");
+                if(domain.Contains('/'))
+                    domain = domain[..domain.IndexOf('/')];
             }
+
             var obj = JObject.Parse(
-                (await new RestClient().ExecuteGetAsync(new RestRequest("http://ip-api.com/json/" + Args))).Content);
+                (await new RestClient().ExecuteGetAsync(new RestRequest("http://ip-api.com/json/" + domain))).Content);
             // query, country, countryCode, regionName, city, zip, timezone, isp, org
             dynamic dyn = obj;
             // check for death response
@@ -161,7 +165,7 @@ namespace RevoltBot.Modules
                 return;
             }
 
-            await ReplyAsync(@$"> ## IP Lookup: {Args}
+            await ReplyAsync(@$"> ## IP Lookup: {domain}
 > **IP:** {dyn.query}
 > **Country:** {dyn.country} [{dyn.countryCode}]
 > **Region:** {dyn.regionName}

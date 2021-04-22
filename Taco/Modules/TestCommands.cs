@@ -40,9 +40,12 @@ namespace RevoltBot.Modules
 > **Api:** {info.Version}
 > **Voso:** {voso.Version}
 > ## Features
+> **Registration:** {StringBooled(info.Features.Registration)}
 > **Email:** {StringBooled(info.Features.Email)}
 > **Invite-only:** {StringBooled(info.Features.InviteOnly)}
 > **Captcha:** {StringBooled(info.Features.Captcha.Enabled)}
+> **Autumn:** {StringBooled(info.Features.Autumn.Enabled)}
+> **Voso:** {StringBooled(info.Features.Voso.Enabled)}
 > **Voso.RTP:** {StringBooled(voso.Features.Rtp)}");
         }
 

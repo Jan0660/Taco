@@ -13,11 +13,11 @@ namespace RevoltApi
     public class RevoltApiInfoFeatures
     {
         [JsonProperty("registration")] public bool Registration;
-
         [JsonProperty("captcha")] public RevoltApiCaptchaFeature Captcha;
         [JsonProperty("email")] public bool Email;
         [JsonProperty("invite_only")] public bool InviteOnly;
         [JsonProperty("autumn")] public RevoltApiAutumnFeature Autumn;
+        [JsonProperty("voso")] public RevoltApiVosoFeature Voso;
     }
 
     public class RevoltApiCaptchaFeature
@@ -25,11 +25,18 @@ namespace RevoltApi
         [JsonProperty("enabled")] public bool Enabled;
         [JsonProperty("key")] public string Key;
     }
-    
+
     public class RevoltApiAutumnFeature
     {
         [JsonProperty("enabled")] public bool Enabled;
         [JsonProperty("url")] public string Url;
+    }
+
+    public class RevoltApiVosoFeature
+    {
+        [JsonProperty("enabled")] public bool Enabled;
+        [JsonProperty("url")] public string Url;
+        [JsonProperty("ws")] public string WebsocketUrl;
     }
 
     public class VosoInformation

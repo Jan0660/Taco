@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using RevoltApi;
 using RevoltApi.Channels;
 using RevoltBot.Attributes;
 using RevoltBot.CommandHandling;
@@ -25,7 +26,8 @@ namespace RevoltBot.Modules
 > **Developed by:** `owouwuvu` <@01EX40TVKYNV114H8Q8VWEGBWQ>
 > **Uptime:** {(uptime.Days == 0 ? "" : uptime.Days + " Days")} {uptime.Hours} Hours {uptime.Minutes} Minutes
 > **Latest update at:** {new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime.ToString("dd/MM/yyyy")}
-> **Groups count:** {Message.Client.ChannelsCache.OfType<GroupChannel>().Count()}"
+> **Groups count:** {Message.Client.ChannelsCache.OfType<GroupChannel>().Count()}
+> **Friends count:** {Message.Client.UsersCache.Where(user => user.Relationship == RelationshipStatus.Friend).Count()}"
 #if DEBUG
                               + "\nDEBUG BUILD"
 #endif

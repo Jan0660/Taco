@@ -387,7 +387,7 @@ namespace RevoltApi
         public async Task<string> UploadFile(string name, string path)
         {
             var aut = new RestClient(AutumnUrl);
-            var req = new RestRequest("/");
+            var req = new RestRequest("/attachments");
             req.AddFile(name, path);
             var res = await aut.ExecutePostAsync(req);
             var obj = JObject.Parse(res.Content);
@@ -397,7 +397,7 @@ namespace RevoltApi
         public async Task<string> UploadFile(string name, byte[] data)
         {
             var aut = new RestClient(AutumnUrl);
-            var req = new RestRequest("/");
+            var req = new RestRequest("/attachments");
             req.AddFile(name, data, name);
             var res = await aut.ExecutePostAsync(req);
             var obj = JObject.Parse(res.Content);

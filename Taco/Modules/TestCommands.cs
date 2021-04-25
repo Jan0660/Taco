@@ -35,10 +35,12 @@ namespace RevoltBot.Modules
         {
             var info = await Message.Client.GetApiInfo();
             var voso = await Message.Client.GetVosoInfo();
-            await ReplyAsync(@$"> ## Revolt info (for app.revolt.chat)
+            var autumn = await Message.Client.GetAutumnInfo();
+            await ReplyAsync(@$"> # Revolt info (for app.revolt.chat)
 > ## Versions
 > **Api:** {info.Version}
 > **Voso:** {voso.Version}
+> **Autumn:** {autumn.Version}
 > ## Features
 > **Registration:** {StringBooled(info.Features.Registration)}
 > **Email:** {StringBooled(info.Features.Email)}
@@ -46,7 +48,9 @@ namespace RevoltBot.Modules
 > **Captcha:** {StringBooled(info.Features.Captcha.Enabled)}
 > **Autumn:** {StringBooled(info.Features.Autumn.Enabled)}
 > **Voso:** {StringBooled(info.Features.Voso.Enabled)}
-> **Voso.RTP:** {StringBooled(voso.Features.Rtp)}");
+> **Voso.RTP:** {StringBooled(voso.Features.Rtp)}
+> **Autumn.JpegQuality:** {autumn.JpegQuality}
+> **Maximum Attachment Size:** {autumn.Tags.Attachments.MaxSize / 1000 / 1000}MB");
         }
 
         public string StringBooled(bool value)

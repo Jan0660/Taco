@@ -50,4 +50,36 @@ namespace RevoltApi
     {
         [JsonProperty("rtp")] public bool Rtp;
     }
+
+    public class AutumnInformation
+    {
+        [JsonProperty("autumn")] public string Version;
+        [JsonProperty("tags")] public AutumnInfoTags Tags;
+        [JsonProperty("jpeg_quality")] public int JpegQuality;
+    }
+
+    public class AutumnInfoTags
+    {
+        [JsonProperty("avatars")] public AutumnInfoTag Avatars;
+        [JsonProperty("icons")] public AutumnInfoTag Icons;
+        [JsonProperty("banners")] public AutumnInfoTag Banners;
+        [JsonProperty("backgrounds")] public AutumnInfoTag Backgrounds;
+        [JsonProperty("attachments")] public AutumnInfoTag Attachments;
+    }
+
+    public class AutumnInfoTag
+    {
+        /// <summary>
+        /// Maximum size in bytes.
+        /// </summary>
+        [JsonProperty("max_size")] public ulong MaxSize;
+
+        [JsonProperty("enabled")] public bool Enabled;
+
+        [JsonProperty("serve_if_field_present")]
+        public string ServeIfFieldPresent;
+
+        [JsonProperty("restrict_content_type")]
+        public string RestrictContentType;
+    }
 }

@@ -452,7 +452,13 @@ namespace RevoltApi
         public async Task<VosoInformation> GetVosoInfo()
         {
             return JsonConvert.DeserializeObject<VosoInformation>(
-                (await (new RestClient(VosoUrl).ExecuteGetAsync(new RestRequest(VosoUrl)))).Content);
+                (await (new RestClient(VosoUrl).ExecuteGetAsync(new RestRequest(VosoUrl)))).Content)!;
+        }
+
+        public async Task<AutumnInformation> GetAutumnInfo()
+        {
+            return JsonConvert.DeserializeObject<AutumnInformation>(
+                (await (new RestClient(VosoUrl).ExecuteGetAsync(new RestRequest(AutumnUrl)))).Content)!;
         }
     }
 

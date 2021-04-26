@@ -73,5 +73,15 @@ namespace RevoltApi
         public Task RemoveGroupMemberAsync(string channelId, string userId)
             => Client._restClient.ExecuteAsync(new RestRequest($"/channels/{channelId}/recipients/{userId}",
                 Method.DELETE));
+
+        public Task EditMessageAsync(string channelId, string messageId, string newContent)
+        {
+            var req = new RestRequest($"/channels/{channelId}/messages/{messageId}");
+            req.AddJsonBody(new
+            {
+                content = newContent
+            });
+            return Client._restClient.ExecuteAsync(req, Method.PATCH);
+        }
     }
 }

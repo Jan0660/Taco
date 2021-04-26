@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevoltApi", "RevoltApi\Revo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Saltus", "Saltus\Saltus.csproj", "{3EEC9C82-B9E5-4BF8-9B6A-F75ADEAA30FF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBridge", "DiscordBridge\DiscordBridge.csproj", "{99660303-3636-45A6-B72B-ABCAD24A238D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,5 +25,9 @@ Global
 		{3EEC9C82-B9E5-4BF8-9B6A-F75ADEAA30FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EEC9C82-B9E5-4BF8-9B6A-F75ADEAA30FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EEC9C82-B9E5-4BF8-9B6A-F75ADEAA30FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99660303-3636-45A6-B72B-ABCAD24A238D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99660303-3636-45A6-B72B-ABCAD24A238D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99660303-3636-45A6-B72B-ABCAD24A238D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99660303-3636-45A6-B72B-ABCAD24A238D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

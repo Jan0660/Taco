@@ -25,7 +25,9 @@ namespace DiscordBridge
 
         static async Task Main(string[] args)
         {
+#if DEBUG
             Console.Options.UseAnsi = false;
+#endif
             foreach (var msgType in MessageTypes.AsArray())
             {
                 msgType.LogInfos.Add(new TimeLogInfo()
@@ -36,6 +38,7 @@ namespace DiscordBridge
                     }
                 });
             }
+
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"));
             _client = new RevoltClient(Config.RevoltSession);
             await _client.ConnectWebSocketAsync();
@@ -62,13 +65,16 @@ namespace DiscordBridge
                             new EmbedBuilder()
                             {
                                 Title = message.Attachment.Filename,
-                                ImageUrl = $"https://autumn.revolt.chat/attachments/{message.Attachment._id}/{message.Attachment.Filename}",
+                                ImageUrl =
+                                    $"https://autumn.revolt.chat/attachments/{message.Attachment._id}/{message.Attachment.Filename}",
                                 Color = new Color(47, 49, 54),
                                 Footer = new()
                                 {
-                                    Text = $"{message.Attachment.SizeToString()} • {message.Attachment.Metadata.Width}x{message.Attachment.Metadata.Height}"
+                                    Text =
+                                        $"{message.Attachment.SizeToString()} • {message.Attachment.Metadata.Width}x{message.Attachment.Metadata.Height}"
                                 },
-                                Url = $"https://autumn.revolt.chat/attachments/{message.Attachment._id}/{message.Attachment.Filename}"
+                                Url =
+                                    $"https://autumn.revolt.chat/attachments/{message.Attachment._id}/{message.Attachment.Filename}"
                             }.Build()
                         };
                     var msg = await discord.SendMessageAsync(message.Content, username: message.Author.Username,
@@ -105,6 +111,7 @@ namespace DiscordBridge
                 {
                     await message.Channel.SendFileAsync("../Taco/Resources/UberFruit.png");
                 }
+
                 try
                 {
                     var msg = await _client.Channels.SendMessageAsync(Config.RevoltChannelId,
@@ -120,7 +127,8 @@ namespace DiscordBridge
             {
                 if (DiscordRevoltMessages.TryGetValue(cacheable.Id, out string revoltMessageId))
                 {
-                    await _client.Channels.EditMessageAsync(Config.RevoltChannelId, revoltMessageId, message.ToGoodString());
+                    await _client.Channels.EditMessageAsync(Config.RevoltChannelId, revoltMessageId,
+                        message.ToGoodString());
                 }
             };
             await Task.Delay(-1);
@@ -129,7 +137,8 @@ namespace DiscordBridge
         public static Task ModifyMessageAsync(ulong id, string newContent)
         {
             var restClient =
-                new RestClient($"https://discord.com/api/webhooks/{Config.WebhookId}/{Config.WebhookToken}/messages/{id}");
+                new RestClient(
+                    $"https://discord.com/api/webhooks/{Config.WebhookId}/{Config.WebhookToken}/messages/{id}");
             var req = new RestRequest(Method.PATCH);
             req.AddJsonBody(JsonConvert.SerializeObject(new
             {
@@ -166,7 +175,7 @@ namespace DiscordBridge
 
         public static string SizeToString(this Attachment att)
         {
-            var size = (decimal)att.Size;
+            var size = (decimal) att.Size;
             if (size > 1_000_000)
                 return Meth.Round(size / 1000 / 1000, 2) + "MB";
             if (size > 1_000)

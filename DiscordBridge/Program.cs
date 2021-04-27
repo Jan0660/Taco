@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Webhook;
@@ -22,6 +24,7 @@ namespace DiscordBridge
         public static Config Config;
         public static Dictionary<string, ulong> RevoltDiscordMessages = new();
         public static Dictionary<ulong, string> DiscordRevoltMessages = new();
+        public static Regex ReplaceRevoltMentions = new("<@([0-9,A-Z]{26})+>", RegexOptions.Compiled);
 
         static async Task Main(string[] args)
         {
@@ -77,7 +80,7 @@ namespace DiscordBridge
                                     $"https://autumn.revolt.chat/attachments/{message.Attachment._id}/{message.Attachment.Filename}"
                             }.Build()
                         };
-                    var msg = await discord.SendMessageAsync(message.Content, username: message.Author.Username,
+                    var msg = await discord.SendMessageAsync(message.Content.ReplaceRevoltMentions(), username: message.Author.Username,
                         avatarUrl: message.Author.AvatarUrl, allowedMentions: new(), embeds: embeds);
                     RevoltDiscordMessages.Add(message._id, msg);
                 }
@@ -90,7 +93,7 @@ namespace DiscordBridge
             {
                 if (RevoltDiscordMessages.TryGetValue(id, out ulong discordMessageId))
                 {
-                    await ModifyMessageAsync(discordMessageId, data.Content);
+                    await ModifyMessageAsync(discordMessageId, data.Content.ReplaceRevoltMentions());
                 }
             };
             _client.MessageDeleted += (messageId) =>
@@ -202,6 +205,16 @@ namespace DiscordBridge
 
         public static string ToGoodString(this SocketMessage message)
             => message.Author.ToBetterString() + "> " + message.Content;
+
+        public static string ReplaceRevoltMentions(this string str)
+            => Program.ReplaceRevoltMentions.Replace(str, match =>
+            {
+                var id = match.Value[2..28];
+                var mention = Program.Client.UsersCache.FirstOrDefault(u => u._id == id);
+                if (mention != null)
+                    return '@' + mention.Username;
+                return match.Value;
+            });
 
         public static string SizeToString(this Attachment att)
         {

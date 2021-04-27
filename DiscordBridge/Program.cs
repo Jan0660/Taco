@@ -11,6 +11,7 @@ using Log73;
 using Newtonsoft.Json;
 using RestSharp;
 using RevoltApi;
+using RevoltApi.Channels;
 using Attachment = RevoltApi.Attachment;
 using Console = Log73.Console;
 using Meth = System.Math;
@@ -59,6 +60,10 @@ namespace DiscordBridge
             {
                 Console.Log(message.Content);
                 if (message.AuthorId == Config.RevoltSession.UserId)
+                    return;
+                if (message.Channel is not GroupChannel)
+                    return;
+                if (message.ChannelId != Config.RevoltChannelId)
                     return;
                 try
                 {

@@ -17,5 +17,8 @@ namespace RevoltApi.Channels
 
         public Task LeaveAsync()
             => Client.Channels.LeaveAsync(_id);
+
+        public override string ToString()
+            => Name;
     }
 }

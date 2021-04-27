@@ -167,6 +167,8 @@ namespace DiscordBridge
             if (str.StartsWith("# "))
                 str = '\\' + str;
             str = str.Replace("$", "\\$");
+            if (str.Length > 1995)
+                str = str[..1995] + "(...)";
             return str;
         }
 

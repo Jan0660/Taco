@@ -25,5 +25,8 @@ namespace RevoltApi
         
         public Task<RelationshipStatus> UnblockAsync()
             => Client.Users.UnblockAsync(_id);
+
+        public override string ToString()
+            => Username;
     }
 }

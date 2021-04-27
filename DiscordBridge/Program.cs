@@ -93,6 +93,15 @@ namespace DiscordBridge
                     await ModifyMessageAsync(discordMessageId, data.Content);
                 }
             };
+            _client.MessageDeleted += (messageId) =>
+            {
+                if (RevoltDiscordMessages.TryGetValue(messageId, out ulong id))
+                {
+                    return DeleteMessageAsync(id);
+                }
+
+                return Task.CompletedTask;
+            };
             var discordClient = new DiscordSocketClient();
             await discordClient.LoginAsync(TokenType.Bot, Config.DiscordBotToken);
             await discordClient.StartAsync();
@@ -131,6 +140,15 @@ namespace DiscordBridge
                         message.ToGoodString());
                 }
             };
+            discordClient.MessageDeleted += (cacheable, channel) =>
+            {
+                if (DiscordRevoltMessages.TryGetValue(cacheable.Id, out string id))
+                {
+                    return _client.Channels.DeleteMessageAsync(Config.RevoltChannelId, id);
+                }
+
+                return Task.CompletedTask;
+            };
             await Task.Delay(-1);
         }
 
@@ -144,6 +162,16 @@ namespace DiscordBridge
             {
                 content = newContent
             }));
+            var h = restClient.ExecuteAsync(req).Result;
+            return Task.CompletedTask;
+        }
+
+        public static Task DeleteMessageAsync(ulong id)
+        {
+            var restClient =
+                new RestClient(
+                    $"https://discord.com/api/webhooks/{Config.WebhookId}/{Config.WebhookToken}/messages/{id}");
+            var req = new RestRequest(Method.DELETE);
             var h = restClient.ExecuteAsync(req).Result;
             return Task.CompletedTask;
         }

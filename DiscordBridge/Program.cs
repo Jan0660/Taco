@@ -41,6 +41,7 @@ namespace DiscordBridge
                     }
                 });
             }
+            Console.Log("h");
 
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"));
             _client = new RevoltClient(Config.RevoltSession);

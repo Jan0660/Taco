@@ -59,7 +59,7 @@ namespace RevoltBot.CommandHandling
         {
             var message = context.Message;
             var relevant = message.Content.Remove(0, prefixLength);
-            // get command
+            // get command 
             var commands = Commands.Where(c => c.Aliases.Any(a => relevant.ToLower() == a.ToLower()))
                 .Concat(Commands.Where(c => c.Aliases.Any(a => relevant.ToLower().StartsWith(a.ToLower()))));
             CommandInfo command = null;

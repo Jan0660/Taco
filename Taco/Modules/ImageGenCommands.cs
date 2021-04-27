@@ -2,6 +2,7 @@
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using RevoltApi;
@@ -18,10 +19,25 @@ namespace RevoltBot.Modules
         public const ushort BaseResolution = 16; // 64
         [Command("jesusCarry")]
         public Task JesusCarry()
-            => TemplateSend("JesusCarry.png", Message.AuthorId, new Point(162, 182));
+            => TemplateSend("JesusCarry.png", _getContextUserId(), new Point(162, 182));
         [Command("suicide")]
         public Task Suicide()
-            => TemplateSend("Suicide.png", Message.AuthorId, new Point(36, 103), size: 64);
+            => TemplateSend("Suicide.png", _getContextUserId(), new Point(36, 103), size: 64);
+        [Command("retard", "retardFound")]
+        public Task Retard()
+            => TemplateSend("RetardFound.png", _getContextUserId(), new Point(486, 18), size: 256);
+
+        private string _getContextUserId()
+        {
+            if (Args == "")
+                return Message.AuthorId;
+            if (Args.Length == 26)
+                return Args;
+            if (Args.Length == 29)
+                return Args.Replace("<@", "").Replace(">", "");
+            return Context.Message.Client.UsersCache.FirstOrDefault(u => u.Username.ToLower() == Args.ToLower())?._id ??
+                   "amogus";
+        }
 
         public async Task<Message> TemplateSend(string template, string userId, Point location, bool rounded = true, int size = 128)
         {

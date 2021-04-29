@@ -78,7 +78,7 @@ namespace RevoltBot.CommandHandling
 
             if (command == null)
                 throw new Exception("COMMAND_NOT_FOUND");
-            var alias = command.Aliases.First(a => relevant.ToLower().StartsWith(a.ToLower()));
+            var alias = command.Aliases.First(a => relevant.ToLower().StartsWith(a.ToLower()) && a.Length == longest);
             var args = relevant.Remove(0, alias.Length + (alias.Length == relevant.Length ? 0 : 1));
             foreach (var precondition in command.Preconditions)
             {

@@ -17,15 +17,30 @@ namespace RevoltBot.Modules
     {
         public static int BaseRounding = 8; // 32
         public const ushort BaseResolution = 16; // 64
+
         [Command("jesusCarry")]
         public Task JesusCarry()
             => TemplateSend("JesusCarry.png", _getContextUserId(), new Point(162, 182));
+
         [Command("suicide")]
         public Task Suicide()
             => TemplateSend("Suicide.png", _getContextUserId(), new Point(36, 103), size: 64);
+
         [Command("retard", "retardFound")]
         public Task Retard()
-            => TemplateSend("RetardFound.png", _getContextUserId(), new Point(486, 18), size: 256);
+            => TemplateSend("RetardFound.png", _getContextUserId(), new Point(486, 18), rounded: false, size: 256);
+        
+        [Command("02ily")]
+        public Task ZeroTwoILoveThis()
+            => TemplateSend("02ily.png", _getContextUserId(), new Point(131, 569), rounded: false, size: 256);
+        
+        [Command("killList")]
+        public Task KillList()
+            => TemplateSend("KillList.png", _getContextUserId(), new Point(69, 53), rounded: false, size: 256);
+        
+        [Command("lovedList")]
+        public Task LovedList()
+            => TemplateSend("LovedList.png", _getContextUserId(), new Point(69, 53), rounded: false, size: 256);
 
         private string _getContextUserId()
         {
@@ -39,16 +54,20 @@ namespace RevoltBot.Modules
                    "amogus";
         }
 
-        public async Task<Message> TemplateSend(string template, string userId, Point location, bool rounded = true, int size = 128)
+        public async Task<Message> TemplateSend(string template, string userId, Point location, bool rounded = true,
+            int size = 128)
         {
             var httpClient = new HttpClient();
-            var pfp = new Bitmap(await httpClient.GetStreamAsync($"{Message.Client.ApiUrl}/users/{userId}/avatar?size={size}"));
+            var pfp = new Bitmap(
+                await httpClient.GetStreamAsync($"{Message.Client.ApiUrl}/users/{userId}/avatar?size={size}"));
             if (pfp.Height != size)
             {
                 pfp = pfp.Resize(new Size(size, size), ImageFormat.Png);
             }
+
             if (rounded)
-                pfp = ImageGen.RoundCorners(pfp, (int)(BaseRounding * ((double)pfp.Height / (double)BaseResolution)));
+                pfp = ImageGen.RoundCorners(pfp,
+                    (int) (BaseRounding * ((double) pfp.Height / (double) BaseResolution)));
             var img = ImageGen.Template(pfp, template, location);
             var stream = new MemoryStream();
             img.Save(stream, ImageFormat.Png);

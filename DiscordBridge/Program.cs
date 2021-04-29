@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
@@ -42,6 +43,7 @@ namespace DiscordBridge
                     }
                 });
             }
+
             Console.Log("h");
 
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"));
@@ -86,7 +88,8 @@ namespace DiscordBridge
                                     $"https://autumn.revolt.chat/attachments/{message.Attachment._id}/{message.Attachment.Filename}"
                             }.Build()
                         };
-                    var msg = await discord.SendMessageAsync(message.Content.ReplaceRevoltMentions(), username: message.Author.Username,
+                    var msg = await discord.SendMessageAsync(message.Content.ReplaceRevoltMentions(),
+                        username: message.Author.Username,
                         avatarUrl: message.Author.AvatarUrl, allowedMentions: new(), embeds: embeds);
                     RevoltDiscordMessages.Add(message._id, msg);
                 }
@@ -132,8 +135,18 @@ namespace DiscordBridge
 
                 try
                 {
-                    var msg = await _client.Channels.SendMessageAsync(Config.RevoltChannelId,
-                        message.ToGoodString());
+                    Message msg;
+                    if (message.Attachments.Any())
+                    {
+                        var http = new HttpClient();
+                        var attachment = await http.GetByteArrayAsync(message.Attachments.First().ProxyUrl);
+                        var attachmentId = await _client.UploadFile(message.Attachments.First().Filename, attachment);
+                        msg = await _client.Channels.SendMessageAsync(Config.RevoltChannelId, message.ToGoodString(),
+                            attachmentId);
+                    }
+                    else
+                        msg = await _client.Channels.SendMessageAsync(Config.RevoltChannelId,
+                            message.ToGoodString());
                     DiscordRevoltMessages.Add(message.Id, msg._id);
                 }
                 catch (Exception exc)

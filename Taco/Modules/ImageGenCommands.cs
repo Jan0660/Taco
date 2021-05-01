@@ -59,7 +59,7 @@ namespace RevoltBot.Modules
         {
             var httpClient = new HttpClient();
             var pfp = new Bitmap(
-                await httpClient.GetStreamAsync($"{Message.Client.ApiUrl}/users/{userId}/avatar?size={size}"));
+                await httpClient.GetStreamAsync($"{Context.Message.Client.UsersCache.First(u => u._id == userId).AvatarUrl}?size={size}"));
             if (pfp.Height != size)
             {
                 pfp = pfp.Resize(new Size(size, size), ImageFormat.Png);

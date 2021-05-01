@@ -11,8 +11,9 @@ namespace RevoltApi
         [JsonProperty("badges")] public int Badges;
         [JsonProperty("relationship")] public RelationshipStatus Relationship;
         [JsonProperty("online")] public bool Online;
+        [JsonProperty("avatar")] public Attachment Avatar;
         [JsonIgnore] public string DefaultAvatarUrl => $"{Client.ApiUrl}/users/{_id}/default_avatar";
-        [JsonIgnore] public string AvatarUrl => $"{Client.ApiUrl}/users/{_id}/avatar";
+        [JsonIgnore] public string AvatarUrl => $"{Client.AutumnUrl}/{Avatar.Tag}/{Avatar._id}";
 
         public Task<RelationshipStatus> AddFriendAsync()
             => Client.Users.AddFriendAsync(Username);

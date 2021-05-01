@@ -90,7 +90,7 @@ namespace DiscordBridge
                         };
                     var msg = await discord.SendMessageAsync(message.Content.ReplaceRevoltMentions(),
                         username: message.Author.Username,
-                        avatarUrl: message.Author.AvatarUrl, allowedMentions: new(), embeds: embeds);
+                        avatarUrl: message.Author.AvatarUrl + "?size=256", allowedMentions: new(), embeds: embeds);
                     RevoltDiscordMessages.Add(message._id, msg);
                 }
                 catch (Exception exc)
@@ -156,6 +156,8 @@ namespace DiscordBridge
             };
             discordClient.MessageUpdated += async (cacheable, message, channel) =>
             {
+                if (message.Content == null)
+                    return;
                 if (DiscordRevoltMessages.TryGetValue(cacheable.Id, out string revoltMessageId))
                 {
                     await _client.Channels.EditMessageAsync(Config.RevoltChannelId, revoltMessageId,

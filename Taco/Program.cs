@@ -53,7 +53,8 @@ namespace RevoltBot
             _configureLogging();
 
             _client =
-                new RevoltClient(JsonConvert.DeserializeObject<Session>(await File.ReadAllTextAsync("./session.json"))!);
+                new RevoltClient(
+                    JsonConvert.DeserializeObject<Session>(await File.ReadAllTextAsync("./session.json"))!);
             var info = _client.ApiInfo;
             Console.Info($"API Version: {info.Version}");
 
@@ -145,8 +146,10 @@ salty");
 
         private static async Task ClientOnMessageReceived(Message message)
         {
+#if DEBUG
             Console.Debug(
                 $"{message.Author.Username}[{message.AuthorId}] at [{message.ChannelId}] => {message.Content}");
+#endif
             if (message.Content.StartsWith(Prefix))
             {
                 try

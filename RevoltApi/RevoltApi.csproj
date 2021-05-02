@@ -4,6 +4,7 @@
         <TargetFramework>net5.0</TargetFramework>
         <Nullable>annotations</Nullable>
         <NullableContextOptions>enable</NullableContextOptions>
+        <Version>0.0.1</Version>
     </PropertyGroup>
 
     <ItemGroup>

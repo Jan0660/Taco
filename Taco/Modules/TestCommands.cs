@@ -139,5 +139,19 @@ namespace RevoltBot.Modules
         //
         //     await ReplyAsync(text);
         // }
+        [Command("roadmap")]
+        public Task Roadmap()
+            => ReplyAsync("Revolt's roadmap is available here: https://revolt.chat/roadmap");
+        [Command("weblate")]
+        public Task Weblate()
+            => ReplyAsync("https://weblate.insrt.uk/engage/revolt/?utm_source=taco");
+
+        [Command("session")]
+        public Task Session()
+            => ReplyAsync("https://rvf.geist.ga/posts/Getting-Session-Data");
+
+        [Command("gitlab")]
+        public Task GitLab()
+            => ReplyAsync("https://gitlab.insrt.uk/revolt");
     }
 }

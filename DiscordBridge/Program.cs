@@ -60,7 +60,6 @@ namespace DiscordBridge
                 Config.WebhookToken);
             _client.MessageReceived += async message =>
             {
-                Console.Log(message.Content);
                 if (message.AuthorId == Config.RevoltSession.UserId)
                     return;
                 if (message.Channel is not GroupChannel)

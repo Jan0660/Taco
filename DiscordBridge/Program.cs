@@ -10,6 +10,7 @@ using Discord.Webhook;
 using Discord.WebSocket;
 using Log73;
 using Newtonsoft.Json;
+using Owoify;
 using RestSharp;
 using RevoltApi;
 using RevoltApi.Channels;
@@ -87,7 +88,7 @@ namespace DiscordBridge
                                     $"https://autumn.revolt.chat/attachments/{message.Attachment._id}/{message.Attachment.Filename}"
                             }.Build()
                         };
-                    var msg = await discord.SendMessageAsync(message.Content.ReplaceRevoltMentions(),
+                    var msg = await discord.SendMessageAsync(Owoifier.Owoify(message.Content.ReplaceRevoltMentions(), Owoifier.OwoifyLevel.Uwu),
                         username: message.Author.Username,
                         avatarUrl: message.Author.Avatar == null ? message.Author.DefaultAvatarUrl : message.Author.AvatarUrl + "?size=256", allowedMentions: new(), embeds: embeds);
                     RevoltDiscordMessages.Add(message._id, msg);

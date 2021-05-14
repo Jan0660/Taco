@@ -297,6 +297,7 @@ namespace RevoltApi
                             break;
                         }
                         case "MessageUpdate":
+                        {
                             var messageId = packet.Value<string>("id");
                             MessageEditData data = packet.Value<JObject>("data").ToObject<MessageEditData>();
 
@@ -306,6 +307,7 @@ namespace RevoltApi
                             }
 
                             break;
+                        }
                         case "ChannelGroupJoin":
                         {
                             var groupId = packet.Value<string>("id");
@@ -363,6 +365,20 @@ namespace RevoltApi
                                 handler.Invoke(newChannel);
                             }
 
+                            break;
+                        }
+                        case "UserUpdate":
+                        {
+                            // todo: handle status changes
+                            var id = packet.Value<string>("id");
+                            User user = UsersCache.FirstOrDefault(u => u._id == id);
+                            if (user == null)
+                                return;
+                            JObject data = packet.Value<JObject>("data");
+                            if (data.ContainsKey("avatar"))
+                            {
+                                user.Avatar = data.Value<JObject>("avatar")!.ToObject<Attachment>()!;
+                            }
                             break;
                         }
                     }

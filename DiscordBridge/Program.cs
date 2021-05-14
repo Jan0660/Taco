@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using Discord;
 using Discord.Webhook;
 using Discord.WebSocket;
@@ -77,7 +78,7 @@ namespace DiscordBridge
                             {
                                 Title = message.Attachment.Filename,
                                 ImageUrl =
-                                    $"https://autumn.revolt.chat/attachments/{message.Attachment._id}/{message.Attachment.Filename}",
+                                    $"https://autumn.revolt.chat/attachments/{message.Attachment._id}/{HttpUtility.UrlEncode(message.Attachment.Filename)}",
                                 Color = new Color(47, 49, 54),
                                 Footer = new()
                                 {
@@ -85,7 +86,7 @@ namespace DiscordBridge
                                         $"{message.Attachment.SizeToString()} • {message.Attachment.Metadata.Width}x{message.Attachment.Metadata.Height}"
                                 },
                                 Url =
-                                    $"https://autumn.revolt.chat/attachments/{message.Attachment._id}/{message.Attachment.Filename}"
+                                    $"https://autumn.revolt.chat/attachments/{message.Attachment._id}/{HttpUtility.UrlEncode(message.Attachment.Filename)}"
                             }.Build()
                         };
                     var msg = await discord.SendMessageAsync(Owoifier.Owoify(message.Content.ReplaceRevoltMentions(), Owoifier.OwoifyLevel.Uwu),

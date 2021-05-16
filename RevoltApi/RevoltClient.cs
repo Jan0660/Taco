@@ -400,24 +400,34 @@ namespace RevoltApi
             return JsonConvert.DeserializeObject<RevoltApiInfo>(res.Content);
         }
 
-        public async Task<string> UploadFile(string name, string path)
+        public async Task<string> UploadFile(string name, string path, string tag = "attachments")
         {
             var aut = new RestClient(AutumnUrl);
-            var req = new RestRequest("/attachments");
+            var req = new RestRequest($"/{tag}");
             req.AddFile(name, path);
             var res = await aut.ExecutePostAsync(req);
             var obj = JObject.Parse(res.Content);
             return obj.Value<string>("id");
         }
 
-        public async Task<string> UploadFile(string name, byte[] data)
+        public async Task<string> UploadFile(string name, byte[] data, string tag = "attachments")
         {
             var aut = new RestClient(AutumnUrl);
-            var req = new RestRequest("/attachments");
+            var req = new RestRequest($"/{tag}");
             req.AddFile(name, data, name);
             var res = await aut.ExecutePostAsync(req);
             var obj = JObject.Parse(res.Content);
             return obj.Value<string>("id");
+        }
+
+        public Task UpdateAvatarId(string id)
+        {
+            var req = new RestRequest("/users/id");
+            req.AddJsonBody(JsonConvert.SerializeObject(new
+            {
+                avatar = id
+            }));
+            return _restClient.ExecuteAsync(req);
         }
 
 

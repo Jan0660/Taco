@@ -4,7 +4,7 @@ image: mcr.microsoft.com/dotnet/sdk:5.0
 restore-wrapper:
   stage: restore-wrapper
   script:
-    - cd RevoltApi
+    - cd Revolt.Net
     - dotnet restore
 
 # Build the wrapper.
@@ -15,7 +15,7 @@ build-wrapper:
   dependencies:
     - restore-wrapper
   script:
-    - cd RevoltApi
+    - cd Revolt.Net
     - dotnet build --configuration release
 # Restore packages the bot depends on.
 restore-bot:

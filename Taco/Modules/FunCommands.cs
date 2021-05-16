@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Owoify;
-using RevoltApi.Channels;
-using RevoltBot.Attributes;
-using RevoltBot.CommandHandling;
+using Revolt.Channels;
+using Taco.Attributes;
+using Taco.CommandHandling;
 
-namespace RevoltBot.Modules
+namespace Taco.Modules
 {
     [ModuleName("Fun")]
     [Summary("r")]

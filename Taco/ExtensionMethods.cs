@@ -3,13 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Jan0660.AzurAPINet.Ships;
-using RevoltApi;
-using RevoltApi.Channels;
-using RevoltBot.Attributes;
-using RevoltBot.CommandHandling;
+using Revolt;
+using Revolt.Channels;
 using SixLabors.ImageSharp;
+using Taco.Attributes;
+using Taco.CommandHandling;
 
-namespace RevoltBot
+namespace Taco
 {
     public static class ExtensionMethods
     {

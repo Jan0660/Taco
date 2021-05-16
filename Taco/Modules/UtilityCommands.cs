@@ -12,11 +12,11 @@ using NuGet.Frameworks;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using RestSharp;
-using RevoltApi.Channels;
-using RevoltBot.Attributes;
-using RevoltBot.CommandHandling;
+using Revolt.Channels;
+using Taco.Attributes;
+using Taco.CommandHandling;
 
-namespace RevoltBot.Modules
+namespace Taco.Modules
 {
     [ModuleName("Utility", "Programmer", "Nerd")]
     [Summary("Utilities")]

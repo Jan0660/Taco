@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using RevoltApi;
-using RevoltBot.Attributes;
+using Taco.Attributes;
 
-namespace RevoltBot.CommandHandling
+namespace Taco.CommandHandling
 {
     public static class CommandHandler
     {

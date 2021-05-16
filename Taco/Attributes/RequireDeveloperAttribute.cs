@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using RevoltApi;
-using RevoltBot.CommandHandling;
+using Revolt;
+using Taco.CommandHandling;
 
-namespace RevoltBot.Attributes
+namespace Taco.Attributes
 {
     public class RequireDeveloperAttribute : PreconditionAttribute
     {

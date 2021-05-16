@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using RevoltApi;
+using Revolt;
 
-namespace RevoltBot.CommandHandling
+namespace Taco.CommandHandling
 {
     public class ModuleBase
     {

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace RevoltApi
+namespace Revolt
 {
     public class Relation
     {

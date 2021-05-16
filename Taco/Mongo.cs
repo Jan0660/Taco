@@ -1,16 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text.Json;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using Newtonsoft.Json;
-using RevoltApi;
 
-namespace RevoltBot
+namespace Taco
 {
     public static class Mongo
     {

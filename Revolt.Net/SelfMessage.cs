@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
-using RestSharp;
 
-namespace RevoltApi
+namespace Revolt
 {
     public class SelfMessage : Message
     {

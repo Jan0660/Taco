@@ -1,12 +1,12 @@
 ﻿using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using RevoltBot.Attributes;
-using RevoltBot.CommandHandling;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
+using Taco.Attributes;
+using Taco.CommandHandling;
 
-namespace RevoltBot.Modules
+namespace Taco.Modules
 {
     [Summary(":flushed:")]
     public class TestModule : ModuleBase

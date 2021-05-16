@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <AssemblyName>Revolt.Net</AssemblyName>
+        <PackageId>Revolt.Net</PackageId>
+        <Nullable>annotations</Nullable>
+        <NullableContextOptions>enable</NullableContextOptions>
+        <Version>0.0.2</Version>
+        <Description>The .NET library for Revolt with a DOD and OOP design.</Description>
+        <RootNamespace>Revolt</RootNamespace>
+        <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/Jan0660/Taco</RepositoryUrl>
+        <Authors>Jan0660</Authors>
+        <Copyright>Jan0660</Copyright>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Log73" Version="0.6.1" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="RestSharp" Version="106.11.7" />
+      <PackageReference Include="Websocket.Client" Version="4.3.30" />
+    </ItemGroup>
+
+</Project>

@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using RevoltBot.Attributes;
-using RevoltBot.CommandHandling;
+using Taco.Attributes;
+using Taco.CommandHandling;
 
-namespace RevoltBot.Modules
+namespace Taco.Modules
 {
     [ModuleName("Fuck you.")]
     [Summary("Fuck you.")]

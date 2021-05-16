@@ -2,7 +2,7 @@
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 
-namespace RevoltBot.Util
+namespace Taco.Util
 {
     public static class ImageGen
     {

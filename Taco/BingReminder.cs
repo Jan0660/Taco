@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using System.Timers;
 
-namespace RevoltBot
+namespace Taco
 {
     public static class BingReminder
     {

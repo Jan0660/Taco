@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using RevoltApi;
+using Revolt;
 
 namespace Saltus
 {
@@ -10,6 +10,7 @@ namespace Saltus
     {
         static async Task Main(string[] args)
         {
+            // we do a little trolling
             var client =
                 new RevoltClient(JsonConvert.DeserializeObject<Session>(await File.ReadAllTextAsync("./session.json")));
             await client.ConnectWebSocketAsync();

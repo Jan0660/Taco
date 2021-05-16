@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
-using RevoltApi;
-using RevoltApi.Channels;
-using RevoltBot.CommandHandling;
+using Revolt;
+using Revolt.Channels;
+using Taco.CommandHandling;
 
-namespace RevoltBot.Attributes
+namespace Taco.Attributes
 {
     public class GroupOnlyAttribute : PreconditionAttribute
     {

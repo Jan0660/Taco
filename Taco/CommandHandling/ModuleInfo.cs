@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using RevoltBot.Attributes;
+using Taco.Attributes;
 
-namespace RevoltBot.CommandHandling
+namespace Taco.CommandHandling
 {
     public class ModuleInfo
     {

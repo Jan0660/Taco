@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RevoltBot.Attributes
+namespace Taco.Attributes
 {
     public class HiddenAttribute : Attribute
     {

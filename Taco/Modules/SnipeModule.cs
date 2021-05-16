@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using RevoltApi;
-using RevoltBot.Attributes;
-using RevoltBot.CommandHandling;
+using Revolt;
+using Taco.Attributes;
+using Taco.CommandHandling;
 
-namespace RevoltBot.Modules
+namespace Taco.Modules
 {
     [Summary("Snipe command")]
     [ModuleName("Snipe")]

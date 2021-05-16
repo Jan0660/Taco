@@ -7,15 +7,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Log73;
 using Log73.ColorSchemes;
-using MongoDB.Driver;
 using Newtonsoft.Json;
-using RevoltApi;
-using RevoltApi.Channels;
-using RevoltBot.CommandHandling;
-using RevoltBot.Modules;
+using Revolt;
+using Taco.CommandHandling;
+using Taco.Modules;
 using Console = Log73.Console;
 
-namespace RevoltBot
+namespace Taco
 {
     public static class Program
     {

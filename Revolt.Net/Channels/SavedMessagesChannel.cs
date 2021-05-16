@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace RevoltApi.Channels
+namespace Revolt.Channels
 {
     public class SavedMessagesChannel : Channel
     {

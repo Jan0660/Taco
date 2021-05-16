@@ -1,6 +1,6 @@
-﻿using RevoltApi;
+﻿using Revolt;
 
-namespace RevoltBot
+namespace Taco
 {
     public class CommandContext
     {

@@ -1,16 +1,15 @@
 ﻿using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using RevoltApi;
-using RevoltBot.Attributes;
-using RevoltBot.CommandHandling;
-using RevoltBot.Util;
+using Revolt;
+using Taco.Attributes;
+using Taco.CommandHandling;
+using Taco.Util;
 
-namespace RevoltBot.Modules
+namespace Taco.Modules
 {
     [ModuleName("ImageGen")]
     public class ImageGenCommands : ModuleBase

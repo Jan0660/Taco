@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RevoltBot.Attributes
+namespace Taco.Attributes
 {
     [AttributeUsage(AttributeTargets.Class)]  
     public class ModuleNameAttribute : Attribute

@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Jan0660.AzurAPINet;
 using Jan0660.AzurAPINet.Enums;
-using RevoltBot.Attributes;
-using RevoltBot.CommandHandling;
+using Taco.Attributes;
+using Taco.CommandHandling;
 
-namespace RevoltBot.Modules
+namespace Taco.Modules
 {
     [ModuleName("Azur Lane", "AzurLane", "az")]
     [Summary("ship, shipstats")]

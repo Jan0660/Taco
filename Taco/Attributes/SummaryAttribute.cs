@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RevoltBot.Attributes
+namespace Taco.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class SummaryAttribute : Attribute

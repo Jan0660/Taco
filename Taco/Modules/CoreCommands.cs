@@ -5,13 +5,12 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
-using RevoltApi;
-using RevoltApi.Channels;
-using RevoltBot.Attributes;
-using RevoltBot.CommandHandling;
-using Console = Log73.Console;
+using Revolt;
+using Revolt.Channels;
+using Taco.Attributes;
+using Taco.CommandHandling;
 
-namespace RevoltBot.Modules
+namespace Taco.Modules
 {
     [ModuleName("Core", "base", "basic")]
     [Summary("Core commands like `info` and `help`.")]

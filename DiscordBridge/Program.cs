@@ -12,9 +12,9 @@ using Discord.WebSocket;
 using Log73;
 using Newtonsoft.Json;
 using RestSharp;
-using RevoltApi;
-using RevoltApi.Channels;
-using Attachment = RevoltApi.Attachment;
+using Revolt;
+using Revolt.Channels;
+using Attachment = Revolt.Attachment;
 using Console = Log73.Console;
 using Meth = System.Math;
 

@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Hardware.Info;
-using MongoDB.Driver;
-using RevoltApi;
+using Revolt;
 
-namespace RevoltBot
+namespace Taco
 {
     public static class Annoy
     {

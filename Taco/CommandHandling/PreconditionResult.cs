@@ -1,4 +1,4 @@
-﻿namespace RevoltBot.CommandHandling
+﻿namespace Taco.CommandHandling
 {
     public class PreconditionResult
     {

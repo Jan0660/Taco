@@ -25,7 +25,7 @@ namespace Revolt
         private Timer _pingTimer;
         public string ApiUrl = "https://api.revolt.chat";
         public string AutumnUrl = "https://autumn.revolt.chat";
-        public string VosoUrl = "https://voso.revolt.chat";
+        public string VortexUrl = "https://voso.revolt.chat";
 
         #region events
 
@@ -475,16 +475,16 @@ namespace Revolt
             return _deserialize<T>(res.Content);
         }
 
-        public async Task<VosoInformation> GetVosoInfo()
+        public async Task<VortexInformation> GetVortexInfo()
         {
-            return JsonConvert.DeserializeObject<VosoInformation>(
-                (await (new RestClient(VosoUrl).ExecuteGetAsync(new RestRequest(VosoUrl)))).Content)!;
+            return JsonConvert.DeserializeObject<VortexInformation>(
+                (await (new RestClient(VortexUrl).ExecuteGetAsync(new RestRequest(VortexUrl)))).Content)!;
         }
 
         public async Task<AutumnInformation> GetAutumnInfo()
         {
             return JsonConvert.DeserializeObject<AutumnInformation>(
-                (await (new RestClient(VosoUrl).ExecuteGetAsync(new RestRequest(AutumnUrl)))).Content)!;
+                (await (new RestClient(VortexUrl).ExecuteGetAsync(new RestRequest(AutumnUrl)))).Content)!;
         }
     }
 

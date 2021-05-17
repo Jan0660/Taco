@@ -17,7 +17,7 @@ namespace Revolt
         [JsonProperty("email")] public bool Email;
         [JsonProperty("invite_only")] public bool InviteOnly;
         [JsonProperty("autumn")] public RevoltApiAutumnFeature Autumn;
-        [JsonProperty("voso")] public RevoltApiVosoFeature Voso;
+        [JsonProperty("vortex")] public RevoltApiVortexFeature Vortex;
     }
 
     public class RevoltApiCaptchaFeature
@@ -32,21 +32,21 @@ namespace Revolt
         [JsonProperty("url")] public string Url;
     }
 
-    public class RevoltApiVosoFeature
+    public class RevoltApiVortexFeature
     {
         [JsonProperty("enabled")] public bool Enabled;
         [JsonProperty("url")] public string Url;
         [JsonProperty("ws")] public string WebsocketUrl;
     }
 
-    public class VosoInformation
+    public class VortexInformation
     {
         [JsonProperty("voso")] public string Version;
         [JsonProperty("ws")] public string WebsocketUrl;
-        [JsonProperty("features")] public VosoFeatures Features;
+        [JsonProperty("features")] public VortexFeatures Features;
     }
 
-    public class VosoFeatures
+    public class VortexFeatures
     {
         [JsonProperty("rtp")] public bool Rtp;
     }

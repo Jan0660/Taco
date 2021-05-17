@@ -34,12 +34,12 @@ namespace Taco.Modules
         public async Task RevoltInfo()
         {
             var info = await Message.Client.GetApiInfo();
-            var voso = await Message.Client.GetVosoInfo();
+            var vortex = await Message.Client.GetVortexInfo();
             var autumn = await Message.Client.GetAutumnInfo();
             await ReplyAsync(@$"> # Revolt info (for app.revolt.chat)
 > ## Versions
 > **Api:** {info.Version}
-> **Voso:** {voso.Version}
+> **Vortex:** {vortex.Version}
 > **Autumn:** {autumn.Version}
 > ## Features
 > **Registration:** {StringBooled(info.Features.Registration)}
@@ -47,8 +47,8 @@ namespace Taco.Modules
 > **Invite-only:** {StringBooled(info.Features.InviteOnly)}
 > **Captcha:** {StringBooled(info.Features.Captcha.Enabled)}
 > **Autumn:** {StringBooled(info.Features.Autumn.Enabled)}
-> **Voso:** {StringBooled(info.Features.Voso.Enabled)}
-> **Voso.RTP:** {StringBooled(voso.Features.Rtp)}
+> **Vortex:** {StringBooled(info.Features.Vortex.Enabled)}
+> **Vortex.RTP:** {StringBooled(vortex.Features.Rtp)}
 > **Autumn.JpegQuality:** {autumn.JpegQuality}
 > **Maximum Attachment Size:** {autumn.Tags.Attachments.MaxSize / 1000 / 1000}MB");
         }

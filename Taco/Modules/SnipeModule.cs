@@ -57,7 +57,7 @@ namespace Taco.Modules
                 return Task.CompletedTask;
             _snipedMessages.Add(message);
             if (_snipedMessages.Count == 100)
-                _snipedMessages.Remove(_snipedMessages.Last());
+                _snipedMessages.Remove(_snipedMessages.FirstOrDefault());
             return Task.CompletedTask;
         }
 
@@ -65,7 +65,7 @@ namespace Taco.Modules
         {
             _messages.Add(message);
             if (_messages.Count == 100)
-                _messages.Remove(_messages.Last());
+                _messages.Remove(_messages.First());
             return Task.CompletedTask;
         }
     }

@@ -107,7 +107,14 @@ namespace Taco.Modules
             int i = 0;
             foreach (char ch in Args)
             {
-                res += $"\\color{{#{cycle[i]}}}{ch}";
+                string str = ch switch
+                {
+                    '{' => "\\{",
+                    '}' => "\\}",
+                    '\\' => "\\\\",
+                    _ => ch.ToString()
+                };
+                res += $"\\color{{#{cycle[i]}}}{str}";
                 i++;
                 if (i == cycle.Length)
                     i = 0;

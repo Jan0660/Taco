@@ -47,7 +47,7 @@ namespace Taco.Modules
 > **Invite-only:** {StringBooled(info.Features.InviteOnly)}
 > **Captcha:** {StringBooled(info.Features.Captcha.Enabled)}
 > **Autumn:** {StringBooled(info.Features.Autumn.Enabled)}
-> **Vortex:** {StringBooled(info.Features.Vortex.Enabled)}
+> **Vortex:** {StringBooled(info.Features.Vortex?.Enabled ?? false)}
 > **Vortex.RTP:** {StringBooled(vortex.Features.Rtp)}
 > **Autumn.JpegQuality:** {autumn.JpegQuality}
 > **Maximum Attachment Size:** {autumn.Tags.Attachments.MaxSize / 1000 / 1000}MB");

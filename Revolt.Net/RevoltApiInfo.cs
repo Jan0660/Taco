@@ -17,7 +17,7 @@ namespace Revolt
         [JsonProperty("email")] public bool Email;
         [JsonProperty("invite_only")] public bool InviteOnly;
         [JsonProperty("autumn")] public RevoltApiAutumnFeature Autumn;
-        [JsonProperty("vortex")] public RevoltApiVortexFeature Vortex;
+        [JsonProperty("voso")] public RevoltApiVortexFeature Vortex;
     }
 
     public class RevoltApiCaptchaFeature

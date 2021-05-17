@@ -5,6 +5,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using CryptoCurrencyApis;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -174,6 +175,32 @@ namespace Taco.Modules
 > **Time zone:** {dyn.timezone}
 > **ISP:** {dyn.isp}
 > **Organization:** {dyn.org}");
+        }
+
+        [Command("etc")]
+        public async Task Etc()
+        {
+            if (Args == "")
+            {
+                var rates = await EtherScanApi.GetRatesCached("ETC");
+                await ReplyAsync(@$"> ## ETC Rates
+> :us: USD: {rates.USD}
+> :uk: GBP: {rates.GBP}
+> :european_union: EUR: {rates.EUR}
+> :czech_republic: CZK: {rates.CZK}");
+            }
+            else
+            {
+                var geth = new GethClient("https://blockscout.com/etc/mainnet/api/eth-rpc");
+                var balance = await geth.GetBalance(Args);
+                var rates = await EtherScanApi.GetRatesCached("ETC");
+                await ReplyAsync($@"> ## ETC Wallet Balance
+> ETC: {balance}
+> :us: USD: {balance * rates.USD}
+> :uk: GBP: {balance * rates.GBP}
+> :european_union: EUR: {balance * rates.EUR}
+> :czech_republic: CZK: {balance * rates.CZK}");
+            }
         }
     }
 }

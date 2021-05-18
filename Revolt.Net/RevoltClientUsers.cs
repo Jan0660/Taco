@@ -11,7 +11,7 @@ namespace Revolt
     public class RevoltClientUsers
     {
         public RevoltClient Client { get; }
-        
+
         public RevoltClientUsers(RevoltClient client)
         {
             this.Client = client;
@@ -37,6 +37,7 @@ namespace Revolt
             {
                 h.Client = Client;
             }
+
             return r;
         }
 
@@ -48,7 +49,8 @@ namespace Revolt
             if (res.Content == "{\"type\":\"AlreadyFriends\"}")
                 throw new Exception("Already friends.");
             var user = Client.UsersCache.FirstOrDefault(u => u.Username == username);
-            var status = Enum.Parse<RelationshipStatus>(JObject.Parse(res.Content).Value<string>("status"));
+            var status = (RelationshipStatus) Enum.Parse(typeof(RelationshipStatus),
+                JObject.Parse(res.Content).Value<string>("status")!);
             if (user != null)
             {
                 user.Relationship = status;
@@ -56,7 +58,7 @@ namespace Revolt
 
             return status;
         }
-        
+
         /// <summary>
         /// deletes a friend request or unfriends them
         /// </summary>
@@ -68,7 +70,8 @@ namespace Revolt
                 throw new Exception("No effect.");
             var user = Client.UsersCache.FirstOrDefault(u => u._id == id);
             var str = JObject.Parse(res.Content).Value<string>("status");
-            var status = Enum.Parse<RelationshipStatus>(str);
+            var status = (RelationshipStatus) Enum.Parse(typeof(RelationshipStatus),
+                JObject.Parse(res.Content).Value<string>("status")!);
             if (user != null)
             {
                 user.Relationship = status;
@@ -76,14 +79,15 @@ namespace Revolt
 
             return status;
         }
-        
+
         public async Task<RelationshipStatus> BlockAsync(string id)
         {
             var res = await Client._restClient.ExecuteAsync(new RestRequest($"/users/{id}/block", Method.PUT));
             if (res.Content == "{\"type\":\"NoEffect\"}")
                 throw new Exception("No effect.");
             var user = Client.UsersCache.FirstOrDefault(u => u._id == id);
-            var status = Enum.Parse<RelationshipStatus>(JObject.Parse(res.Content).Value<string>("status"));
+            var status = (RelationshipStatus) Enum.Parse(typeof(RelationshipStatus),
+                JObject.Parse(res.Content).Value<string>("status")!);
             if (user != null)
             {
                 user.Relationship = status;
@@ -99,7 +103,8 @@ namespace Revolt
                 throw new Exception("No effect.");
             var user = Client.UsersCache.FirstOrDefault(u => u._id == id);
             var str = JObject.Parse(res.Content).Value<string>("status");
-            var status = Enum.Parse<RelationshipStatus>(str);
+            var status = (RelationshipStatus) Enum.Parse(typeof(RelationshipStatus),
+                JObject.Parse(res.Content).Value<string>("status")!);
             if (user != null)
             {
                 user.Relationship = status;

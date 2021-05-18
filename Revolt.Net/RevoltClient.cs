@@ -283,7 +283,8 @@ namespace Revolt
                             var id = packet.Value<string>("user");
                             // if (id == "01EXAG0ZFX02W7PNQE7W5MT339")
                             //     return;
-                            var status = Enum.Parse<RelationshipStatus>(packet.Value<string>("status"));
+                            var status = (RelationshipStatus) Enum.Parse(typeof(RelationshipStatus),
+                                packet.Value<string>("status")!);
                             // update user if they're in cache
                             var user = _users.FirstOrDefault(u => u._id == id);
                             if (user != null)
@@ -379,6 +380,7 @@ namespace Revolt
                             {
                                 user.Avatar = data.Value<JObject>("avatar")!.ToObject<Attachment>()!;
                             }
+
                             break;
                         }
                     }

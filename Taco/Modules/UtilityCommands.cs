@@ -16,10 +16,11 @@ using RestSharp;
 using Revolt.Channels;
 using Taco.Attributes;
 using Taco.CommandHandling;
+using Taco.Util;
 
 namespace Taco.Modules
 {
-    [ModuleName("Utility", "Programmer", "Nerd")]
+    [ModuleName("Utility", "Programmer", "Nerd", "Utilities")]
     [Summary("Utilities")]
     public class UtilityCommands : ModuleBase
     {
@@ -65,7 +66,11 @@ namespace Taco.Modules
 
             var packageSearchMetadatas = packages.ToList();
             if (!packageSearchMetadatas.Any())
-                throw new Exception("no results");
+            {
+                await ReplyAsync(":x: No results.");
+                return;
+            }
+
             var pkg = packageSearchMetadatas.Last();
             // var versions = await pkg.GetVersionsAsync();
             await ReplyAsync($@"> # {pkg.Identity.Id} - v{pkg.Identity.Version.ToFullString()}
@@ -146,38 +151,27 @@ namespace Taco.Modules
         [Summary("Retrieve information about an IP or domain.")]
         public async Task Hack()
         {
-            string domain = Args;
-            if (new Regex("http(s?)://(.+)(/?.?)").IsMatch(Args))
-            {
-                // todo: bro
-                domain = domain.Replace("http://", "").Replace("https://", "");
-                if(domain.Contains('/'))
-                    domain = domain[..domain.IndexOf('/')];
-            }
-
-            var obj = JObject.Parse(
-                (await new RestClient().ExecuteGetAsync(new RestRequest("http://ip-api.com/json/" + domain))).Content);
-            // query, country, countryCode, regionName, city, zip, timezone, isp, org
-            dynamic dyn = obj;
+            var res = await IpApi.GetAsync(Args);
             // check for death response
-            if (dyn.query == Args && dyn.country == null)
+            if (res.Query == Args && res.Country == null)
             {
                 await ReplyAsync(":x: I can't find that IP or domain.");
                 return;
             }
 
-            await ReplyAsync(@$"> ## IP Lookup: {domain}
-> **IP:** {dyn.query}
-> **Country:** {dyn.country} [{dyn.countryCode}]
-> **Region:** {dyn.regionName}
-> **City:** {dyn.city}
-> **Zip:** {dyn.zip}
-> **Time zone:** {dyn.timezone}
-> **ISP:** {dyn.isp}
-> **Organization:** {dyn.org}");
+            await ReplyAsync(@$"> ## IP Lookup
+> **IP:** {res.Query}
+> **Country:** {res.Country} [{res.CountryCode}]
+> **Region:** {res.RegionName}
+> **City:** {res.City}
+> **Zip:** {res.Zip}
+> **Time zone:** {res.Timezone}
+> **ISP:** {res.Isp}
+> **Organization:** {res.Org}");
         }
 
         [Command("etc")]
+        [Summary("Get ETC prices, wallet balance.")]
         public async Task Etc()
         {
             if (Args == "")

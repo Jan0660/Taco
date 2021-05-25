@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Jan0660.AzurAPINet;
 using Jan0660.AzurAPINet.Enums;
 using Taco.Attributes;
@@ -19,8 +20,6 @@ namespace Taco.Modules
             var ship = Azurlane.getShip(Args);
             if (ship == null)
                 return ReplyAsync("Ship not found.");
-            // var web = new WebClient();
-            // var data = await web.DownloadDataTaskAsync(ship.Skins.First().Image);
             return Message.Channel.SendMessageAsync(
                 @$"> # [{ship.Names.en ?? ship.Names.code} [{ship.Id}]]({ship.WikiUrl})
 > **Nationality:** {ship.Nationality}
@@ -28,7 +27,17 @@ namespace Taco.Modules
 > **Build Time:** {(ship.Construction.Constructable ? ship.Construction.ConstructionTime.ToString("hh\\:mm\\:ss") : "Cannot be constructed")}
 > **Rarity:** $\color{{{GetRarityColor(ship.GetRarityEnum().ToGeneralRarity())}}}\textsf{{{ship.Rarity}}}$ **|** $\color{{orange}}\textsf{{{ship.Stars.StarsString}}}$
 > **Scrap Value:** {(ship.ScrapValue.CanScrap ? $@"{ship.ScrapValue.Coin} Coins; {ship.ScrapValue.Oil} Oil; {ship.ScrapValue.Medal} Medals;" : "Cannot be scraped")}
-> ${{\footnotesize Footer {{\hspace{{1mm}}}} when?}}$"); // , "bruh.png", data
+> ${{\footnotesize Footer {{\hspace{{1mm}}}} when?}}$");
+        }
+
+        [Command("shipImage", "shipImg")]
+        [Summary("Get first skin for ship.")]
+        public Task ShipFirstSkin()
+        {
+            var ship = Azurlane.getShip(Args);
+            if (ship == null)
+                return ReplyAsync("Ship not found.");
+            return ReplyAsync(ship.Skins.First().Image);
         }
 
         [Command("shipstats")]
@@ -50,6 +59,7 @@ namespace Taco.Modules
 |:------- |:------:|:-------:|:-------:|:-------:|:-------:|
 ";
             }
+
             var baseStats = ship.Stats.BaseStats.ToDict();
             var lvl100Stats = ship.Stats.Level100.ToDict();
             var lvl120Stats = ship.Stats.Level120.ToDict();

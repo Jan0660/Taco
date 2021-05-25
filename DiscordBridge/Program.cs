@@ -89,7 +89,9 @@ namespace DiscordBridge
                     }
                     var msg = await discord.SendMessageAsync(message.Content.ReplaceRevoltMentions(),
                         username: message.Author.Username,
-                        avatarUrl: message.Author.Avatar == null ? message.Author.DefaultAvatarUrl : message.Author.AvatarUrl + "?size=256", allowedMentions: new(), embeds: embeds);
+                        avatarUrl: message.Author.Avatar == null
+                            ? message.Author.DefaultAvatarUrl
+                            : message.Author.AvatarUrl + "?size=256", allowedMentions: new(), embeds: embeds);
                     RevoltDiscordMessages.Add(message._id, msg);
                 }
                 catch (Exception exc)
@@ -97,18 +99,21 @@ namespace DiscordBridge
                     Console.Exception(exc);
                 }
             };
-            _client.MessageUpdated += async (id, data) =>
+            _client.MessageUpdated += (id, data) =>
             {
                 if (RevoltDiscordMessages.TryGetValue(id, out ulong discordMessageId))
                 {
-                    await ModifyMessageAsync(discordMessageId, data.Content.ReplaceRevoltMentions());
+                    return discord.ModifyMessageAsync(discordMessageId,
+                        c => c.Content = data.Content.ReplaceRevoltMentions());
                 }
+
+                return Task.CompletedTask;
             };
             _client.MessageDeleted += (messageId) =>
             {
                 if (RevoltDiscordMessages.TryGetValue(messageId, out ulong id))
                 {
-                    return DeleteMessageAsync(id);
+                    return discord.DeleteMessageAsync(id);
                 }
 
                 return Task.CompletedTask;
@@ -146,6 +151,7 @@ namespace DiscordBridge
                     else
                         msg = await _client.Channels.SendMessageAsync(Config.RevoltChannelId,
                             message.ToGoodString());
+
                     DiscordRevoltMessages.Add(message.Id, msg._id);
                 }
                 catch (Exception exc)
@@ -173,30 +179,6 @@ namespace DiscordBridge
                 return Task.CompletedTask;
             };
             await Task.Delay(-1);
-        }
-
-        public static Task ModifyMessageAsync(ulong id, string newContent)
-        {
-            var restClient =
-                new RestClient(
-                    $"https://discord.com/api/webhooks/{Config.WebhookId}/{Config.WebhookToken}/messages/{id}");
-            var req = new RestRequest(Method.PATCH);
-            req.AddJsonBody(JsonConvert.SerializeObject(new
-            {
-                content = newContent
-            }));
-            var h = restClient.ExecuteAsync(req).Result;
-            return Task.CompletedTask;
-        }
-
-        public static Task DeleteMessageAsync(ulong id)
-        {
-            var restClient =
-                new RestClient(
-                    $"https://discord.com/api/webhooks/{Config.WebhookId}/{Config.WebhookToken}/messages/{id}");
-            var req = new RestRequest(Method.DELETE);
-            var h = restClient.ExecuteAsync(req).Result;
-            return Task.CompletedTask;
         }
     }
 

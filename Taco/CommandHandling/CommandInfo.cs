@@ -15,13 +15,7 @@ namespace Taco.CommandHandling
         public MethodInfo Method;
         public PreconditionAttribute[] Preconditions;
         public string Summary;
-        private string DebuggerDisplay
-        {
-            get
-            {
-                return string.Format("Command: {0}", Aliases.First());
-            }
-        }
+        private string DebuggerDisplay => string.Format("Command: {0}", Aliases.First());
 
         public async Task ExecuteAsync(CommandContext context, string args)
         {

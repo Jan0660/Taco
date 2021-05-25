@@ -85,15 +85,6 @@ namespace Taco.Modules
         public Task Flushed()
             => ReplyAsync("# $\\huge\\text{😳}$");
 
-        [Command("retard")]
-        public async Task Retard()
-        {
-            await Message.Channel.BeginTypingAsync();
-            await Task.Delay(7000);
-            await ReplyAsync("<@01EXAG0ZFX02W7PNQE7W5MT339> retard");
-            await Message.Channel.EndTypingAsync();
-        }
-
         [Command("gaytext", "gay")]
         [Summary("Converts h*terosexual text to the gay.")]
         public Task GayText()
@@ -102,7 +93,6 @@ namespace Taco.Modules
             {
                 "F66", "FC6", "CF6", "6F6", "6FC", "6CF", "66F", "C6F"
             };
-            //var h = @"$\textsf{\color{#F66}g\color{#FC6}a\color{#CF6}y\color{#6F6} \color{#6FC}t\color{#6CF}e\color{#66F}x\color{#C6F}t}$";
             var res = @"$\textsf{";
             int i = 0;
             foreach (char ch in Args)

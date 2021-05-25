@@ -11,7 +11,7 @@ namespace Revolt
         [JsonProperty("author")] public string AuthorId;
         [JsonIgnore] public User Author => Client.Users.Get(AuthorId);
         [JsonProperty("content")] public string Content;
-        [JsonProperty("attachment")] public Attachment? Attachment;
+        [JsonProperty("attachments")] public Attachment[]? Attachments;
         // todo: edited?
     }
 }

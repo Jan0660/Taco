@@ -69,25 +69,24 @@ namespace DiscordBridge
                     return;
                 try
                 {
-                    var embeds = message.Attachment == null
-                        ? null
-                        : new List<Embed>()
+                    var embeds = message.Attachments == null ? null : new List<Embed>();
+                    foreach (var attachment in message.Attachments)
+                    {
+                        embeds.Add(new EmbedBuilder()
                         {
-                            new EmbedBuilder()
+                            Title = attachment.Filename,
+                            ImageUrl =
+                                $"https://autumn.revolt.chat/attachments/{attachment._id}/{HttpUtility.UrlEncode(attachment.Filename)}",
+                            Color = new Color(47, 49, 54),
+                            Footer = new()
                             {
-                                Title = message.Attachment.Filename,
-                                ImageUrl =
-                                    $"https://autumn.revolt.chat/attachments/{message.Attachment._id}/{HttpUtility.UrlEncode(message.Attachment.Filename)}",
-                                Color = new Color(47, 49, 54),
-                                Footer = new()
-                                {
-                                    Text =
-                                        $"{message.Attachment.SizeToString()} • {message.Attachment.Metadata.Width}x{message.Attachment.Metadata.Height}"
-                                },
-                                Url =
-                                    $"https://autumn.revolt.chat/attachments/{message.Attachment._id}/{HttpUtility.UrlEncode(message.Attachment.Filename)}"
-                            }.Build()
-                        };
+                                Text =
+                                    $"{attachment.SizeToString()} • {attachment.Metadata.Width}x{attachment.Metadata.Height}"
+                            },
+                            Url =
+                                $"https://autumn.revolt.chat/attachments/{attachment._id}/{HttpUtility.UrlEncode(attachment.Filename)}"
+                        }.Build());
+                    }
                     var msg = await discord.SendMessageAsync(message.Content.ReplaceRevoltMentions(),
                         username: message.Author.Username,
                         avatarUrl: message.Author.Avatar == null ? message.Author.DefaultAvatarUrl : message.Author.AvatarUrl + "?size=256", allowedMentions: new(), embeds: embeds);

@@ -70,7 +70,7 @@ namespace DiscordBridge
                 try
                 {
                     var embeds = message.Attachments == null ? null : new List<Embed>();
-                    foreach (var attachment in message.Attachments)
+                    foreach (var attachment in message?.Attachments)
                     {
                         embeds.Add(new EmbedBuilder()
                         {

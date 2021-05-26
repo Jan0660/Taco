@@ -70,23 +70,25 @@ namespace DiscordBridge
                 try
                 {
                     var embeds = message.Attachments == null ? null : new List<Embed>();
-                    foreach (var attachment in message?.Attachments)
-                    {
-                        embeds.Add(new EmbedBuilder()
+                    if (message.Attachments != null)
+                        foreach (var attachment in message.Attachments)
                         {
-                            Title = attachment.Filename,
-                            ImageUrl =
-                                $"https://autumn.revolt.chat/attachments/{attachment._id}/{HttpUtility.UrlEncode(attachment.Filename)}",
-                            Color = new Color(47, 49, 54),
-                            Footer = new()
+                            embeds.Add(new EmbedBuilder()
                             {
-                                Text =
-                                    $"{attachment.SizeToString()} • {attachment.Metadata.Width}x{attachment.Metadata.Height}"
-                            },
-                            Url =
-                                $"https://autumn.revolt.chat/attachments/{attachment._id}/{HttpUtility.UrlEncode(attachment.Filename)}"
-                        }.Build());
-                    }
+                                Title = attachment.Filename,
+                                ImageUrl =
+                                    $"https://autumn.revolt.chat/attachments/{attachment._id}/{HttpUtility.UrlEncode(attachment.Filename)}",
+                                Color = new Color(47, 49, 54),
+                                Footer = new()
+                                {
+                                    Text =
+                                        $"{attachment.SizeToString()} • {attachment.Metadata.Width}x{attachment.Metadata.Height}"
+                                },
+                                Url =
+                                    $"https://autumn.revolt.chat/attachments/{attachment._id}/{HttpUtility.UrlEncode(attachment.Filename)}"
+                            }.Build());
+                        }
+
                     var msg = await discord.SendMessageAsync(message.Content.ReplaceRevoltMentions(),
                         username: message.Author.Username,
                         avatarUrl: message.Author.Avatar == null

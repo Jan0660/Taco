@@ -5,7 +5,7 @@ namespace Revolt.Channels
 {
     public class Channel : RevoltObject
     {
-        [JsonProperty("channel_type")] public string ChannelType;
+        [JsonProperty("channel_type")] public string ChannelType { get; private set; }
 
         public Task<SelfMessage> SendMessageAsync(string content, string attachmentId = null)
             => Client.Channels.SendMessageAsync(_id, content, attachmentId);

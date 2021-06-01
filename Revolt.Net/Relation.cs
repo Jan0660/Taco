@@ -4,8 +4,8 @@ namespace Revolt
 {
     public class Relation
     {
-        [JsonProperty("_id")] public string Id;
+        [JsonProperty("_id")] public string Id  { get; internal set; }
 
-        [JsonProperty("status")] public RelationshipStatus Status;
+        [JsonProperty("status")] public RelationshipStatus Status  { get; internal set; }
     }
 }

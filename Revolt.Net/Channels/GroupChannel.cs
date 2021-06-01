@@ -5,9 +5,9 @@ namespace Revolt.Channels
 {
     public class GroupChannel : MessageChannel
     {
-        [JsonProperty("name")] public string Name;
-        [JsonProperty("owner")] public string OwnerId;
-        [JsonProperty("description")] public string Description;
+        [JsonProperty("name")] public string Name { get; internal set; }
+        [JsonProperty("owner")] public string OwnerId { get; internal set; }
+        [JsonProperty("description")] public string Description { get; internal set; }
 
         public Task AddMemberAsync(string userId)
             => Client.Channels.AddGroupMemberAsync(_id, userId);

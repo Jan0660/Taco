@@ -125,21 +125,8 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                     Content = Config.Profile
                 }
             });
-            //Client.MessageReceived += AutoSalty;
             await Annoy.Run();
             await Task.Delay(-1);
-        }
-
-        private static Task AutoSalty(Message msg)
-        {
-            if (msg.AuthorId == "01EXAG0ZFX02W7PNQE7W5MT339")
-            {
-                return msg.Channel.SendMessageAsync($@"> {msg.Content.Replace("\n", "\n> ")}
-
-salty");
-            }
-
-            return Task.CompletedTask;
         }
 
         private static async Task ClientOnMessageReceived(Message message)

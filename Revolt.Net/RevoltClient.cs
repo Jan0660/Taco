@@ -15,17 +15,17 @@ namespace Revolt
     public class RevoltClient
     {
         internal RestClient _restClient = new("https://api.revolt.chat/");
-        public RevoltApiInfo ApiInfo;
-        internal WebsocketClient _webSocket;
-        private Session _session;
+        public RevoltApiInfo ApiInfo { get; }
+        internal WebsocketClient _webSocket { get; set; }
+        private Session _session { get; }
         private List<User> _users = new();
         public IReadOnlyList<User> UsersCache => _users.AsReadOnly();
         private List<Channel> _channels = new();
         public IReadOnlyList<Channel> ChannelsCache => _channels.AsReadOnly();
         private Timer _pingTimer;
-        public string ApiUrl = "https://api.revolt.chat";
-        public string AutumnUrl = "https://autumn.revolt.chat";
-        public string VortexUrl = "https://voso.revolt.chat";
+        public string ApiUrl { get; set; } = "https://api.revolt.chat";
+        public string AutumnUrl { get; set; } = "https://autumn.revolt.chat";
+        public string VortexUrl { get; set; } = "https://voso.revolt.chat";
 
         #region events
 

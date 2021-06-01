@@ -5,7 +5,7 @@ namespace Revolt
     public class Relationship : RevoltObject
     {
         [JsonProperty("_id")] public string UserId;
-        [JsonProperty("status")] public RelationshipStatus Status;
+        [JsonProperty("status")] public RelationshipStatus Status  { get; internal set; }
     }
     public enum RelationshipStatus : byte
     {

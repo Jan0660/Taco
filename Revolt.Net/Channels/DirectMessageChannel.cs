@@ -4,6 +4,6 @@ namespace Revolt.Channels
 {
     public class DirectMessageChannel : MessageChannel
     {
-        [JsonProperty("active")] public bool Active;
+        [JsonProperty("active")] public bool Active { get; internal set; }
     }
 }

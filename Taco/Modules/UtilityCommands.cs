@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CryptoCurrencyApis;
+using Jan0660.AzurAPINet.Enums;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -28,6 +30,9 @@ namespace Taco.Modules
         private static readonly ILogger Logger = NullLogger.Instance;
         private static Lazy<HttpCode[]> httpCodes = new Lazy<HttpCode[]>(_getHttpCodes);
         private static Lazy<HttpHeader[]> httpHeaders = new Lazy<HttpHeader[]>(_getHttpHeaders);
+
+        private static Lazy<LinuxDistro[]> linuxDistros = new(() =>
+            JsonConvert.DeserializeObject<LinuxDistro[]>(File.ReadAllText("./Resources/LinuxDistros.json")));
 
         private static HttpHeader[] _getHttpHeaders()
         {
@@ -236,6 +241,75 @@ namespace Taco.Modules
 > :floppy_disk: **Installed Size:** {(pkg.InstalledSize >= 1000000
     ? $"{Math.Round(pkg.InstalledSize / 1000d / 1000, 2)}MB"
     : $"{pkg.InstalledSize / 1000}KB")}");
+        }
+
+        public static (string, string)[] CommonDistroNames = new[]
+        {
+            ("pios", "Raspberry Pi OS"),
+            ("raspios", "Raspberry Pi OS"),
+            ("raspbian", "Raspberry Pi OS"),
+            ("raspberry pi", "Raspberry Pi OS"),
+            ("arch", "arch linux"),
+            ("arhc", "arch linux"),
+            ("the best distro there is", "Artix Linux"),
+            ("the distro that best distro is based on", "Arch Linux"),
+            ("the other best distro there is", "Gentoo Linux"),
+            ("intal", "Gentoo Linux"),
+            ("intal gento", "Gentoo Linux"),
+            ("fuck systemd", "Artix Linux"),
+            ("based", "Gentoo Linux"),
+            ("Independent", "Gentoo Linux"),
+            ("gento", "Gentoo Linux"),
+            ("openbased", "openbsd"),
+            ("systemd is bloat", "Artix Linux"),
+            ("gentoo", "Gentoo Linux"),
+            ("the fucking", "Gentoo Linux")
+        };
+
+        public static LinuxDistro DistroSearch(string name)
+            => linuxDistros.Value.FirstOrDefault(d => d.FullName.ToLower() == name.ToLower())
+               ?? linuxDistros.Value.FirstOrDefault(d => d.DistributionFullName.ToLower() == name.ToLower())
+               ?? linuxDistros.Value.FirstOrDefault(d => d.FullName.ToLowerTrimmed() == name.ToLower())
+               ?? linuxDistros.Value.FirstOrDefault(d => d.FullName.ToLowerTrimmed() == name.ToLowerTrimmed());
+
+        [Command("distro")]
+        public Task LinuxDistro()
+        {
+            var distro = DistroSearch(Args);
+            if (distro == null)
+            {
+                var endsWithLinux = !Args.ToLowerTrimmed().EndsWith("linux")
+                    ? linuxDistros.Value.FirstOrDefault(d =>
+                    {
+                        try
+                        {
+                            return d.FullName.ToLowerTrimmed().Remove(d.FullName.ToLowerTrimmed().Length - 5) ==
+                                   Args.ToLowerTrimmed();
+                        }
+                        catch
+                        {
+                            return false;
+                        }
+                    })
+                    : null;
+                if (endsWithLinux != null)
+                    distro = endsWithLinux;
+
+                var tryCommon = CommonDistroNames.FirstOrDefault(d => d.Item1.ToLower() == Args.ToLower());
+                if (tryCommon.Item1 != null)
+                    distro = DistroSearch(tryCommon.Item2.ToLower());
+
+                if (distro == null)
+                    return ReplyAsync("Couldn't find the distro.");
+            }
+
+            return ReplyAsync($@"> ## {distro.DistributionFullName}
+> **Origin:** {distro.Origin}
+> **Architectures:** {String.Join(", ", distro.Architectures)}
+> **Status:** {distro.Status}
+> **Desktops:** {String.Join(", ", distro.Desktops)}
+> > {distro.Description}
+> [\[Website\]]({distro.HomePage})");
         }
     }
 }

@@ -196,5 +196,46 @@ namespace Taco.Modules
 > :czech_republic: CZK: {balance * rates.CZK}");
             }
         }
+
+        [Command("arch")]
+        [Summary("Get package info from Arch Linux' official repositories.")]
+        public async Task Arch()
+        {
+            var search = await ArchReposApi.SearchPackage(Args);
+            if (!search.Results.Any())
+            {
+                await ReplyAsync("Sorry, no results.");
+                return;
+            }
+
+            var pkg = search.Results.FirstOrDefault(p =>
+                p.Name.Equals(Args, StringComparison.InvariantCultureIgnoreCase));
+            if (pkg == null)
+            {
+                // no exact match, show results
+                await ReplyAsync($@"> # Arch Linux repos search
+{new Func<string>(() => {
+    var res = "";
+    for (int i = 0; i < 5 && i < search.Results.Length; i++)
+        res += @$"> #### {search.Results[i].Repository}/{search.Results[i].Name}
+> > {search.Results[i].Description}
+> 
+";
+    return res;
+})()}> ##### {search.Results.Length} results");
+            }
+            else
+                await ReplyAsync(@$"> # [{pkg.Repository}/{pkg.Name}]({pkg.PackageUrl})
+> > {pkg.Description}
+> 
+> :woozy_face: **Dependencies:** {pkg.Depends.Length}
+> :page_facing_up: **License(s):** {String.Join(", ", pkg.Licenses)}
+> :floppy_disk: **Compressed Size:** {(pkg.CompressedSize >= 1000000
+    ? $"{Math.Round(pkg.CompressedSize / 1000d / 1000, 2)}MB"
+    : $"{pkg.CompressedSize / 1000}KB")}
+> :floppy_disk: **Installed Size:** {(pkg.InstalledSize >= 1000000
+    ? $"{Math.Round(pkg.InstalledSize / 1000d / 1000, 2)}MB"
+    : $"{pkg.InstalledSize / 1000}KB")}");
+        }
     }
 }

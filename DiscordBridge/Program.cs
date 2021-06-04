@@ -25,10 +25,12 @@ namespace DiscordBridge
     {
         private static RevoltClient _client;
         public static RevoltClient Client => _client;
+        public static DiscordSocketClient DiscordClient;
         public static Config Config;
-        public static Dictionary<string, ulong> RevoltDiscordMessages = new();
-        public static Dictionary<ulong, string> DiscordRevoltMessages = new();
-        public static Regex ReplaceRevoltMentions = new("<@([0-9,A-Z]{26})+>", RegexOptions.Compiled);
+        public static readonly Dictionary<string, ulong> RevoltDiscordMessages = new();
+        public static readonly Dictionary<ulong, string> DiscordRevoltMessages = new();
+        public static readonly Regex ReplaceRevoltMentions = new("<@([0-9,A-Z]{26})+>", RegexOptions.Compiled);
+        public static readonly Regex ReplaceDiscordMentions = new("<@!?[0-9]{1,20}>", RegexOptions.Compiled);
 
         static async Task Main(string[] args)
         {
@@ -121,15 +123,15 @@ namespace DiscordBridge
 
                 return Task.CompletedTask;
             };
-            var discordClient = new DiscordSocketClient();
-            await discordClient.LoginAsync(TokenType.Bot, Config.DiscordBotToken);
-            await discordClient.StartAsync();
-            discordClient.Ready += () =>
+            DiscordClient = new DiscordSocketClient();
+            await DiscordClient.LoginAsync(TokenType.Bot, Config.DiscordBotToken);
+            await DiscordClient.StartAsync();
+            DiscordClient.Ready += () =>
             {
                 Console.Log("Discord ready!");
                 return Task.CompletedTask;
             };
-            discordClient.MessageReceived += async message =>
+            DiscordClient.MessageReceived += async message =>
             {
                 if (message.Author.Id == Config.WebhookId)
                     return;
@@ -138,6 +140,13 @@ namespace DiscordBridge
                 if (message.Content == "-uber" && message.Author.IsBot == false)
                 {
                     await message.Channel.SendFileAsync("../Taco/Resources/UberFruit.png");
+                }
+
+                if (message.Content == "-bridge-status" && message.Author.IsBot == false)
+                {
+                    await message.Channel.SendMessageAsync($@"**DiscordRevoltMessages:** {DiscordRevoltMessages.Count}
+**RevoltDiscordMessages:** {RevoltDiscordMessages.Count}
+**Discord Latency:** {DiscordClient.Latency}");
                 }
 
                 try
@@ -162,7 +171,7 @@ namespace DiscordBridge
                     Console.Exception(exc);
                 }
             };
-            discordClient.MessageUpdated += async (cacheable, message, channel) =>
+            DiscordClient.MessageUpdated += async (cacheable, message, channel) =>
             {
                 if (message.Content == null)
                     return;
@@ -172,7 +181,7 @@ namespace DiscordBridge
                         message.ToGoodString());
                 }
             };
-            discordClient.MessageDeleted += (cacheable, channel) =>
+            DiscordClient.MessageDeleted += (cacheable, channel) =>
             {
                 if (DiscordRevoltMessages.TryGetValue(cacheable.Id, out string id))
                 {
@@ -211,6 +220,18 @@ namespace DiscordBridge
             return str;
         }
 
+        public static string ReplaceDiscordMentions(this string str)
+            => Program.ReplaceDiscordMentions.Replace(str,
+                match =>
+                {
+                    ulong id = UInt64.Parse(
+                        match.Value[2..^1].StartsWith('!') ? match.Value[3..^1] : match.Value[2..^1]);
+                    var user = Program.DiscordClient.GetUser(id);
+                    if (user == null)
+                        return match.Value;
+                    return $"@{user}";
+                });
+
         public static string ToGoodString(this SocketMessage message)
         {
             string str = "";
@@ -219,16 +240,16 @@ namespace DiscordBridge
                 {
                     var reference = message.Channel.GetCachedMessage(message.Reference.MessageId.Value) ??
                                     message.Channel.GetMessageAsync(message.Reference.MessageId.Value).Result;
-                    str += $"> {reference.Content.Shorten(100).Replace("\n", "\n> ")}";
+                    str += $"> {reference.Content.ReplaceDiscordMentions().Shorten(100).Replace("\n", "\n> ")}\n\n";
                 }
                 catch (Exception exc)
                 {
                     Console.Error($"Error when getting message reference: {exc.Message}");
                 }
 
-            str += message.Author.ToBetterString() + "> " + message.Content;
+            str += message.Author.ToBetterString() + "> " + message.Content.ReplaceDiscordMentions();
 
-            return str;
+            return str.Shorten(2000);
         }
 
         public static string ReplaceRevoltMentions(this string str)

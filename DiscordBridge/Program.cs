@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -196,19 +197,39 @@ namespace DiscordBridge
 
     public static class ExtensionMethods
     {
+        [Pure]
+        public static string Shorten(this string str, int length)
+            => str.Length > length ? str[..(length - 5)] + "(...)" : str;
+
         public static string ToBetterString(this SocketUser user)
         {
             var str = user.Discriminator == "0000" ? user.Username : user.ToString();
             if (str.StartsWith("# "))
                 str = '\\' + str;
             str = str.Replace("$", "\\$");
-            if (str.Length > 1995)
-                str = str[..1995] + "(...)";
+            str = str.Shorten(1999);
             return str;
         }
 
         public static string ToGoodString(this SocketMessage message)
-            => message.Author.ToBetterString() + "> " + message.Content;
+        {
+            string str = "";
+            if (message.Reference != null)
+                try
+                {
+                    var reference = message.Channel.GetCachedMessage(message.Reference.MessageId.Value) ??
+                                    message.Channel.GetMessageAsync(message.Reference.MessageId.Value).Result;
+                    str += $"> {reference.Content.Shorten(100).Replace("\n", "\n> ")}";
+                }
+                catch (Exception exc)
+                {
+                    Console.Error($"Error when getting message reference: {exc.Message}");
+                }
+
+            str += message.Author.ToBetterString() + "> " + message.Content;
+
+            return str;
+        }
 
         public static string ReplaceRevoltMentions(this string str)
             => Program.ReplaceRevoltMentions.Replace(str, match =>

@@ -13,7 +13,7 @@ namespace Taco
         public List<string> BingReminderChannels = new();
         public string MongoUrl;
         public string DatabaseName;
-        public bool AnnoyToggle = true;
+        public bool AnnoyToggle;
         public string Presence = "Idle";
         public string Profile = "Cry about it nerd.";
         public string Status = "Amogus";

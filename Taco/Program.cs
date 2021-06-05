@@ -112,7 +112,6 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             Console.Info("Connecting to MongoDB...");
             await Mongo.Connect();
             Console.Info("Connected to MongoDB.");
-            await _client.Channels.Get("01EXA9VX0606E4T65TQYJ4CFPQ").EndTypingAsync();
             await Client.Self.EditProfileAsync(new UserInfo()
             {
                 Status = new()

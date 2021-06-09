@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using RestSharp;
 using Revolt.Channels;
 using Websocket.Client;
@@ -35,6 +36,14 @@ namespace Revolt
         {
             add => _messageReceived.Add(value);
             remove => _messageReceived.Remove(value);
+        }
+
+        private List<Func<ObjectMessage, Task>> _systemMessageReceived = new();
+
+        public event Func<ObjectMessage, Task> SystemMessageReceived
+        {
+            add => _systemMessageReceived.Add(value);
+            remove => _systemMessageReceived.Remove(value);
         }
 
         private List<Func<Task>> _onReady = new();
@@ -141,9 +150,9 @@ namespace Revolt
             remove => _userPresence.Remove(value);
         }
 
-        private List<Func<Channel, Task>> _channelUpdate = new();
+        private List<Func<string, JObject, Task>> _channelUpdate = new();
 
-        public event Func<Channel, Task> ChannelUpdate
+        public event Func<string, JObject, Task> ChannelUpdate
         {
             add => _channelUpdate.Add(value);
             remove => _channelUpdate.Remove(value);
@@ -206,12 +215,21 @@ namespace Revolt
                     switch (packetType)
                     {
                         case "Message":
-                            var msg = _deserialize<Message>(message.Text);
-                            // if (msg.AuthorId == "01EXAG0ZFX02W7PNQE7W5MT339")
-                            //     return;
-                            foreach (var handler in _messageReceived)
+                            try
                             {
-                                handler.Invoke(msg);
+                                var msg = _deserialize<Message>(message.Text);
+                                foreach (var handler in _messageReceived)
+                                {
+                                    handler.Invoke(msg);
+                                }
+                            }
+                            catch
+                            {
+                                var msg = _deserialize<ObjectMessage>(message.Text);
+                                foreach (var handler in _systemMessageReceived)
+                                {
+                                    handler.Invoke(msg);
+                                }
                             }
 
                             break;
@@ -353,17 +371,14 @@ namespace Revolt
                         case "ChannelUpdate":
                         {
                             var id = packet.Value<string>("id");
-                            var channel = _channels.FirstOrDefault(c => c._id == id);
-                            var newChannel = _deserializeChannel(packet.Value<JObject>("data"));
-                            if (channel != null)
-                            {
-                                _channels.Remove(channel);
-                                _channels.Add(newChannel);
-                            }
+                            var channel = (GroupChannel) _channels.First(c => c._id == id);
+                            var data = packet.Value<JObject>("data");
+                            if (data!.TryGetValue("icon", out var icon))
+                                channel.Icon = icon.ToObject<Attachment>()!;
 
                             foreach (var handler in _channelUpdate)
                             {
-                                handler.Invoke(newChannel);
+                                handler.Invoke(id, data);
                             }
 
                             break;

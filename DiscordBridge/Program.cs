@@ -123,6 +123,18 @@ namespace DiscordBridge
 
                 return Task.CompletedTask;
             };
+            _client.SystemMessageReceived += msg =>
+            {
+                if (msg.Channel is not GroupChannel)
+                    return Task.CompletedTask;
+                if (msg.ChannelId != Config.RevoltChannelId)
+                    return Task.CompletedTask;
+                var group = (GroupChannel) msg.Channel;
+                return discord.SendMessageAsync(msg.Stringify(), allowedMentions: new AllowedMentions(),
+                    avatarUrl: (msg.Content.Id == null ? null : Client.Users.Get(msg.Content.Id).AvatarUrl) ??
+                               group.Icon?.GetUrl() ?? "https://app.revolt.chat/assets/group.png",
+                    username: "REVOLT Bridge");
+            };
             DiscordClient = new DiscordSocketClient();
             await DiscordClient.LoginAsync(TokenType.Bot, Config.DiscordBotToken);
             await DiscordClient.StartAsync();
@@ -270,6 +282,30 @@ namespace DiscordBridge
             if (size > 1_000)
                 return Meth.Round(size / 1000, 2) + "KB";
             return size + "B";
+        }
+
+        public static string GetUrl(this Attachment attachment)
+            =>
+                $"{Program.Client.ApiInfo.Features.Autumn.Url}/{attachment.Tag}/{attachment._id}/{HttpUtility.UrlEncode(attachment.Filename)}";
+
+        public static string Stringify(this ObjectMessage msg)
+        {
+            string GetUsername(string id)
+                => $"**@{Program.Client.Users.Get(id).Username}**";
+
+            return msg.Content.Type switch
+            {
+                "text" => msg.Content.Content,
+                "user_added" =>
+                    $"{GetUsername(msg.Content.Id)} has been added to the group by {GetUsername(msg.Content.By)}.",
+                "user_remove" =>
+                    $"{GetUsername(msg.Content.Id)} has been removed from the group by {GetUsername(msg.Content.By)}.",
+                "user_left" => $"{GetUsername(msg.Content.Id)} has left the group.",
+                "channel_renamed" => $"{GetUsername(msg.Content.By)} has renamed the channel to `{msg.Content.Name}`.",
+                "channel_description_changed" => $"{GetUsername(msg.Content.By!)} changed the group description.",
+                "channel_icon_changed" => $"{GetUsername(msg.Content.By)} has changed the channel icon.",
+                _ => msg.Content.Type
+            };
         }
     }
 }

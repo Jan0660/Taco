@@ -262,12 +262,12 @@ namespace DiscordBridge
 
             var content = Program.ReplaceDiscordEmotes.Replace(message.Content, match =>
             {
-                int startIndex = 0, endIndex = message.Content.Length - 1;
-                while (message.Content[startIndex] != ':')
+                int startIndex = 0, endIndex = match.Value.Length - 1;
+                while (match.Value[startIndex] != ':')
                     startIndex++;
-                while (message.Content[endIndex] != ':')
+                while (match.Value[endIndex] != ':')
                     endIndex--;
-                return match.Value[(startIndex - 1)..endIndex];
+                return match.Value[startIndex..(endIndex + 1)];
             });
             str += message.Author.ToBetterString() + "> " + content.ReplaceDiscordMentions();
 

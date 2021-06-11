@@ -270,7 +270,7 @@ namespace Revolt
                                 foreach (var channelToken in packet["channels"]!)
                                 {
                                     var channel = _deserializeChannel((JObject) channelToken);
-                                    if (channel is MessageChannel messageChannel)
+                                    if (channel is MessageChannel {LastMessage: { }} messageChannel)
                                         messageChannel.LastMessage.Client = this;
                                     _channels.Add(channel);
                                 }

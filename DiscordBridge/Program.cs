@@ -31,6 +31,7 @@ namespace DiscordBridge
         public static readonly Dictionary<ulong, string> DiscordRevoltMessages = new();
         public static readonly Regex ReplaceRevoltMentions = new("<@([0-9,A-Z]{26})+>", RegexOptions.Compiled);
         public static readonly Regex ReplaceDiscordMentions = new("<@!?[0-9]{1,20}>", RegexOptions.Compiled);
+        public static readonly Regex ReplaceDiscordEmotes = new("<a?:.+?:[0-9]{1,20}>", RegexOptions.Compiled);
 
         static async Task Main(string[] args)
         {
@@ -259,7 +260,16 @@ namespace DiscordBridge
                     Console.Error($"Error when getting message reference: {exc.Message}");
                 }
 
-            str += message.Author.ToBetterString() + "> " + message.Content.ReplaceDiscordMentions();
+            var content = Program.ReplaceDiscordEmotes.Replace(message.Content, match =>
+            {
+                int startIndex = 0, endIndex = message.Content.Length - 1;
+                while (message.Content[startIndex] != ':')
+                    startIndex++;
+                while (message.Content[endIndex] != ':')
+                    endIndex--;
+                return match.Value[(startIndex - 1)..endIndex];
+            });
+            str += message.Author.ToBetterString() + "> " + content.ReplaceDiscordMentions();
 
             return str.Shorten(2000);
         }

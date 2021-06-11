@@ -144,6 +144,31 @@ namespace Taco.Modules
             return ReplyAsync($"<@{Args}> has been removed from the rate limit list.");
         }
 
+        [Command("coc set")]
+        public Task CocSet()
+        {
+            var h = Args.Split(' ');
+            Program.Config.CodeOfConduct[int.Parse(h[0])] = String.Join(' ', h[1..]);
+            Program.SaveConfig();
+            return ReplyAsync("set;");
+        }
+
+        [Command("coc add")]
+        public Task CocAdd()
+        {
+            Program.Config.CodeOfConduct.Add(Args);
+            Program.SaveConfig();
+            return ReplyAsync("add;");
+        }
+
+        [Command("coc rm")]
+        public Task CocRemove()
+        {
+            Program.Config.CodeOfConduct.RemoveAt(int.Parse(Args.Split(' ')[0]));
+            Program.SaveConfig();
+            return ReplyAsync("rm;");
+        }
+
         private string _nullableArgs(string str) => str == "null" ? null : str;
     }
 }

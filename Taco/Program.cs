@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Log73;
 using Log73.ColorSchemes;
@@ -41,6 +42,23 @@ namespace Taco
 
         public static Dictionary<string, DateTime> RateLimited = new();
         public static Dictionary<string, (DateTime Start, int Times)> RateLimit = new();
+
+        public const string CocMatchPrefix =
+#if !DEBUG
+                "coc#"
+#else
+                "cock"
+#endif
+            ;
+
+        public static readonly Regex CocMatchRegex = new(
+#if !DEBUG
+            CocMatchPrefix + "[0-9]{1,2}"
+#else
+            CocMatchPrefix + "[0-9]{1,2}"
+#endif
+            , RegexOptions.Compiled
+        );
 
         static async Task Main(string[] args)
         {
@@ -83,12 +101,6 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                     return _client.Users.AddFriendAsync(_client.UsersCache.First(u => u._id == userId).Username);
                 }
 
-                return Task.CompletedTask;
-            };
-            _client.MessageUpdated += (messageId, data) =>
-            {
-                Console.Info(
-                    $"Message Updated: Id: {messageId}; NewContent: {data.Content}; Date: {data.Edited.Date};");
                 return Task.CompletedTask;
             };
 
@@ -203,6 +215,12 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
 > ```");
                 }
             }
+
+            // coc
+            var cocMatch = CocMatchRegex.Match(message.Content);
+            if (cocMatch.Success)
+                await message.Channel.SendMessageAsync(
+                    Config.CodeOfConduct[int.Parse(cocMatch.Value[CocMatchPrefix.Length..])]);
         }
 
         public static Task SaveConfig()

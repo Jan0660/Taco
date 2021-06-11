@@ -18,6 +18,7 @@ namespace Taco
         public string Profile = "Cry about it nerd.";
         public string Status = "Amogus";
         public int UpdateTime = 20000;
+        public List<string> CodeOfConduct = new();
 
         public Task Save()
             => File.WriteAllTextAsync("./config.json", JsonConvert.SerializeObject(this));

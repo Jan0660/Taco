@@ -280,7 +280,7 @@ namespace DiscordBridge
                 var id = match.Value[2..28];
                 var mention = Program.Client.UsersCache.FirstOrDefault(u => u._id == id);
                 if (mention != null)
-                    return '@' + mention.Username;
+                    return '@' + mention.Username.Replace("_", "\\_");
                 return match.Value;
             });
 

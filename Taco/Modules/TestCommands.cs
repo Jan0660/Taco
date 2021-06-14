@@ -156,5 +156,9 @@ namespace Taco.Modules
 
         [Command("coc")]
         public Task FullCodeOfConduct() => ReplyAsync("> " + string.Join("\n> ", Program.Config.CodeOfConduct));
+
+        [Command("invite", "invites", "servers")]
+        public Task ServerInvites() => ReplyAsync(@"> [**Revolt Testers**](https://app.revolt.chat/invite/QakWe0fX)
+> [**Taco/Jan**](https://app.revolt.chat/invite/ewB5kwKG)");
     }
 }

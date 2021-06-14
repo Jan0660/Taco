@@ -153,5 +153,8 @@ namespace Taco.Modules
         [Command("gitlab")]
         public Task GitLab()
             => ReplyAsync("https://gitlab.insrt.uk/revolt");
+
+        [Command("coc")]
+        public Task FullCodeOfConduct() => ReplyAsync("> " + string.Join("\n> ", Program.Config.CodeOfConduct));
     }
 }

@@ -27,7 +27,7 @@ namespace DiscordBridge
         public static RevoltClient Client => _client;
         public static DiscordSocketClient DiscordClient;
         public static Config Config;
-        public static readonly Dictionary<string, ulong> RevoltDiscordMessages = new();
+        public static readonly Dictionary<string, (ulong MessageId, ulong ChannelId)> RevoltDiscordMessages = new();
         public static readonly Dictionary<ulong, string> DiscordRevoltMessages = new();
         public static readonly Regex ReplaceRevoltMentions = new("<@([0-9,A-Z]{26})+>", RegexOptions.Compiled);
         public static readonly Regex ReplaceDiscordMentions = new("<@!?[0-9]{1,20}>", RegexOptions.Compiled);
@@ -61,15 +61,18 @@ namespace DiscordBridge
             };
             var info = _client.ApiInfo;
             Console.Info($"API Version: {info.Version}");
-            var discord = new DiscordWebhookClient(Config.WebhookId,
-                Config.WebhookToken);
+            Console.Info("Creating Discord webhook clients...");
+            foreach (var channel in Config.Channels)
+            {
+                channel.DiscordWebhook = new DiscordWebhookClient(channel.WebhookId, channel.WebhookToken);
+            }
+
             _client.MessageReceived += async message =>
             {
+                var channel = Config.ByRevoltId(message.ChannelId);
+                if (channel == null)
+                    return;
                 if (message.AuthorId == Config.RevoltSession.UserId)
-                    return;
-                if (message.Channel is not GroupChannel)
-                    return;
-                if (message.ChannelId != Config.RevoltChannelId)
                     return;
                 try
                 {
@@ -93,12 +96,12 @@ namespace DiscordBridge
                             }.Build());
                         }
 
-                    var msg = await discord.SendMessageAsync(message.Content.ReplaceRevoltMentions(),
+                    var msg = await channel.DiscordWebhook.SendMessageAsync(message.Content.ReplaceRevoltMentions(),
                         username: message.Author.Username,
                         avatarUrl: message.Author.Avatar == null
                             ? message.Author.DefaultAvatarUrl
                             : message.Author.AvatarUrl + "?size=256", allowedMentions: new(), embeds: embeds);
-                    RevoltDiscordMessages.Add(message._id, msg);
+                    RevoltDiscordMessages.Add(message._id, (msg, channel.DiscordChannelId));
                 }
                 catch (Exception exc)
                 {
@@ -107,9 +110,10 @@ namespace DiscordBridge
             };
             _client.MessageUpdated += (id, data) =>
             {
-                if (RevoltDiscordMessages.TryGetValue(id, out ulong discordMessageId))
+                if (RevoltDiscordMessages.TryGetValue(id, out var discordSide))
                 {
-                    return discord.ModifyMessageAsync(discordMessageId,
+                    return Config.ByDiscordId(discordSide.ChannelId).DiscordWebhook.ModifyMessageAsync(
+                        discordSide.MessageId,
                         c => c.Content = data.Content.ReplaceRevoltMentions());
                 }
 
@@ -117,21 +121,22 @@ namespace DiscordBridge
             };
             _client.MessageDeleted += (messageId) =>
             {
-                if (RevoltDiscordMessages.TryGetValue(messageId, out ulong id))
+                if (RevoltDiscordMessages.TryGetValue(messageId, out var discordSide))
                 {
-                    return discord.DeleteMessageAsync(id);
+                    return Config.ByDiscordId(discordSide.ChannelId).DiscordWebhook
+                        .DeleteMessageAsync(discordSide.MessageId);
                 }
 
                 return Task.CompletedTask;
             };
             _client.SystemMessageReceived += msg =>
             {
-                if (msg.Channel is not GroupChannel)
+                var channel = Config.ByRevoltId(msg.ChannelId);
+                if (channel == null)
                     return Task.CompletedTask;
-                if (msg.ChannelId != Config.RevoltChannelId)
+                if (msg.Channel is not GroupChannel group)
                     return Task.CompletedTask;
-                var group = (GroupChannel) msg.Channel;
-                return discord.SendMessageAsync(msg.Stringify(), allowedMentions: new AllowedMentions(),
+                return channel.DiscordWebhook.SendMessageAsync(msg.Stringify(), allowedMentions: new AllowedMentions(),
                     avatarUrl: (msg.Content.Id == null ? null : Client.Users.Get(msg.Content.Id).AvatarUrl) ??
                                group.Icon?.GetUrl() ?? "https://app.revolt.chat/assets/group.png",
                     username: "REVOLT Bridge");
@@ -146,9 +151,10 @@ namespace DiscordBridge
             };
             DiscordClient.MessageReceived += async message =>
             {
-                if (message.Author.Id == Config.WebhookId)
+                var channel = Config.ByDiscordId(message.Channel.Id);
+                if (channel == null)
                     return;
-                if (message.Channel.Id != Config.DiscordChannelId)
+                if (message.Author.Id == channel.WebhookId)
                     return;
                 if (message.Content == "-uber" && message.Author.IsBot == false)
                 {
@@ -170,11 +176,12 @@ namespace DiscordBridge
                         var http = new HttpClient();
                         var attachment = await http.GetByteArrayAsync(message.Attachments.First().ProxyUrl);
                         var attachmentId = await _client.UploadFile(message.Attachments.First().Filename, attachment);
-                        msg = await _client.Channels.SendMessageAsync(Config.RevoltChannelId, message.ToGoodString(),
+                        msg = await _client.Channels.SendMessageAsync(
+                            channel.RevoltChannelId, message.ToGoodString(),
                             attachmentId);
                     }
                     else
-                        msg = await _client.Channels.SendMessageAsync(Config.RevoltChannelId,
+                        msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,
                             message.ToGoodString());
 
                     DiscordRevoltMessages.Add(message.Id, msg._id);
@@ -190,7 +197,8 @@ namespace DiscordBridge
                     return;
                 if (DiscordRevoltMessages.TryGetValue(cacheable.Id, out string revoltMessageId))
                 {
-                    await _client.Channels.EditMessageAsync(Config.RevoltChannelId, revoltMessageId,
+                    await _client.Channels.EditMessageAsync(Config.ByDiscordId(cacheable.Id).RevoltChannelId,
+                        revoltMessageId,
                         message.ToGoodString());
                 }
             };
@@ -198,7 +206,7 @@ namespace DiscordBridge
             {
                 if (DiscordRevoltMessages.TryGetValue(cacheable.Id, out string id))
                 {
-                    return _client.Channels.DeleteMessageAsync(Config.RevoltChannelId, id);
+                    return _client.Channels.DeleteMessageAsync(Config.ByDiscordId(cacheable.Id).RevoltChannelId, id);
                 }
 
                 return Task.CompletedTask;
@@ -209,12 +217,24 @@ namespace DiscordBridge
 
     public class Config
     {
+        public List<BridgeChannel> Channels;
+        public string DiscordBotToken;
+        public Session RevoltSession;
+
+        public BridgeChannel ByDiscordId(ulong id)
+            => Channels.FirstOrDefault(c => c.DiscordChannelId == id);
+
+        public BridgeChannel ByRevoltId(string id)
+            => Channels.FirstOrDefault(c => c.RevoltChannelId == id);
+    }
+
+    public class BridgeChannel
+    {
         public ulong WebhookId;
         public string WebhookToken;
-        public string DiscordBotToken;
         public ulong DiscordChannelId;
         public string RevoltChannelId;
-        public Session RevoltSession;
+        [JsonIgnore] public DiscordWebhookClient DiscordWebhook;
     }
 
     public static class ExtensionMethods
@@ -286,7 +306,7 @@ namespace DiscordBridge
 
         public static string SizeToString(this Attachment att)
         {
-            var size = (decimal) att.Size;
+            var size = (decimal)att.Size;
             if (size > 1_000_000)
                 return Meth.Round(size / 1000 / 1000, 2) + "MB";
             if (size > 1_000)

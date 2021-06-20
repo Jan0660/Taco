@@ -184,7 +184,7 @@ namespace Revolt
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (this.ApiInfo == null || this._webSocket == null)
             {
-                this.ApiInfo = GetApiInfo().Result;
+                this.ApiInfo = await GetApiInfo();
                 _webSocket = new(new Uri(ApiInfo.WebsocketUrl));
             }
 

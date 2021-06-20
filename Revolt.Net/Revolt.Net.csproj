@@ -6,7 +6,7 @@
         <PackageId>Revolt.Net</PackageId>
         <Nullable>annotations</Nullable>
         <NullableContextOptions>enable</NullableContextOptions>
-        <Version>0.0.4</Version>
+        <Version>0.0.5</Version>
         <LangVersion>latest</LangVersion>
         <Description>The .NET library for Revolt with a DOD and OOP design.</Description>
         <RootNamespace>Revolt</RootNamespace>

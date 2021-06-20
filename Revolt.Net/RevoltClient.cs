@@ -163,6 +163,7 @@ namespace Revolt
         public RevoltClientChannels Channels { get; private set; }
         public RevoltClientUsers Users { get; private set; }
         public RevoltClientSelf Self { get; private set; }
+        public RevoltClientServers Servers { get; private set; }
 
         public RevoltClient(Session session)
         {
@@ -174,6 +175,7 @@ namespace Revolt
             this.Channels = new RevoltClientChannels(this);
             this.Users = new RevoltClientUsers(this);
             this.Self = new RevoltClientSelf(this);
+            this.Servers = new RevoltClientServers(this);
         }
 
         /// <summary>
@@ -469,6 +471,12 @@ namespace Revolt
                 case "SavedMessages":
                     channel = obj.ToObject<SavedMessagesChannel>();
                     break;
+                case "TextChannel":
+                    channel = obj.ToObject<TextChannel>(new JsonSerializer()
+                    {
+                        ContractResolver = new CamelCasePropertyNamesContractResolver()
+                    });
+                    break;
                 default:
                     Console.Warn($"Unimplemented channel_type: {obj.Value<string>("channel_type")}");
                     channel = obj.ToObject<Channel>();
@@ -504,13 +512,16 @@ namespace Revolt
             return JsonConvert.DeserializeObject<AutumnInformation>(
                 (await (new RestClient(VortexUrl).ExecuteGetAsync(new RestRequest(AutumnUrl)))).Content)!;
         }
+
+        private static Random rng = new();
+        public static string GenerateNonce()
+            => DateTimeOffset.Now.ToUnixTimeSeconds() + rng.Next().ToString();
     }
 
     public class SendMessageRequest
     {
-        private static Random rng = new();
         [JsonProperty("content")] public string Content;
-        [JsonProperty("nonce")] public string Nonce = DateTimeOffset.Now.ToUnixTimeSeconds() + rng.Next().ToString();
+        [JsonProperty("nonce")] public string Nonce = RevoltClient.GenerateNonce();
         [JsonProperty("attachment")] public string AttachmentId = null;
     }
 }

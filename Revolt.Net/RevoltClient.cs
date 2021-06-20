@@ -16,8 +16,8 @@ namespace Revolt
     public class RevoltClient
     {
         internal RestClient _restClient = new("https://api.revolt.chat/");
-        public RevoltApiInfo ApiInfo { get; }
-        internal WebsocketClient _webSocket { get; set; }
+        public RevoltApiInfo ApiInfo { get; private set; }
+        internal WebsocketClient _webSocket { get; private set; }
         private Session _session { get; }
         private List<User> _users = new();
         public IReadOnlyList<User> UsersCache => _users.AsReadOnly();
@@ -170,8 +170,6 @@ namespace Revolt
             _session = session;
             _restClient.AddDefaultHeader("x-user-id", session.UserId);
             _restClient.AddDefaultHeader("x-session-token", session.SessionToken);
-            this.ApiInfo = GetApiInfo().Result;
-            _webSocket = new(new Uri(ApiInfo.WebsocketUrl));
             this.Channels = new RevoltClientChannels(this);
             this.Users = new RevoltClientUsers(this);
             this.Self = new RevoltClientSelf(this);
@@ -183,6 +181,13 @@ namespace Revolt
         /// </summary>
         public async Task ConnectWebSocketAsync()
         {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            if (this.ApiInfo == null || this._webSocket == null)
+            {
+                this.ApiInfo = GetApiInfo().Result;
+                _webSocket = new(new Uri(ApiInfo.WebsocketUrl));
+            }
+
             _webSocket.ReconnectTimeout = null;
             _webSocket.DisconnectionHappened.Subscribe(info =>
             {
@@ -271,8 +276,8 @@ namespace Revolt
 
                                 foreach (var channelToken in packet["channels"]!)
                                 {
-                                    var channel = _deserializeChannel((JObject) channelToken);
-                                    if (channel is MessageChannel {LastMessage: { }} messageChannel)
+                                    var channel = _deserializeChannel((JObject)channelToken);
+                                    if (channel is MessageChannel { LastMessage: { } } messageChannel)
                                         messageChannel.LastMessage.Client = this;
                                     _channels.Add(channel);
                                 }
@@ -303,7 +308,7 @@ namespace Revolt
                             var id = packet.Value<string>("user");
                             // if (id == "01EXAG0ZFX02W7PNQE7W5MT339")
                             //     return;
-                            var status = (RelationshipStatus) Enum.Parse(typeof(RelationshipStatus),
+                            var status = (RelationshipStatus)Enum.Parse(typeof(RelationshipStatus),
                                 packet.Value<string>("status")!);
                             // update user if they're in cache
                             var user = _users.FirstOrDefault(u => u._id == id);
@@ -373,7 +378,7 @@ namespace Revolt
                         case "ChannelUpdate":
                         {
                             var id = packet.Value<string>("id");
-                            var channel = (GroupChannel) _channels.First(c => c._id == id);
+                            var channel = (GroupChannel)_channels.First(c => c._id == id);
                             var data = packet.Value<JObject>("data");
                             if (data!.TryGetValue("icon", out var icon))
                                 channel.Icon = icon.ToObject<Attachment>()!;
@@ -514,6 +519,7 @@ namespace Revolt
         }
 
         private static Random rng = new();
+
         public static string GenerateNonce()
             => DateTimeOffset.Now.ToUnixTimeSeconds() + rng.Next().ToString();
     }

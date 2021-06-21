@@ -64,7 +64,14 @@ namespace DiscordBridge
             Console.Info("Creating Discord webhook clients...");
             foreach (var channel in Config.Channels)
             {
-                channel.DiscordWebhook = new DiscordWebhookClient(channel.WebhookId, channel.WebhookToken);
+                try
+                {
+                    channel.DiscordWebhook = new DiscordWebhookClient(channel.WebhookId, channel.WebhookToken);
+                }
+                catch
+                {
+                    // shut up
+                }
             }
 
             _client.MessageReceived += async message =>
@@ -144,10 +151,36 @@ namespace DiscordBridge
             DiscordClient = new DiscordSocketClient();
             await DiscordClient.LoginAsync(TokenType.Bot, Config.DiscordBotToken);
             await DiscordClient.StartAsync();
-            DiscordClient.Ready += () =>
+            DiscordClient.Ready += async () =>
             {
                 Console.Log("Discord ready!");
-                return Task.CompletedTask;
+                foreach (var channel in Config.Channels)
+                {
+                    var discordChannel = DiscordClient.GetChannel(channel.DiscordChannelId);
+                    if (discordChannel is SocketCategoryChannel category)
+                    {
+                        foreach (var h in category.Channels)
+                        {
+                            if (channel.RevoltServerId != null && h is SocketTextChannel textH &&
+                                Config.ByDiscordId(h.Id) == null)
+                            {
+                                var wh = await textH.CreateWebhookAsync("REVOLT Bridge");
+                                var ch = await _client.Servers.CreateChannel(channel.RevoltServerId, h.Name,
+                                    $"Bridged from Discord(Id: {h.Id})");
+                                Config.Channels.Add(new BridgeChannel
+                                {
+                                    RevoltChannelId = ch._id,
+                                    WebhookId = wh.Id,
+                                    WebhookToken = wh.Token,
+                                    DiscordChannelId = h.Id,
+                                    DiscordWebhook = new(wh.Id, wh.Token)
+                                });
+                            }
+                        }
+                    }
+                }
+
+                File.WriteAllText("./config.json", JsonConvert.SerializeObject(Config, Formatting.Indented));
             };
             DiscordClient.MessageReceived += async message =>
             {
@@ -234,6 +267,7 @@ namespace DiscordBridge
         public string WebhookToken;
         public ulong DiscordChannelId;
         public string RevoltChannelId;
+        public string? RevoltServerId;
         [JsonIgnore] public DiscordWebhookClient DiscordWebhook;
     }
 

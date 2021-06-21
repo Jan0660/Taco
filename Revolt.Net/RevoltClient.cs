@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Timers;
 using Newtonsoft.Json;
@@ -23,6 +25,8 @@ namespace Revolt
         public IReadOnlyList<User> UsersCache => _users.AsReadOnly();
         private List<Channel> _channels = new();
         public IReadOnlyList<Channel> ChannelsCache => _channels.AsReadOnly();
+
+        public List<Server> ServersCache { get; internal set; }
         private Timer _pingTimer;
         public string ApiUrl { get; set; } = "https://api.revolt.chat";
         public string AutumnUrl { get; set; } = "https://autumn.revolt.chat";
@@ -184,7 +188,7 @@ namespace Revolt
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (this.ApiInfo == null || this._webSocket == null)
             {
-                this.ApiInfo = await GetApiInfo();
+                this.ApiInfo = GetApiInfo();
                 _webSocket = new(new Uri(ApiInfo.WebsocketUrl));
             }
 
@@ -267,6 +271,7 @@ namespace Revolt
                                 // initialize cache
                                 _users = new();
                                 _channels = new();
+                                ServersCache = new();
                                 foreach (var userToken in packet["users"]!)
                                 {
                                     var user = userToken.ToObject<User>();
@@ -281,6 +286,9 @@ namespace Revolt
                                         messageChannel.LastMessage.Client = this;
                                     _channels.Add(channel);
                                 }
+
+                                foreach (var serverToken in packet["servers"]!)
+                                    ServersCache.Add(serverToken.ToObject<Server>());
 
                                 foreach (var handler in _onReady)
                                 {
@@ -419,11 +427,10 @@ namespace Revolt
             await _webSocket.Start();
         }
 
-        public async Task<RevoltApiInfo> GetApiInfo()
-        {
-            var res = (new RestClient(ApiUrl)).Get(new RestRequest());
-            return JsonConvert.DeserializeObject<RevoltApiInfo>(res.Content);
-        }
+        public RevoltApiInfo GetApiInfo()
+            => JsonConvert.DeserializeObject<RevoltApiInfo>(new WebClient().DownloadString(ApiUrl))!;
+        public async Task<RevoltApiInfo> GetApiInfoAsync()
+            => JsonConvert.DeserializeObject<RevoltApiInfo>(await new HttpClient().GetStringAsync(ApiUrl))!;
 
         public async Task<string> UploadFile(string name, string path, string tag = "attachments")
         {
@@ -505,18 +512,21 @@ namespace Revolt
             var res = await _restClient.ExecuteGetAsync(req);
             return _deserialize<T>(res.Content);
         }
+        public VortexInformation GetVortexInfo()
+            => JsonConvert.DeserializeObject<VortexInformation>(
+                new WebClient().DownloadString(VortexUrl))!;
 
-        public async Task<VortexInformation> GetVortexInfo()
-        {
-            return JsonConvert.DeserializeObject<VortexInformation>(
-                (await (new RestClient(VortexUrl).ExecuteGetAsync(new RestRequest(VortexUrl)))).Content)!;
-        }
+        public AutumnInformation GetAutumnInfo()
+            => JsonConvert.DeserializeObject<AutumnInformation>(
+                new WebClient().DownloadString(AutumnUrl))!;
 
-        public async Task<AutumnInformation> GetAutumnInfo()
-        {
-            return JsonConvert.DeserializeObject<AutumnInformation>(
-                (await (new RestClient(VortexUrl).ExecuteGetAsync(new RestRequest(AutumnUrl)))).Content)!;
-        }
+        public async Task<VortexInformation> GetVortexInfoAsync()
+            => JsonConvert.DeserializeObject<VortexInformation>(
+                await new HttpClient().GetStringAsync(VortexUrl))!;
+
+        public async Task<AutumnInformation> GetAutumnInfoAsync()
+            => JsonConvert.DeserializeObject<AutumnInformation>(
+                await new HttpClient().GetStringAsync(AutumnUrl))!;
 
         private static Random rng = new();
 

@@ -421,7 +421,7 @@ namespace Revolt
 
         public async Task<RevoltApiInfo> GetApiInfo()
         {
-            var res = await _restClient.ExecuteGetAsync(new RestRequest("/"));
+            var res = (new RestClient(ApiUrl)).Get(new RestRequest());
             return JsonConvert.DeserializeObject<RevoltApiInfo>(res.Content);
         }
 

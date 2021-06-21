@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RestSharp;
@@ -85,5 +86,34 @@ namespace Revolt
 
         public Task DeleteMessageAsync(string channelId, string id)
             => Client._restClient.ExecuteAsync(new RestRequest($"/channels/{channelId}/messages/{id}"), Method.DELETE);
+        
+        public async Task<Message[]> GetMessagesAsync(string channelId, int limit, string before = null, string after = null,
+            MessageSort sort = MessageSort.Latest)
+        {
+            var req = new RestRequest($"/channels/{channelId}/messages");
+            req.AddJsonBody(JsonConvert.SerializeObject(new GetMessagesRequest()
+            {
+                limit = limit,
+                after = after!,
+                before = before!,
+                sort = sort.ToString()
+            }));
+            var res = await Client._restClient.ExecuteGetAsync(req);
+            return JsonConvert.DeserializeObject<Message[]>(res.Content)!;
+        }
+        
+        private struct GetMessagesRequest
+        {
+            public int limit;
+            public string before;
+            public string after;
+            public string sort;
+        }
+    }
+
+    public enum MessageSort
+    {
+        Latest,
+        Oldest
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Timers;
 using Newtonsoft.Json;
@@ -20,7 +21,7 @@ namespace Revolt
         internal RestClient _restClient = new("https://api.revolt.chat/");
         public RevoltApiInfo ApiInfo { get; private set; }
         internal WebsocketClient _webSocket { get; private set; }
-        private Session _session { get; }
+        internal Session _session { get; }
         private List<User> _users = new();
         public IReadOnlyList<User> UsersCache => _users.AsReadOnly();
         private List<Channel> _channels = new();
@@ -196,7 +197,9 @@ namespace Revolt
             _webSocket.DisconnectionHappened.Subscribe(info =>
             {
                 Console.Error($"websocke disonnect {info.Type}");
-                _webSocket.Start();
+                // is null if disconnected using DisconnectWebSocket()
+                if(_webSocket != null)
+                    _webSocket.Start();
             });
             _webSocket.ReconnectionHappened.Subscribe((info =>
             {
@@ -425,6 +428,14 @@ namespace Revolt
                 }
             }));
             await _webSocket.Start();
+        }
+
+        public void DisconnectWebsocket()
+        {
+            var websocket = _webSocket;
+            _webSocket = null!;
+            websocket.Stop(WebSocketCloseStatus.NormalClosure, "sus");
+            websocket.Dispose();
         }
 
         public RevoltApiInfo GetApiInfo()

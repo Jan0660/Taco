@@ -8,6 +8,7 @@ namespace Revolt
     public class RevoltClientSelf
     {
         public RevoltClient Client { get; }
+        public string UserId => Client._session.UserId;
 
         public RevoltClientSelf(RevoltClient client)
         {

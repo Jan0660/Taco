@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net.Http;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace Revolt.Channels
@@ -15,7 +16,7 @@ namespace Revolt.Channels
             var attachmentId = await Client.UploadFile(fileName, filePath);
             return await Client.Channels.SendMessageAsync(_id, content, attachmentId);
         }
-        
+
         public async Task<SelfMessage> SendFileAsync(string content, string fileName, byte[] data)
         {
             var attachmentId = await Client.UploadFile(fileName, data);
@@ -27,5 +28,9 @@ namespace Revolt.Channels
 
         public Task EndTypingAsync()
             => Client.Channels.EndTypingAsync(_id);
+
+        public Task<Message[]> GetMessagesAsync(int limit, string before = null, string after = null,
+            MessageSort sort = MessageSort.Latest)
+            => Client.Channels.GetMessagesAsync(_id, limit, before, after, sort);
     }
 }

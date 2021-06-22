@@ -549,6 +549,6 @@ namespace Revolt
     {
         [JsonProperty("content")] public string Content;
         [JsonProperty("nonce")] public string Nonce = RevoltClient.GenerateNonce();
-        [JsonProperty("attachment")] public string AttachmentId = null;
+        [JsonProperty("attachments")] public List<string>? Attachments = null;
     }
 }

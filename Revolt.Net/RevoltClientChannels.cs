@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -26,15 +27,15 @@ namespace Revolt
             return Client._deserializeChannel(Client._restClient.Get(new RestRequest($"/channels/{id}/")).Content);
         }
 
-        public async Task<SelfMessage> SendMessageAsync(string channelId, string content, string attachmentId = null)
+        public async Task<SelfMessage> SendMessageAsync(string channelId, string content, List<string> attachmentIds = null)
         {
-            if ((content == "" | content == null) && (attachmentId == null | attachmentId == ""))
+            if ((content == "" | content == null) && (attachmentIds == null))
                 throw new Exception("Cannot send empty message without an attachment.");
             var req = new RestRequest($"/channels/{channelId}/messages", Method.POST);
             req.AddJsonBody(JsonConvert.SerializeObject(new SendMessageRequest
             {
                 Content = content,
-                AttachmentId = attachmentId
+                Attachments = attachmentIds
             }));
             var res = await Client._restClient.ExecutePostAsync(req);
             return Client._deserialize<SelfMessage>(res.Content);

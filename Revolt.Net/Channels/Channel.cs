@@ -9,18 +9,18 @@ namespace Revolt.Channels
         [JsonProperty("channel_type")] public string ChannelType { get; private set; }
 
         public Task<SelfMessage> SendMessageAsync(string content, string attachmentId = null)
-            => Client.Channels.SendMessageAsync(_id, content, attachmentId);
+            => Client.Channels.SendMessageAsync(_id, content, new(){attachmentId});
 
         public async Task<SelfMessage> SendFileAsync(string content, string fileName, string filePath)
         {
             var attachmentId = await Client.UploadFile(fileName, filePath);
-            return await Client.Channels.SendMessageAsync(_id, content, attachmentId);
-        }
+            return await Client.Channels.SendMessageAsync(_id, content, new(){attachmentId});
+    }
 
         public async Task<SelfMessage> SendFileAsync(string content, string fileName, byte[] data)
         {
             var attachmentId = await Client.UploadFile(fileName, data);
-            return await Client.Channels.SendMessageAsync(_id, content, attachmentId);
+            return await Client.Channels.SendMessageAsync(_id, content, new(){attachmentId});
         }
 
         public Task BeginTypingAsync()

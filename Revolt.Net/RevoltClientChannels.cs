@@ -27,7 +27,8 @@ namespace Revolt
             return Client._deserializeChannel(Client._restClient.Get(new RestRequest($"/channels/{id}/")).Content);
         }
 
-        public async Task<SelfMessage> SendMessageAsync(string channelId, string content, List<string> attachmentIds = null)
+        public async Task<SelfMessage> SendMessageAsync(string channelId, string content,
+            List<string> attachmentIds = null)
         {
             if ((content == "" | content == null) && (attachmentIds == null))
                 throw new Exception("Cannot send empty message without an attachment.");
@@ -87,22 +88,28 @@ namespace Revolt
 
         public Task DeleteMessageAsync(string channelId, string id)
             => Client._restClient.ExecuteAsync(new RestRequest($"/channels/{channelId}/messages/{id}"), Method.DELETE);
-        
-        public async Task<Message[]> GetMessagesAsync(string channelId, int limit, string before = null, string after = null,
+
+        public async Task<Message[]> GetMessagesAsync(string channelId, int limit, string before = null,
+            string after = null,
             MessageSort sort = MessageSort.Latest)
         {
             var req = new RestRequest($"/channels/{channelId}/messages");
-            req.AddJsonBody(JsonConvert.SerializeObject(new GetMessagesRequest()
+            var body = JsonConvert.SerializeObject(new GetMessagesRequest()
             {
                 limit = limit,
                 after = after!,
                 before = before!,
                 sort = sort.ToString()
-            }));
+            });
+            req.AddJsonBody(body);
             var res = await Client._restClient.ExecuteGetAsync(req);
-            return JsonConvert.DeserializeObject<Message[]>(res.Content)!;
+            var messages = JsonConvert.DeserializeObject<Message[]>(res.Content)!;
+            foreach (var msg in messages)
+                msg.Client = Client;
+            // todo: until delta issue is fixed
+            return messages.Take(limit).ToArray();
         }
-        
+
         private struct GetMessagesRequest
         {
             public int limit;

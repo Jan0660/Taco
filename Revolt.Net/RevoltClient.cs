@@ -22,7 +22,7 @@ namespace Revolt
         public RevoltApiInfo ApiInfo { get; private set; }
         internal WebsocketClient _webSocket { get; private set; }
         internal Session _session { get; }
-        private List<User> _users = new();
+        internal List<User> _users = new();
         public IReadOnlyList<User> UsersCache => _users.AsReadOnly();
         private List<Channel> _channels = new();
         public IReadOnlyList<Channel> ChannelsCache => _channels.AsReadOnly();

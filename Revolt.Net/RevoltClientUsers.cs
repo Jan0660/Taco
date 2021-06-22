@@ -26,7 +26,10 @@ namespace Revolt
             var res = Client._restClient.ExecuteGetAsync(req).Result;
             if (res.StatusCode == HttpStatusCode.NotFound)
                 return null;
-            return Client._deserialize<User>(res.Content);
+            user = Client._deserialize<User>(res.Content);
+            user.Client = Client;
+            Client._users.Add(user);
+            return user;
         }
 
         public async Task<Relationship[]> GetRelationships()

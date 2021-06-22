@@ -71,8 +71,6 @@ namespace Taco
             _client =
                 new RevoltClient(
                     JsonConvert.DeserializeObject<Session>(await File.ReadAllTextAsync("./session.json"))!);
-            var info = _client.ApiInfo;
-            Console.Info($"API Version: {info.Version}");
 
             #region Event handlers
 
@@ -107,6 +105,8 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             #endregion
 
             await _client.ConnectWebSocketAsync();
+            var info = _client.ApiInfo;
+            Console.Info($"API Version: {info.Version}");
 
             SnipeModule.Init(_client);
             _client.MessageReceived += ClientOnMessageReceived;

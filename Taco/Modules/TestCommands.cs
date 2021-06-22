@@ -33,9 +33,9 @@ namespace Taco.Modules
         [Summary("Information about revolt instance.")]
         public async Task RevoltInfo()
         {
-            var info = await Message.Client.GetApiInfo();
-            var vortex = await Message.Client.GetVortexInfo();
-            var autumn = await Message.Client.GetAutumnInfo();
+            var info = await Message.Client.GetApiInfoAsync();
+            var vortex = await Message.Client.GetVortexInfoAsync();
+            var autumn = await Message.Client.GetAutumnInfoAsync();
             await ReplyAsync(@$"> # Revolt info (for app.revolt.chat)
 > ## Versions
 > **Api:** {info.Version}

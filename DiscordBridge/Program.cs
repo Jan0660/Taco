@@ -211,7 +211,7 @@ namespace DiscordBridge
                         var attachmentId = await _client.UploadFile(message.Attachments.First().Filename, attachment);
                         msg = await _client.Channels.SendMessageAsync(
                             channel.RevoltChannelId, message.ToGoodString(),
-                            attachmentId);
+                            new() { attachmentId });
                     }
                     else
                         msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,

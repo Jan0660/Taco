@@ -52,7 +52,7 @@ namespace Revolt
             if (res.Content == "{\"type\":\"AlreadyFriends\"}")
                 throw new Exception("Already friends.");
             var user = Client.UsersCache.FirstOrDefault(u => u.Username == username);
-            var status = (RelationshipStatus) Enum.Parse(typeof(RelationshipStatus),
+            var status = (RelationshipStatus)Enum.Parse(typeof(RelationshipStatus),
                 JObject.Parse(res.Content).Value<string>("status")!);
             if (user != null)
             {
@@ -73,7 +73,7 @@ namespace Revolt
                 throw new Exception("No effect.");
             var user = Client.UsersCache.FirstOrDefault(u => u._id == id);
             var str = JObject.Parse(res.Content).Value<string>("status");
-            var status = (RelationshipStatus) Enum.Parse(typeof(RelationshipStatus),
+            var status = (RelationshipStatus)Enum.Parse(typeof(RelationshipStatus),
                 JObject.Parse(res.Content).Value<string>("status")!);
             if (user != null)
             {
@@ -89,7 +89,7 @@ namespace Revolt
             if (res.Content == "{\"type\":\"NoEffect\"}")
                 throw new Exception("No effect.");
             var user = Client.UsersCache.FirstOrDefault(u => u._id == id);
-            var status = (RelationshipStatus) Enum.Parse(typeof(RelationshipStatus),
+            var status = (RelationshipStatus)Enum.Parse(typeof(RelationshipStatus),
                 JObject.Parse(res.Content).Value<string>("status")!);
             if (user != null)
             {
@@ -106,7 +106,7 @@ namespace Revolt
                 throw new Exception("No effect.");
             var user = Client.UsersCache.FirstOrDefault(u => u._id == id);
             var str = JObject.Parse(res.Content).Value<string>("status");
-            var status = (RelationshipStatus) Enum.Parse(typeof(RelationshipStatus),
+            var status = (RelationshipStatus)Enum.Parse(typeof(RelationshipStatus),
                 JObject.Parse(res.Content).Value<string>("status")!);
             if (user != null)
             {
@@ -115,5 +115,13 @@ namespace Revolt
 
             return status;
         }
+
+        public MutualRelationships GetMutualRelationships(string id)
+            => JsonConvert.DeserializeObject<MutualRelationships>(
+                Client._restClient.ExecuteAsGet(new RestRequest($"/users/{id}/mutual", Method.GET), "GET").Content)!;
+        
+        public Profile GetProfile(string id)
+            => JsonConvert.DeserializeObject<Profile>(
+                Client._restClient.ExecuteAsGet(new RestRequest($"/users/{id}/profile", Method.GET), "GET").Content)!;
     }
 }

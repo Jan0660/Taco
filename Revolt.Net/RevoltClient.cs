@@ -198,7 +198,7 @@ namespace Revolt
             {
                 Console.Error($"websocke disonnect {info.Type}");
                 // is null if disconnected using DisconnectWebSocket()
-                if(_webSocket != null)
+                if (_webSocket != null)
                     _webSocket.Start();
             });
             _webSocket.ReconnectionHappened.Subscribe((info =>
@@ -316,9 +316,7 @@ namespace Revolt
                         }
                         case "UserRelationship":
                         {
-                            var id = packet.Value<string>("user");
-                            // if (id == "01EXAG0ZFX02W7PNQE7W5MT339")
-                            //     return;
+                            var id = packet.Value<JObject>("user").Value<string>("_id");
                             var status = (RelationshipStatus)Enum.Parse(typeof(RelationshipStatus),
                                 packet.Value<string>("status")!);
                             // update user if they're in cache
@@ -440,6 +438,7 @@ namespace Revolt
 
         public RevoltApiInfo GetApiInfo()
             => JsonConvert.DeserializeObject<RevoltApiInfo>(new WebClient().DownloadString(ApiUrl))!;
+
         public async Task<RevoltApiInfo> GetApiInfoAsync()
             => JsonConvert.DeserializeObject<RevoltApiInfo>(await new HttpClient().GetStringAsync(ApiUrl))!;
 
@@ -523,6 +522,7 @@ namespace Revolt
             var res = await _restClient.ExecuteGetAsync(req);
             return _deserialize<T>(res.Content);
         }
+
         public VortexInformation GetVortexInfo()
             => JsonConvert.DeserializeObject<VortexInformation>(
                 new WebClient().DownloadString(VortexUrl))!;

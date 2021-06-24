@@ -83,7 +83,23 @@ namespace DiscordBridge
                     return;
                 try
                 {
-                    var embeds = message.Attachments == null ? null : new List<Embed>();
+                    var embeds = new List<Embed>();
+                    ulong replyToId = RevoltDiscordMessages
+                        .FirstOrDefault(m => m.Key == message.Replies?.FirstOrDefault()).Value.MessageId;
+                    if (replyToId == 0)
+                        replyToId = DiscordRevoltMessages
+                            .FirstOrDefault(m => m.Value == message.Replies?.FirstOrDefault()).Key;
+                    if (replyToId != 0)
+                    {
+                        embeds.Add(new EmbedBuilder()
+                        {
+                            Title = "Quoted Message",
+                            Url =
+                                $"https://discord.com/channels/{channel.DiscordServerId}/{channel.DiscordChannelId}/{replyToId}",
+                            Color = new Color(47, 49, 54),
+                        }.Build());
+                    }
+
                     if (message.Attachments != null)
                         foreach (var attachment in message.Attachments)
                         {
@@ -157,6 +173,8 @@ namespace DiscordBridge
                 foreach (var channel in Config.Channels)
                 {
                     var discordChannel = DiscordClient.GetChannel(channel.DiscordChannelId);
+                    if (channel.DiscordServerId == 0)
+                        channel.DiscordServerId = (discordChannel as SocketGuildChannel)?.Guild?.Id ?? 0;
                     if (discordChannel is SocketCategoryChannel category)
                     {
                         foreach (var h in category.Channels)
@@ -203,6 +221,34 @@ namespace DiscordBridge
 
                 try
                 {
+                    MessageReply reply = new();
+                    bool isReply = false;
+                    if (message.Reference != null)
+                    {
+                        try
+                        {
+                            string replyToId = null;
+                            if (DiscordRevoltMessages.TryGetValue(message.Reference.MessageId.Value, out var msgId))
+                                replyToId = msgId;
+                            var h = RevoltDiscordMessages.FirstOrDefault(m =>
+                                m.Value.MessageId == message.Reference.MessageId.Value);
+                            if (h.Key != null)
+                                replyToId = h.Key;
+                            if (replyToId == null)
+                                throw new Exception("Didn't find message to reply to.");
+                            isReply = true;
+                            reply = new()
+                            {
+                                Id = replyToId,
+                                Mention = true
+                            };
+                        }
+                        catch
+                        {
+                            isReply = false;
+                        }
+                    }
+
                     Message msg;
                     if (message.Attachments.Any())
                     {
@@ -211,11 +257,11 @@ namespace DiscordBridge
                         var attachmentId = await _client.UploadFile(message.Attachments.First().Filename, attachment);
                         msg = await _client.Channels.SendMessageAsync(
                             channel.RevoltChannelId, message.ToGoodString(),
-                            new() { attachmentId });
+                            new() { attachmentId }, isReply ? new[] { reply } : null);
                     }
                     else
                         msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,
-                            message.ToGoodString());
+                            message.ToGoodString(), replies: isReply ? new[] { reply } : null);
 
                     DiscordRevoltMessages.Add(message.Id, msg._id);
                 }
@@ -266,6 +312,7 @@ namespace DiscordBridge
         public ulong WebhookId;
         public string WebhookToken;
         public ulong DiscordChannelId;
+        public ulong DiscordServerId;
         public string RevoltChannelId;
         public string? RevoltServerId;
         [JsonIgnore] public DiscordWebhookClient DiscordWebhook;
@@ -302,17 +349,17 @@ namespace DiscordBridge
         public static string ToGoodString(this SocketMessage message)
         {
             string str = "";
-            if (message.Reference != null)
-                try
-                {
-                    var reference = message.Channel.GetCachedMessage(message.Reference.MessageId.Value) ??
-                                    message.Channel.GetMessageAsync(message.Reference.MessageId.Value).Result;
-                    str += $"> {reference.Content.ReplaceDiscordMentions().Shorten(100).Replace("\n", "\n> ")}\n\n";
-                }
-                catch (Exception exc)
-                {
-                    Console.Error($"Error when getting message reference: {exc.Message}");
-                }
+            // if (message.Reference != null)
+            //     try
+            //     {
+            //         var reference = message.Channel.GetCachedMessage(message.Reference.MessageId.Value) ??
+            //                         message.Channel.GetMessageAsync(message.Reference.MessageId.Value).Result;
+            //         str += $"> {reference.Content.ReplaceDiscordMentions().Shorten(100).Replace("\n", "\n> ")}\n\n";
+            //     }
+            //     catch (Exception exc)
+            //     {
+            //         Console.Error($"Error when getting message reference: {exc.Message}");
+            //     }
 
             var content = Program.ReplaceDiscordEmotes.Replace(message.Content, match =>
             {

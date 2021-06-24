@@ -8,8 +8,8 @@ namespace Revolt.Channels
     {
         [JsonProperty("channel_type")] public string ChannelType { get; private set; }
 
-        public Task<SelfMessage> SendMessageAsync(string content, string attachmentId = null)
-            => Client.Channels.SendMessageAsync(_id, content, attachmentId == null ? null : new() { attachmentId });
+        public Task<SelfMessage> SendMessageAsync(string content, string attachmentId = null, MessageReply[] replies = null)
+            => Client.Channels.SendMessageAsync(_id, content, attachmentId == null ? null : new() { attachmentId }, replies);
 
         public async Task<SelfMessage> SendFileAsync(string content, string fileName, string filePath)
         {

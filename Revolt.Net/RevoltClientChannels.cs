@@ -28,7 +28,7 @@ namespace Revolt
         }
 
         public async Task<SelfMessage> SendMessageAsync(string channelId, string content,
-            List<string> attachmentIds = null)
+            List<string> attachmentIds = null, MessageReply[] replies = null)
         {
             if ((content == "" | content == null) && (attachmentIds == null))
                 throw new Exception("Cannot send empty message without an attachment.");
@@ -36,7 +36,8 @@ namespace Revolt
             req.AddJsonBody(JsonConvert.SerializeObject(new SendMessageRequest
             {
                 Content = content,
-                Attachments = attachmentIds
+                Attachments = attachmentIds,
+                Replies = replies
             }));
             var res = await Client._restClient.ExecutePostAsync(req);
             return Client._deserialize<SelfMessage>(res.Content);

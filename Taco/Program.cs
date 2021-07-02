@@ -101,6 +101,7 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
 
                 return Task.CompletedTask;
             };
+            ServerLogging.RegisterEvents();
 
             #endregion
 
@@ -128,7 +129,7 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             {
                 Status = new()
                 {
-                    Text = Config.Status,
+                    Text = Config!.Status,
                     Presence = Config.Presence
                 },
                 Profile = new()
@@ -242,7 +243,7 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             var msgTypes = MessageTypes.AsArray();
             var timeLogInfo = new TimeLogInfo()
             {
-                Style = new() {Color = Color.Gold}
+                Style = new() { Color = Color.Gold }
             };
             foreach (var msgType in msgTypes)
             {

@@ -86,11 +86,9 @@ namespace Taco
             UserId = userId;
         }
 
-        public async Task UpdateAsync()
-        {
-            await Mongo.UserCollection.FindOneAndUpdateAsync(new BsonDocument("UserId", UserId),
-                new JsonUpdateDefinition<BsonDocument>(JsonConvert.SerializeObject(this)));
-        }
+        public Task UpdateAsync()
+            => Mongo.UserCollection.FindOneAndReplaceAsync(new BsonDocument("UserId", UserId),
+                this.ToBsonDocument());
     }
 
     [BsonIgnoreExtraElements]
@@ -103,10 +101,8 @@ namespace Taco
 
         public ServerData(string serverId) => (ServerId) = (serverId);
 
-        public async Task UpdateAsync()
-        {
-            await Mongo.ServerCollection.FindOneAndUpdateAsync(new BsonDocument("ServerId", ServerId),
-                new JsonUpdateDefinition<BsonDocument>(JsonConvert.SerializeObject(this)));
-        }
+        public Task UpdateAsync()
+            => Mongo.ServerCollection.FindOneAndReplaceAsync(new BsonDocument("ServerId", ServerId),
+                this.ToBsonDocument());
     }
 }

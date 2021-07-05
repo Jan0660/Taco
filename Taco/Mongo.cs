@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -80,6 +82,12 @@ namespace Taco
         public string UserId;
         public PermissionLevel PermissionLevel;
         public string BlacklistedMessage;
+        public Dictionary<string, string> SavedAttachments = new();
+
+        [BsonConstructor]
+        private UserData()
+        {
+        }
 
         public UserData(string userId)
         {
@@ -95,8 +103,7 @@ namespace Taco
     public class ServerData
     {
         public string ServerId;
-        [JsonIgnore]
-        public TextChannel LogChannel => (TextChannel)Program.Client.Channels.Get(LogChannelId);
+        [JsonIgnore] public TextChannel LogChannel => (TextChannel)Program.Client.Channels.Get(LogChannelId);
         public string LogChannelId;
 
         public ServerData(string serverId) => (ServerId) = (serverId);

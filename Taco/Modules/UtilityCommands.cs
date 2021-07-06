@@ -328,6 +328,7 @@ namespace Taco.Modules
             await Context.UserData.UpdateAsync();
             await ReplyAsync("Attachment saved.");
         }
+
         [Command("unsave-attachment", "unsaveAttachment", "us-a")]
         public Task UnsaveAttachment()
         {
@@ -346,9 +347,9 @@ namespace Taco.Modules
         public Task SendSavedAttachment()
         {
             if (Context.UserData.SavedAttachments.TryGetValue(Args.ToLower(), out string url))
-                return ReplyAsync($"<@{Message.AuthorId}>: {url}");
+                return InlineReplyAsync(url);
             else
-                return ReplyAsync($"<@{Message.AuthorId}>: Saved attachment not found.");
+                return InlineReplyAsync("Saved attachment not found.");
         }
     }
 }

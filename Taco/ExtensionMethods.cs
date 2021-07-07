@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,13 +14,14 @@ namespace Taco
 {
     public static class ExtensionMethods
     {
-        public static async Task<Message> SendPngAsync(this Channel channel, Image image, string content, string filename = "h.png")
+        public static async Task<Message> SendPngAsync(this Channel channel, Image image, string content,
+            string filename = "h.png")
         {
             var memory = new MemoryStream();
             await image.SaveAsPngAsync(memory);
             return await channel.SendFileAsync(content, filename, memory.GetBuffer());
         }
-        
+
         /*
  @$"**Health:** {stats.Health}
 **Armor:** {stats.Armor}
@@ -60,5 +62,16 @@ namespace Taco
         {
             return module.Attributes.Any(att => att is HiddenAttribute);
         }
+
+        public static void LimitedAdd<T>(this List<T> list, T item, int maxCount)
+        {
+            list.Add(item);
+            if (list.Count == maxCount)
+                list.Remove(list.FirstOrDefault());
+        }
+        
+        [Pure]
+        public static string Shorten(this string str, int length)
+            => str.Length > length ? str[..(length - 5)] + "(...)" : str;
     }
 }

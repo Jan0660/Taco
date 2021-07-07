@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using CryptoCurrencyApis;
 using Jan0660.AzurAPINet.Enums;
 using Newtonsoft.Json;
@@ -144,7 +145,7 @@ namespace Taco.Modules
         [GroupOnly]
         public Task GroupInfo()
         {
-            var group = (GroupChannel) Message.Channel;
+            var group = (GroupChannel)Message.Channel;
             return ReplyAsync($@"> ## {group.Name}
 > {group.Description}
 > **Owner:** <@{group.OwnerId}> [`{group.OwnerId}`]
@@ -310,6 +311,45 @@ namespace Taco.Modules
 > **Desktops:** {String.Join(", ", distro.Desktops)}
 > > {distro.Description}
 > [\[Website\]]({distro.HomePage})");
+        }
+
+        [Command("save-attachment", "saveAttachment", "s-a")]
+        public async Task SaveAttachment()
+        {
+            if (Message.Attachments == null)
+            {
+                await ReplyAsync("You must provide an attachment!");
+                return;
+            }
+
+            var attachment = Message.Attachments.First();
+            Context.UserData.SavedAttachments.Add(Args.ToLower(),
+                $"https://autumn.revolt.chat/attachments/{attachment._id}/{HttpUtility.UrlEncode(attachment.Filename)}");
+            await Context.UserData.UpdateAsync();
+            await ReplyAsync("Attachment saved.");
+        }
+
+        [Command("unsave-attachment", "unsaveAttachment", "us-a")]
+        public Task UnsaveAttachment()
+        {
+            try
+            {
+                Context.UserData.SavedAttachments.Remove(Args);
+                return Context.UserData.UpdateAsync();
+            }
+            catch
+            {
+                return ReplyAsync("Attachment not found.");
+            }
+        }
+
+        [Command("saved-attachment", "savedAttachment", "s")]
+        public Task SendSavedAttachment()
+        {
+            if (Context.UserData.SavedAttachments.TryGetValue(Args.ToLower(), out string url))
+                return InlineReplyAsync(url);
+            else
+                return InlineReplyAsync("Saved attachment not found.");
         }
     }
 }

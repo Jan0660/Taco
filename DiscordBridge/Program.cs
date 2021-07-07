@@ -276,7 +276,7 @@ namespace DiscordBridge
                     return;
                 if (DiscordRevoltMessages.TryGetValue(cacheable.Id, out string revoltMessageId))
                 {
-                    await _client.Channels.EditMessageAsync(Config.ByDiscordId(cacheable.Id).RevoltChannelId,
+                    await _client.Channels.EditMessageAsync(Config.ByDiscordId(channel.Id).RevoltChannelId,
                         revoltMessageId,
                         message.ToGoodString());
                 }
@@ -285,7 +285,7 @@ namespace DiscordBridge
             {
                 if (DiscordRevoltMessages.TryGetValue(cacheable.Id, out string id))
                 {
-                    return _client.Channels.DeleteMessageAsync(Config.ByDiscordId(cacheable.Id).RevoltChannelId, id);
+                    return _client.Channels.DeleteMessageAsync(Config.ByDiscordId(channel.Id).RevoltChannelId, id);
                 }
 
                 return Task.CompletedTask;

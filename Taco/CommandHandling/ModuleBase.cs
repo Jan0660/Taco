@@ -18,6 +18,10 @@ namespace Taco.CommandHandling
         public Task<SelfMessage> ReplyAsync(string content)
             => Message.Channel.SendMessageAsync(content);
 
+        public Task<SelfMessage> InlineReplyAsync(string content, bool mention = false)
+            => Message.Channel.SendMessageAsync(content,
+                replies: new[] { new MessageReply { Id = Message._id, Mention = mention } });
+
         public User GetMention(string mention)
         {
             return Message.Client.UsersCache.FirstOrDefault(u => u._id == mention) ??

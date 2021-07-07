@@ -95,28 +95,17 @@ namespace Revolt
             MessageSort sort = MessageSort.Latest)
         {
             var req = new RestRequest($"/channels/{channelId}/messages");
-            var body = JsonConvert.SerializeObject(new GetMessagesRequest()
-            {
-                limit = limit,
-                after = after!,
-                before = before!,
-                sort = sort.ToString()
-            });
-            req.AddJsonBody(body);
+            req.AddParameter("limit", limit);
+            if (after != null)
+                req.AddParameter("after", after!);
+            if (before != null)
+                req.AddParameter("before", before!);
+            req.AddParameter("sort", sort.ToString());
             var res = await Client._restClient.ExecuteGetAsync(req);
             var messages = JsonConvert.DeserializeObject<Message[]>(res.Content)!;
             foreach (var msg in messages)
                 msg.Client = Client;
-            // todo: until delta issue is fixed
-            return messages.Take(limit).ToArray();
-        }
-
-        private struct GetMessagesRequest
-        {
-            public int limit;
-            public string before;
-            public string after;
-            public string sort;
+            return messages;
         }
     }
 

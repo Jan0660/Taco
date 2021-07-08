@@ -10,6 +10,7 @@ using Log73;
 using Log73.ColorSchemes;
 using Newtonsoft.Json;
 using Revolt;
+using Revolt.Channels;
 using Taco.CommandHandling;
 using Taco.Modules;
 using Console = Log73.Console;
@@ -219,7 +220,7 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
 
             // coc
             var cocMatch = CocMatchRegex.Match(message.Content);
-            if (cocMatch.Success)
+            if (cocMatch.Success && message.Channel is TextChannel { ServerId: "01F7ZSBSFHQ8TA81725KQCSDDP" })
                 await message.Channel.SendMessageAsync(
                     Config.CodeOfConduct[int.Parse(cocMatch.Value[CocMatchPrefix.Length..])]);
         }

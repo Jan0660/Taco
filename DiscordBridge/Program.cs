@@ -402,16 +402,19 @@ namespace DiscordBridge
         public static string Stringify(this ObjectMessage msg)
         {
             string GetUsername(string id)
-                => $"**@{Program.Client.Users.Get(id).Username}**";
+                => $"**@{Program.Client.Users.Get(id)?.Username ?? "(Unknown user)"}**";
 
             return msg.Content.Type switch
             {
                 "text" => msg.Content.Content,
                 "user_added" =>
-                    $"{GetUsername(msg.Content.Id)} has been added to the group by {GetUsername(msg.Content.By)}.",
+                    $"{GetUsername(msg.Content.Id)} was added to the group by {GetUsername(msg.Content.By)}.",
                 "user_remove" =>
-                    $"{GetUsername(msg.Content.Id)} has been removed from the group by {GetUsername(msg.Content.By)}.",
+                    $"{GetUsername(msg.Content.Id)} was removed from the group by {GetUsername(msg.Content.By)}.",
+                "user_joined" => $"{GetUsername(msg.Content.Id)} has joined the server.",
                 "user_left" => $"{GetUsername(msg.Content.Id)} has left the group.",
+                "user_kicked" => $"{GetUsername(msg.Content.Id)} was kicked from the server.",
+                "user_banned" => $"{GetUsername(msg.Content.Id)} was banned from the server.",
                 "channel_renamed" => $"{GetUsername(msg.Content.By)} has renamed the channel to `{msg.Content.Name}`.",
                 "channel_description_changed" => $"{GetUsername(msg.Content.By!)} changed the group description.",
                 "channel_icon_changed" => $"{GetUsername(msg.Content.By)} has changed the channel icon.",

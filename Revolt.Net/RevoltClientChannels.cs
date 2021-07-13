@@ -107,6 +107,18 @@ namespace Revolt
                 msg.Client = Client;
             return messages;
         }
+        
+        public async Task<User[]> GetMembersAsync(string id)
+        {
+            var users = JsonConvert.DeserializeObject<User[]>(
+                (await Client._restClient.ExecuteGetAsync(new RestRequest($"/channels/{id}/members"))).Content);
+            foreach (var user in users!)
+            {
+                user.Client = Client;
+            }
+
+            return users;
+        }
     }
 
     public enum MessageSort

@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using RestSharp;
 
 namespace Revolt.Channels
 {
@@ -8,19 +9,21 @@ namespace Revolt.Channels
     {
         [JsonProperty("channel_type")] public string ChannelType { get; private set; }
 
-        public Task<SelfMessage> SendMessageAsync(string content, string attachmentId = null, MessageReply[] replies = null)
-            => Client.Channels.SendMessageAsync(_id, content, attachmentId == null ? null : new() { attachmentId }, replies);
+        public Task<SelfMessage> SendMessageAsync(string content, string attachmentId = null,
+            MessageReply[] replies = null)
+            => Client.Channels.SendMessageAsync(_id, content, attachmentId == null ? null : new() {attachmentId},
+                replies);
 
         public async Task<SelfMessage> SendFileAsync(string content, string fileName, string filePath)
         {
             var attachmentId = await Client.UploadFile(fileName, filePath);
-            return await Client.Channels.SendMessageAsync(_id, content, new() { attachmentId });
+            return await Client.Channels.SendMessageAsync(_id, content, new() {attachmentId});
         }
 
         public async Task<SelfMessage> SendFileAsync(string content, string fileName, byte[] data)
         {
             var attachmentId = await Client.UploadFile(fileName, data);
-            return await Client.Channels.SendMessageAsync(_id, content, new() { attachmentId });
+            return await Client.Channels.SendMessageAsync(_id, content, new() {attachmentId});
         }
 
         public Task BeginTypingAsync()
@@ -32,5 +35,8 @@ namespace Revolt.Channels
         public Task<Message[]> GetMessagesAsync(int limit, string before = null, string after = null,
             MessageSort sort = MessageSort.Latest)
             => Client.Channels.GetMessagesAsync(_id, limit, before, after, sort);
+
+        public Task<User[]> GetMembersAsync()
+            => Client.Channels.GetMembersAsync(_id);
     }
 }

@@ -145,7 +145,7 @@ namespace Taco.Modules
         [GroupOnly]
         public Task GroupInfo()
         {
-            var group = (GroupChannel)Message.Channel;
+            var group = (GroupChannel) Message.Channel;
             return ReplyAsync($@"> ## {group.Name}
 > {group.Description}
 > **Owner:** <@{group.OwnerId}> [`{group.OwnerId}`]
@@ -350,6 +350,21 @@ namespace Taco.Modules
                 return InlineReplyAsync(url);
             else
                 return InlineReplyAsync("Saved attachment not found.");
+        }
+
+        // get fucked lol
+        [Command("invisible")]
+        public async Task Invisible()
+        {
+            List<string> hiding = new();
+            foreach (var user in await Message.Channel.GetMembersAsync())
+            {
+                if (user.Status.Presence == "Invisible")
+                    hiding.Add(user.Username);
+            }
+
+            await ReplyAsync($@"> ## Invisible users:
+> {String.Join("\n> @", hiding)}");
         }
     }
 }

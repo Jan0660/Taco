@@ -18,6 +18,11 @@ namespace Taco.Modules
         [Summary("Retrieves deleted messages in current group.")]
         public async Task Snipe()
         {
+            if (!Context.CommunityData.AllowSnipe)
+            {
+                await ReplyAsync("Sniping is disabled here.");
+                return;
+            }
             var sniped = _snipedMessages.Where(m => m.ChannelId == Message.ChannelId).ToList();
             if (sniped.Count == 0)
             {

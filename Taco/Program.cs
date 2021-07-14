@@ -52,14 +52,7 @@ namespace Taco
 #endif
             ;
 
-        public static readonly Regex CocMatchRegex = new(
-#if !DEBUG
-            CocMatchPrefix + "[0-9]{1,2}"
-#else
-            CocMatchPrefix + "[0-9]{1,2}"
-#endif
-            , RegexOptions.Compiled
-        );
+        public static readonly Regex CocMatchRegex = new(CocMatchPrefix + "[0-9]{1,2}", RegexOptions.Compiled);
 
         static async Task Main(string[] args)
         {

@@ -1,4 +1,5 @@
-﻿using Revolt;
+﻿using System;
+using Revolt;
 using Revolt.Channels;
 
 namespace Taco
@@ -17,6 +18,7 @@ namespace Taco
         }
 
         private UserData _cachedUserData;
+
         public ServerData ServerData
         {
             get
@@ -30,7 +32,26 @@ namespace Taco
 
         private ServerData _cachedServerData;
 
-        public Message Message { get; init; }
+        public GroupData GroupData
+        {
+            get
+            {
+                if (_cachedGroupData != null)
+                    return _cachedGroupData;
+                if (Message.Channel is not GroupChannel)
+                    throw new Exception("Channel is not a GroupChannel.");
+                _cachedGroupData = Mongo.GetOrCreateGroupData(Message.ChannelId);
+                return _cachedGroupData;
+            }
+        }
+
+        private GroupData _cachedGroupData;
+
+        public CommunityData CommunityData =>
+            _cachedServerData ?? _cachedGroupData ?? Mongo.GetOrCreateCommunityData(Message.ChannelId,
+                Message.Channel is GroupChannel ? CommunityType.Group : CommunityType.Server);
+
+        public Message Message { get; }
 
         public User User => Message.Author;
 

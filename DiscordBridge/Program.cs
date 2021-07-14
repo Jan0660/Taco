@@ -29,6 +29,7 @@ namespace DiscordBridge
         public static Config Config;
         public static readonly Dictionary<string, (ulong MessageId, ulong ChannelId)> RevoltDiscordMessages = new();
         public static readonly Dictionary<ulong, string> DiscordRevoltMessages = new();
+        public static readonly List<string> DiscordRevoltMessagesContent = new();
         public static readonly Regex ReplaceRevoltMentions = new("<@([0-9,A-Z]{26})+>", RegexOptions.Compiled);
         public static readonly Regex ReplaceDiscordMentions = new("<@!?[0-9]{1,20}>", RegexOptions.Compiled);
         public static readonly Regex ReplaceDiscordEmotes = new("<a?:.+?:[0-9]{1,20}>", RegexOptions.Compiled);
@@ -79,7 +80,7 @@ namespace DiscordBridge
                 var channel = Config.ByRevoltId(message.ChannelId);
                 if (channel == null)
                     return;
-                if (message.AuthorId == Config.RevoltSession.UserId && DiscordRevoltMessages.ContainsValue(message._id))
+                if (message.AuthorId == Config.RevoltSession.UserId && DiscordRevoltMessagesContent.Contains(message.Content))
                     return;
                 try
                 {
@@ -89,8 +90,10 @@ namespace DiscordBridge
                     if (replyToId == 0)
                         replyToId = DiscordRevoltMessages
                             .FirstOrDefault(m => m.Value == message.Replies?.FirstOrDefault()).Key;
+                    Task updateReply = null;
                     if (replyToId != 0)
                     {
+                        var index = embeds.Count;
                         embeds.Add(new EmbedBuilder()
                         {
                             Title = "Quoted Message",
@@ -98,6 +101,26 @@ namespace DiscordBridge
                                 $"https://discord.com/channels/{channel.DiscordServerId}/{channel.DiscordChannelId}/{replyToId}",
                             Color = new Color(47, 49, 54),
                         }.Build());
+                        updateReply = new Task(async () =>
+                        {
+                            var msg = await DiscordClient.GetGuild(channel.DiscordServerId)
+                                .GetTextChannel(channel.DiscordChannelId)
+                                .GetMessageAsync(replyToId);
+                            embeds[index] = new EmbedBuilder()
+                            {
+                                Author = new()
+                                {
+                                    Name = msg.Author.ToString(),
+                                    IconUrl = msg.Author.GetAvatarUrl() ?? msg.Author.GetDefaultAvatarUrl(),
+                                    Url =
+                                        $"https://discord.com/channels/{channel.DiscordServerId}/{channel.DiscordChannelId}/{replyToId}",
+                                },
+                                Color = new Color(47, 49, 54),
+                                Description = msg.Content
+                            }.Build();
+                            await channel.DiscordWebhook.ModifyMessageAsync(
+                                RevoltDiscordMessages[message._id].MessageId, x => x.Embeds = embeds);
+                        });
                     }
 
                     if (message.Attachments != null)
@@ -125,6 +148,8 @@ namespace DiscordBridge
                             ? message.Author.DefaultAvatarUrl
                             : message.Author.AvatarUrl + "?size=256", allowedMentions: new(), embeds: embeds);
                     RevoltDiscordMessages.Add(message._id, (msg, channel.DiscordChannelId));
+                    if (updateReply != null)
+                        updateReply.Start();
                 }
                 catch (Exception exc)
                 {
@@ -250,18 +275,20 @@ namespace DiscordBridge
                     }
 
                     Message msg;
+                    var content = message.ToGoodString();
+                    DiscordRevoltMessagesContent.LimitedAdd(content, 50);
                     if (message.Attachments.Any())
                     {
                         var http = new HttpClient();
                         var attachment = await http.GetByteArrayAsync(message.Attachments.First().ProxyUrl);
                         var attachmentId = await _client.UploadFile(message.Attachments.First().Filename, attachment);
                         msg = await _client.Channels.SendMessageAsync(
-                            channel.RevoltChannelId, message.ToGoodString(),
+                            channel.RevoltChannelId, content,
                             new() { attachmentId }, isReply ? new[] { reply } : null);
                     }
                     else
                         msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,
-                            message.ToGoodString(), replies: isReply ? new[] { reply } : null);
+                            content, replies: isReply ? new[] { reply } : null);
 
                     DiscordRevoltMessages.Add(message.Id, msg._id);
                 }
@@ -349,18 +376,6 @@ namespace DiscordBridge
         public static string ToGoodString(this SocketMessage message)
         {
             string str = "";
-            // if (message.Reference != null)
-            //     try
-            //     {
-            //         var reference = message.Channel.GetCachedMessage(message.Reference.MessageId.Value) ??
-            //                         message.Channel.GetMessageAsync(message.Reference.MessageId.Value).Result;
-            //         str += $"> {reference.Content.ReplaceDiscordMentions().Shorten(100).Replace("\n", "\n> ")}\n\n";
-            //     }
-            //     catch (Exception exc)
-            //     {
-            //         Console.Error($"Error when getting message reference: {exc.Message}");
-            //     }
-
             var content = Program.ReplaceDiscordEmotes.Replace(message.Content, match =>
             {
                 int startIndex = 0, endIndex = match.Value.Length - 1;
@@ -420,6 +435,13 @@ namespace DiscordBridge
                 "channel_icon_changed" => $"{GetUsername(msg.Content.By)} has changed the channel icon.",
                 _ => msg.Content.Type
             };
+        }
+
+        public static void LimitedAdd<T>(this List<T> list, T item, int maxCount)
+        {
+            list.Add(item);
+            if (list.Count == maxCount)
+                list.Remove(list.FirstOrDefault());
         }
     }
 }

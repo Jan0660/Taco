@@ -79,7 +79,7 @@ namespace DiscordBridge
                 var channel = Config.ByRevoltId(message.ChannelId);
                 if (channel == null)
                     return;
-                if (message.AuthorId == Config.RevoltSession.UserId)
+                if (message.AuthorId == Config.RevoltSession.UserId && DiscordRevoltMessages.ContainsValue(message._id))
                     return;
                 try
                 {

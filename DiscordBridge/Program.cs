@@ -4,6 +4,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -11,6 +12,7 @@ using Discord;
 using Discord.Webhook;
 using Discord.WebSocket;
 using Log73;
+using Log73.ExtensionMethod;
 using Newtonsoft.Json;
 using RestSharp;
 using Revolt;
@@ -80,7 +82,8 @@ namespace DiscordBridge
                 var channel = Config.ByRevoltId(message.ChannelId);
                 if (channel == null)
                     return;
-                if (message.AuthorId == Config.RevoltSession.UserId && DiscordRevoltMessagesContent.Contains(message.Content))
+                if (message.AuthorId == Config.RevoltSession.UserId &&
+                    DiscordRevoltMessagesContent.Contains(message.Content))
                     return;
                 try
                 {
@@ -101,7 +104,7 @@ namespace DiscordBridge
                                 $"https://discord.com/channels/{channel.DiscordServerId}/{channel.DiscordChannelId}/{replyToId}",
                             Color = new Color(47, 49, 54),
                         }.Build());
-                        updateReply = new Task(async () =>
+                        updateReply = Task.Factory.StartNew(async () =>
                         {
                             var msg = await DiscordClient.GetGuild(channel.DiscordServerId)
                                 .GetTextChannel(channel.DiscordChannelId)
@@ -197,33 +200,99 @@ namespace DiscordBridge
                 Console.Log("Discord ready!");
                 foreach (var channel in Config.Channels)
                 {
+                    // wipe
+                    // foreach (var goneChannel in _client.ChannelsCache)
+                    // {
+                    //     if (goneChannel is TextChannel { ServerId: "01F85B7FT1QC563FWH8VPVWBSH" })
+                    //         await _client.Channels.LeaveAsync(goneChannel._id);
+                    // }
+
                     var discordChannel = DiscordClient.GetChannel(channel.DiscordChannelId);
+                    if (channel.Type != "DiscordGuild")
+                        continue;
                     if (channel.DiscordServerId == 0)
                         channel.DiscordServerId = (discordChannel as SocketGuildChannel)?.Guild?.Id ?? 0;
-                    if (discordChannel is SocketCategoryChannel category)
+                    var categories = new List<Category>();
+                    foreach (var category in DiscordClient.GetGuild(channel.DiscordServerId).CategoryChannels
+                        .OrderBy(c => c.Position))
                     {
-                        foreach (var h in category.Channels)
+                        if (!category.GetPermissionOverwrite(category.Guild.EveryoneRole).HasValue ||
+                            category.GetPermissionOverwrite(category.Guild.EveryoneRole).Value.ViewChannel ==
+                            PermValue.Allow)
                         {
-                            if (channel.RevoltServerId != null && h is SocketTextChannel textH &&
-                                Config.ByDiscordId(h.Id) == null)
+                            $"Creating things for category {category.Name}".Dump();
+                            var revoltCategory = new Category()
                             {
-                                var wh = await textH.CreateWebhookAsync("REVOLT Bridge");
-                                var ch = await _client.Servers.CreateChannel(channel.RevoltServerId, h.Name,
-                                    $"Bridged from Discord(Id: {h.Id})");
-                                Config.Channels.Add(new BridgeChannel
+                                Title = category.Name,
+                                Channels = new()
+                            };
+                            categories.Add(revoltCategory);
+                            foreach (var guildChannel in category.Channels.OrderBy(c => c.Position))
+                            {
+                                var alreadyBridgedChannel =
+                                    Config.Channels.FirstOrDefault(c => c.DiscordChannelId == guildChannel.Id);
+                                if (alreadyBridgedChannel != null)
                                 {
-                                    RevoltChannelId = ch._id,
-                                    WebhookId = wh.Id,
-                                    WebhookToken = wh.Token,
-                                    DiscordChannelId = h.Id,
-                                    DiscordWebhook = new(wh.Id, wh.Token)
-                                });
+                                    revoltCategory.Channels.Add(alreadyBridgedChannel.RevoltChannelId);
+                                    continue;
+                                }
+                                if (!guildChannel.GetPermissionOverwrite(guildChannel.Guild.EveryoneRole).HasValue ||
+                                    guildChannel.GetPermissionOverwrite(guildChannel.Guild.EveryoneRole).Value
+                                        .ViewChannel == PermValue.Allow)
+                                {
+                                    $"Creating things for #{guildChannel.Name}".Dump();
+                                    var webhook =
+                                        (await ((SocketTextChannel)guildChannel).GetWebhooksAsync()).FirstOrDefault(
+                                            wh => wh.Name.ToLowerInvariant() == "revolt bridge") ??
+                                        await ((SocketTextChannel)guildChannel).CreateWebhookAsync("Revolt Bridge");
+                                    var revoltChannel = await _client.Servers.CreateChannel(channel.RevoltServerId,
+                                        guildChannel.Name,
+                                        $"Bridged from Discord(Id: {guildChannel.Id})");
+                                    Config.Channels.Add(new()
+                                    {
+                                        Type = "DiscordGuildChannel",
+                                        DiscordChannelId = guildChannel.Id,
+                                        DiscordServerId = guildChannel.Guild.Id,
+                                        RevoltChannelId = revoltChannel._id,
+                                        WebhookId = webhook.Id,
+                                        WebhookToken = webhook.Token,
+                                        DiscordWebhook = new(webhook.Id, webhook.Token),
+                                    });
+                                    revoltCategory.Channels.Add(revoltChannel._id);
+                                }
                             }
                         }
-                    }
-                }
 
-                File.WriteAllText("./config.json", JsonConvert.SerializeObject(Config, Formatting.Indented));
+                        // Environment.FailFast("Imposter sus????");
+                        // foreach (var h in category.Channels)
+                        // {
+                        //     if (channel.RevoltServerId != null && h is SocketTextChannel textH &&
+                        //         Config.ByDiscordId(h.Id) == null)
+                        //     {
+                        //         var wh = await textH.CreateWebhookAsync("REVOLT Bridge");
+                        //         var ch = await _client.Servers.CreateChannel(channel.RevoltServerId, h.Name,
+                        //             $"Bridged from Discord(Id: {h.Id})");
+                        //         Config.Channels.Add(new BridgeChannel
+                        //         {
+                        //             RevoltChannelId = ch._id,
+                        //             WebhookId = wh.Id,
+                        //             WebhookToken = wh.Token,
+                        //             DiscordChannelId = h.Id,
+                        //             DiscordWebhook = new(wh.Id, wh.Token)
+                        //         });
+                        //     }
+                        // }
+                    }
+
+                    await _client.Servers.EditServerAsync(channel.RevoltServerId, new EditServerRequest()
+                    {
+                        Name = DiscordClient.GetGuild(channel.DiscordServerId).Name,
+                        Categories = categories.ToArray()
+                    });
+                    "Saving config".Dump();
+                    await File.WriteAllTextAsync("./config.json", JsonConvert.SerializeObject(Config, Formatting.Indented));
+                    "Config saved".Dump();
+                }
             };
             DiscordClient.MessageReceived += async message =>
             {
@@ -275,20 +344,32 @@ namespace DiscordBridge
                     }
 
                     Message msg;
-                    var content = message.ToGoodString();
-                    DiscordRevoltMessagesContent.LimitedAdd(content, 50);
-                    if (message.Attachments.Any())
+                    if (message.Content is "" or null && message.Embeds.Any(e => e.Type == EmbedType.Rich))
                     {
-                        var http = new HttpClient();
-                        var attachment = await http.GetByteArrayAsync(message.Attachments.First().ProxyUrl);
-                        var attachmentId = await _client.UploadFile(message.Attachments.First().Filename, attachment);
-                        msg = await _client.Channels.SendMessageAsync(
-                            channel.RevoltChannelId, content,
-                            new() { attachmentId }, isReply ? new[] { reply } : null);
+                        var content = message.Embeds.First(e => e.Type == EmbedType.Rich).Stringify();
+                        DiscordRevoltMessagesContent.LimitedAdd(content, 50);
+                        msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,
+                            content,
+                            replies: isReply ? new[] { reply } : null);
                     }
                     else
-                        msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,
-                            content, replies: isReply ? new[] { reply } : null);
+                    {
+                        var content = message.ToGoodString();
+                        DiscordRevoltMessagesContent.LimitedAdd(content, 50);
+                        if (message.Attachments.Any())
+                        {
+                            var http = new HttpClient();
+                            var attachment = await http.GetByteArrayAsync(message.Attachments.First().ProxyUrl);
+                            var attachmentId =
+                                await _client.UploadFile(message.Attachments.First().Filename, attachment);
+                            msg = await _client.Channels.SendMessageAsync(
+                                channel.RevoltChannelId, content,
+                                new() { attachmentId }, isReply ? new[] { reply } : null);
+                        }
+                        else
+                            msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,
+                                content, replies: isReply ? new[] { reply } : null);
+                    }
 
                     DiscordRevoltMessages.Add(message.Id, msg._id);
                 }
@@ -342,6 +423,7 @@ namespace DiscordBridge
         public ulong DiscordServerId;
         public string RevoltChannelId;
         public string? RevoltServerId;
+        public string Type;
         [JsonIgnore] public DiscordWebhookClient DiscordWebhook;
     }
 
@@ -435,6 +517,53 @@ namespace DiscordBridge
                 "channel_icon_changed" => $"{GetUsername(msg.Content.By)} has changed the channel icon.",
                 _ => msg.Content.Type
             };
+        }
+
+        /// <summary>
+        /// Translate embed title, description, author and footer to markdown.
+        /// </summary>
+        /// <param name="embed"></param>
+        /// <returns></returns>
+        public static string Stringify(this Embed embed)
+        {
+            var res = new StringBuilder(2000);
+
+            void TryWrite(string str)
+            {
+                try
+                {
+                    res.Append(str);
+                }
+                catch
+                {
+                    // probly limited
+                }
+            }
+
+            if (embed.Author.HasValue)
+            {
+                if (embed.Author.Value.Url != null)
+                    TryWrite($"> #### [{embed.Author.Value.Name}]({embed.Author.Value.Url})\n");
+                else
+                    TryWrite($"> #### {embed.Author.Value.Name}\n");
+            }
+
+            if (embed.Title != null)
+            {
+                if (embed.Url != null)
+                    TryWrite($"> # [{embed.Title}]({embed.Url})\n");
+                else
+                    TryWrite($"> # {embed.Title}\n");
+            }
+
+            if (embed.Description != null)
+                TryWrite($"> {embed.Description.Replace("\n", "\n> ")}\n");
+            if (embed.Footer.HasValue)
+            {
+                TryWrite($"> ##### {embed.Footer.Value.Text}\n");
+            }
+
+            return res.ToString();
         }
 
         public static void LimitedAdd<T>(this List<T> list, T item, int maxCount)

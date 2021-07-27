@@ -26,5 +26,18 @@ namespace Revolt
             var res = await Client._restClient.ExecutePostAsync(req);
             return (TextChannel)Client._deserializeChannel(res.Content);
         }
+        
+        public async Task EditServerAsync(string serverId, EditServerRequest request)
+        {
+            var req = new RestRequest($"/servers/{serverId}");
+            req.AddJsonBody(JsonConvert.SerializeObject(request));
+            var res = await Client._restClient.ExecuteAsync(req, Method.PATCH);
+        }
+    }
+
+    public class EditServerRequest
+    {
+        [JsonProperty("name")] public string Name { get; set; }
+        [JsonProperty("categories")] public Category[] Categories { get; set; }
     }
 }

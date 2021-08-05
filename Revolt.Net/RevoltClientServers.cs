@@ -33,6 +33,16 @@ namespace Revolt
             req.AddJsonBody(JsonConvert.SerializeObject(request));
             var res = await Client._restClient.ExecuteAsync(req, Method.PATCH);
         }
+
+        public async Task BanUserAsync(string serverId, string userId, string reason)
+        {
+            var req = new RestRequest($"/servers/{serverId}/bans/{userId}");
+            req.AddJsonBody(JsonConvert.SerializeObject(new
+            {
+                reason
+            }));
+            var res = await Client._restClient.ExecuteAsync(req, Method.PUT);
+        }
     }
 
     public class EditServerRequest

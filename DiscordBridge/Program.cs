@@ -290,7 +290,8 @@ namespace DiscordBridge
                         msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,
                             content, replies: isReply ? new[] { reply } : null);
 
-                    DiscordRevoltMessages.Add(message.Id, msg._id);
+                    if(msg._id != null)
+                        DiscordRevoltMessages.Add(message.Id, msg._id);
                 }
                 catch (Exception exc)
                 {

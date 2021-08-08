@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Web;
 using Newtonsoft.Json;
 
 namespace Revolt
@@ -15,7 +16,7 @@ namespace Revolt
         [JsonProperty("online")] public bool Online { get; internal set; }
         [JsonProperty("avatar")] public Attachment Avatar { get; internal set; }
         [JsonIgnore] public string DefaultAvatarUrl => $"{Client.ApiUrl}/users/{_id}/default_avatar";
-        [JsonIgnore] public string AvatarUrl => $"{Client.AutumnUrl}/{Avatar.Tag}/{Avatar._id}";
+        [JsonIgnore] public string AvatarUrl => $"{Client.AutumnUrl}/{Avatar.Tag}/{Avatar._id}/{HttpUtility.UrlEncode(Avatar.Filename)}";
 
         public Task<RelationshipStatus> AddFriendAsync()
             => Client.Users.AddFriendAsync(Username);

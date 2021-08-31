@@ -48,10 +48,25 @@ namespace Taco
         }
 
         private GroupData _cachedGroupData;
+        private CommunityData _cachedCommunityData;
 
-        public CommunityData CommunityData =>
-            _cachedServerData ?? _cachedGroupData ?? Mongo.GetOrCreateCommunityData(Message.ChannelId,
-                Message.Channel is GroupChannel ? CommunityType.Group : CommunityType.Server);
+        public CommunityData CommunityData
+        {
+            get
+            {
+                var ret = _cachedServerData ?? _cachedGroupData ?? _cachedCommunityData;
+                if (ret != null)
+                    return ret;
+                if (Message.Channel is GroupChannel)
+                {
+                    return GroupData;
+                }
+                return ServerData;
+            }
+        }
+        // public CommunityData CommunityData =>
+        //     _cachedServerData ?? _cachedGroupData ?? Mongo.GetOrCreateCommunityData(Message.ChannelId,
+        //         Message.Channel is GroupChannel ? CommunityType.Group : CommunityType.Server);
 
         public Message Message { get; }
 
@@ -91,5 +106,8 @@ namespace Taco
 
             return serverPerms;
         }
+
+        public Task UpdateCommunityDataAsync()
+            => ServerData != null ? ServerData.UpdateAsync() : GroupData.UpdateAsync();
     }
 }

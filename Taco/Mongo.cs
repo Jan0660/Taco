@@ -176,6 +176,12 @@ namespace Taco
     public class CommunityData
     {
         public bool AllowSnipe { get; set; }
+        public Dictionary<string, string> Tags { get; set; }
+
+        public CommunityData()
+        {
+            Tags = new();
+        }
     }
 
     [BsonIgnoreExtraElements]
@@ -189,5 +195,9 @@ namespace Taco
         }
 
         public GroupData(string id) => GroupId = id;
+
+        public Task UpdateAsync()
+            => Mongo.ServerCollection.FindOneAndReplaceAsync(new BsonDocument("GroupId", GroupId),
+                this.ToBsonDocument());
     }
 }

@@ -16,7 +16,7 @@
       <PackageReference Include="Log73.Extensions.NewtonsoftJson" Version="0.7.0" />
       <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-      <PackageReference Include="NuGet.Protocol" Version="5.10.0" />
+      <PackageReference Include="NuGet.Protocol" Version="5.11.0" />
       <PackageReference Include="Owoify.Net" Version="1.1.0" />
       <PackageReference Include="RestSharp" Version="106.12.0" />
       <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />

@@ -12,7 +12,6 @@ using Newtonsoft.Json.Serialization;
 using RestSharp;
 using Revolt.Channels;
 using Websocket.Client;
-using Console = Log73.Console;
 
 namespace Revolt
 {
@@ -228,17 +227,16 @@ namespace Revolt
                 _webSocket = new(new Uri(ApiInfo.WebsocketUrl));
             }
 
+            // todo: add disconnect and reconnect events
             _webSocket.ReconnectTimeout = null;
             _webSocket.DisconnectionHappened.Subscribe(info =>
             {
-                Console.Error($"websocke disonnect {info.Type}");
                 // is null if disconnected using DisconnectWebSocket()
                 if (_webSocket != null)
                     _webSocket.Start();
             });
             _webSocket.ReconnectionHappened.Subscribe((info =>
             {
-                Console.Debug($"weboscket reconnected {info.Type}");
                 var json = JsonConvert.SerializeObject(_authType switch
                 {
                     AuthType.User => new
@@ -547,7 +545,6 @@ namespace Revolt
                     });
                     break;
                 default:
-                    Console.Warn($"Unimplemented channel_type: {obj.Value<string>("channel_type")}");
                     channel = obj.ToObject<Channel>();
                     break;
             }
@@ -585,7 +582,6 @@ namespace Revolt
             // todo: catch json exception type JsonReaderException
             catch (Exception exception)
             {
-                Console.Exception(exception);
                 var err = JsonConvert.DeserializeObject<RevoltError>(res.Content);
                 if (res.StatusCode == HttpStatusCode.OK)
                     throw new Exception(

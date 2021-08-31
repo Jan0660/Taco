@@ -21,7 +21,7 @@ namespace Revolt
         internal RestClient _restClient = new("https://api.revolt.chat/");
         public RevoltApiInfo ApiInfo { get; private set; }
         internal WebsocketClient _webSocket { get; private set; }
-        internal Session _session { get; }
+        internal Session _session { get; set; }
         internal List<User> _users = new();
         public IReadOnlyList<User> UsersCache => _users.AsReadOnly();
         private List<Channel> _channels = new();
@@ -170,15 +170,50 @@ namespace Revolt
         public RevoltClientSelf Self { get; private set; }
         public RevoltClientServers Servers { get; private set; }
 
-        public RevoltClient(Session session)
+        /// <summary>
+        /// Create an unauthenticated client, use another constructor overload or <see cref="LoginAsync"/> for authenticating.
+        /// </summary>
+        public RevoltClient()
         {
-            _session = session;
-            _restClient.AddDefaultHeader("x-user-id", session.UserId);
-            _restClient.AddDefaultHeader("x-session-token", session.SessionToken);
             this.Channels = new RevoltClientChannels(this);
             this.Users = new RevoltClientUsers(this);
             this.Self = new RevoltClientSelf(this);
             this.Servers = new RevoltClientServers(this);
+        }
+
+        public RevoltClient(Session session) : this()
+        {
+            _useSession(session);
+        }
+
+        public RevoltClient(string botToken) : this()
+        {
+            _restClient.AddDefaultHeader("x-bot-token", botToken);
+            _botToken = botToken;
+            _authType = AuthType.Bot;
+        }
+
+        private void _useSession(Session session)
+        {
+            _session = session;
+            _restClient.AddDefaultHeader("x-user-id", session.UserId);
+            _restClient.AddDefaultHeader("x-session-token", session.SessionToken);
+            _authType = AuthType.User;
+        }
+
+        /// <summary>
+        /// Creates a session and automatically uses it.
+        /// </summary>
+        /// <returns>The session that was created.</returns>
+        public async Task<Session> LoginAsync(string email, string password, string? deviceName = null,
+            string? captcha = null)
+        {
+            var session = await _requestAsync<Session>($"{ApiUrl}/auth/login", body: JsonConvert.SerializeObject(new
+            {
+                email, password, device_name = deviceName, captcha
+            }));
+            _useSession(session);
+            return session;
         }
 
         /// <summary>
@@ -204,12 +239,20 @@ namespace Revolt
             _webSocket.ReconnectionHappened.Subscribe((info =>
             {
                 Console.Debug($"weboscket reconnected {info.Type}");
-                var json = JsonConvert.SerializeObject(new
+                var json = JsonConvert.SerializeObject(_authType switch
                 {
-                    type = "Authenticate", id = _session.Id,
-                    user_id = _session.UserId,
-                    session_token = _session.SessionToken
-                });
+                    AuthType.User => new
+                    {
+                        type = "Authenticate", id = _session.Id,
+                        user_id = _session.UserId,
+                        session_token = _session.SessionToken
+                    },
+                    AuthType.Bot => new
+                    {
+                        type = "Authenticate", token = _botToken
+                    }
+                }
+                    );
                 _webSocket.Send(json);
             }));
 
@@ -540,13 +583,14 @@ namespace Revolt
                 });
             }
             // todo: catch json exception type JsonReaderException
-            catch(Exception exception)
+            catch (Exception exception)
             {
                 Console.Exception(exception);
                 var err = JsonConvert.DeserializeObject<RevoltError>(res.Content);
                 if (res.StatusCode == HttpStatusCode.OK)
                     throw new Exception(
-                        "Internal exception deserializing JSON response from Revolt, please check your Revolt.Net version.", exception);
+                        "Internal exception deserializing JSON response from Revolt, please check your Revolt.Net version.",
+                        exception);
                 throw new RevoltException(err!, res);
             }
 
@@ -586,6 +630,8 @@ namespace Revolt
                 await new HttpClient().GetStringAsync(AutumnUrl))!;
 
         private static Random rng = new();
+        private AuthType _authType;
+        private readonly string _botToken;
 
         public static string GenerateNonce()
             => DateTimeOffset.Now.ToUnixTimeSeconds() + rng.Next().ToString();
@@ -620,14 +666,15 @@ namespace Revolt
 
     internal static class RevoltInternalExtensionMethods
     {
-        public static void AttachClient(this User user, RevoltClient client)
+        public static User AttachClient(this User user, RevoltClient client)
         {
             user.Client = client;
             if (user.Avatar != null)
                 user.Avatar.Client = client;
+            return user;
         }
 
-        public static void AttachClient(this User[] users, RevoltClient client)
+        public static User[] AttachClient(this User[] users, RevoltClient client)
         {
             foreach (var user in users)
             {
@@ -635,6 +682,14 @@ namespace Revolt
                 if (user.Avatar != null)
                     user.Avatar.Client = client;
             }
+
+            return users;
         }
+    }
+
+    internal enum AuthType
+    {
+        Bot,
+        User
     }
 }

@@ -108,8 +108,8 @@ namespace Revolt
             return messages;
         }
 
-        public Task<User[]> GetMembersAsync(string id)
-            => Client._requestAsync<User[]>($"/channels/{id}/members");
+        public async Task<User[]> GetMembersAsync(string id)
+            => (await Client._requestAsync<User[]>($"/channels/{id}/members")).AttachClient(Client);
     }
 
     public enum MessageSort

@@ -107,6 +107,7 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             SnipeModule.Init(_client);
             _client.MessageReceived += ClientOnMessageReceived;
             CommandHandler.LoadCommands();
+            // todo: remove after using bot api
             var r = await _client.Users.GetRelationships();
             foreach (var h in r)
             {

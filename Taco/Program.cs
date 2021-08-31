@@ -63,9 +63,7 @@ namespace Taco
 
             _configureLogging();
 
-            _client =
-                new RevoltClient(
-                    JsonConvert.DeserializeObject<Session>(await File.ReadAllTextAsync("./session.json"))!);
+            _client = new RevoltClient(Config.BotToken, Config.UserId);
 
             #region Event handlers
 
@@ -107,13 +105,6 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             SnipeModule.Init(_client);
             _client.MessageReceived += ClientOnMessageReceived;
             CommandHandler.LoadCommands();
-            // todo: remove after using bot api
-            var r = await _client.Users.GetRelationships();
-            foreach (var h in r)
-            {
-                if (h.Status == RelationshipStatus.Incoming)
-                    await _client.Users.AddFriendAsync(_client.UsersCache.First(u => u._id == h.UserId).Username);
-            }
 
             BingReminder.Init();
             StartTime = DateTime.Now;

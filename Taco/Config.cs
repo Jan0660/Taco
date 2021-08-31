@@ -12,6 +12,7 @@ namespace Taco
         public string BingCoreFx;
         public List<string> BingReminderChannels = new();
         public string MongoUrl;
+        public string BotToken;
         public string DatabaseName;
         public bool AnnoyToggle;
         public string Presence = "Idle";
@@ -19,6 +20,7 @@ namespace Taco
         public string Status = "Amogus";
         public int UpdateTime = 20000;
         public List<string> CodeOfConduct = new();
+        public string UserId;
 
         public Task Save()
             => File.WriteAllTextAsync("./config.json", JsonConvert.SerializeObject(this));

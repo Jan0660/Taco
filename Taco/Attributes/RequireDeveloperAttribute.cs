@@ -6,9 +6,9 @@ namespace Taco.Attributes
 {
     public class RequireDeveloperAttribute : PreconditionAttribute
     {
-        public override Task<PreconditionResult> Evaluate(Message message)
+        public override Task<PreconditionResult> Evaluate(CommandContext context)
         {
-            var data = Mongo.GetUserData(message.AuthorId);
+            var data = Mongo.GetUserData(context.Message.AuthorId);
             if (data is {PermissionLevel: (PermissionLevel)100})
                 return Task.FromResult(PreconditionResult.FromSuccess());
             return Task.FromResult(PreconditionResult.FromError("You suck."));

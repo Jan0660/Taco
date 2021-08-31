@@ -7,9 +7,9 @@ namespace Taco.Attributes
 {
     public class TextChannelOnlyAttribute : PreconditionAttribute
     {
-        public override Task<PreconditionResult> Evaluate(Message message)
+        public override Task<PreconditionResult> Evaluate(CommandContext context)
         {
-            if (message.Channel is TextChannel)
+            if (context.Channel is TextChannel)
                 return Task.FromResult(PreconditionResult.FromSuccess());
             return Task.FromResult(PreconditionResult.FromError("This command can only be executed in a server."));
         }

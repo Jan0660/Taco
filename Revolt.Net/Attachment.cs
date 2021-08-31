@@ -14,7 +14,7 @@ namespace Revolt
     public class AttachmentMetadata
     {
         [JsonProperty("type")] public string Type { get; private set; }
-        [JsonProperty("width")] public int? Width { get; private set; }
-        [JsonProperty("height")] public int? Height { get; private set; }
+        [JsonProperty("width")] public long? Width { get; private set; }
+        [JsonProperty("height")] public long? Height { get; private set; }
     }
 }

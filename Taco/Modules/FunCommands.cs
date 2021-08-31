@@ -36,7 +36,10 @@ namespace Taco.Modules
         {
             var content = await new WebClient().DownloadStringTaskAsync("https://www.bing.com/version");
             var matches = new Regex("(?<=<td>build</td><td>)(.+?)(?=</td>)").Matches(content);
-            await ReplyAsync($@"> **SNRCode:** {matches[0]}
+            if (matches.Count == 1)
+                await ReplyAsync($@"> **SNRCode:** {matches[0]}");
+            else
+                await ReplyAsync($@"> **SNRCode:** {matches[0]}
 > **CoreCLR:** {matches[1]}
 > **CoreFX:** {matches[2]}");
         }
@@ -47,7 +50,7 @@ namespace Taco.Modules
         public async Task BingReminderToggle()
         {
             if (Message.AuthorId == "01EX40TVKYNV114H8Q8VWEGBWQ"
-                | Message.AuthorId == ((GroupChannel) Message.Channel).OwnerId)
+                | Message.AuthorId == ((GroupChannel)Message.Channel).OwnerId)
             {
                 if (Program.Config.BingReminderChannels.Contains(Message.ChannelId))
                 {

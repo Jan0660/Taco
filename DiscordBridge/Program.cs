@@ -187,7 +187,7 @@ namespace DiscordBridge
                 return channel.DiscordWebhook.SendMessageAsync(msg.Stringify(), allowedMentions: new AllowedMentions(),
                     avatarUrl: (msg.Content.Id == null ? null : Client.Users.Get(msg.Content.Id).AvatarUrl) ??
                                group.Icon?.GetUrl() ?? "https://app.revolt.chat/assets/group.png",
-                    username: "REVOLT Bridge");
+                    username: "Revolt Bridge");
             };
             DiscordClient = new DiscordSocketClient();
             await DiscordClient.LoginAsync(TokenType.Bot, Config.DiscordBotToken);

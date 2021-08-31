@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Log73;
 using Log73.ColorSchemes;
+using Log73.Extensions;
 using Newtonsoft.Json;
 using Revolt;
 using Revolt.Channels;
@@ -203,10 +204,10 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                         exception.Message == "COMMAND_NOT_FOUND")
                         return;
                     Console.Exception(exception);
-                    await message.Channel.SendMessageAsync($@"> ## Death occurred
+                    await message.Channel.SendMessageAsync($@"> ## An internal exception occurred
 > 
 > ```csharp
-> {exception.Message.Replace("\n", "\n> ")}
+> ({exception.GetType().FullName}) {exception.Message.Replace("\n", "\n> ")}
 > ```");
                 }
             }
@@ -233,7 +234,7 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             MessageTypes.Debug.Style.Color = Color.FromArgb(255, 191, 254);
 #endif
             Console.Options.LogLevel = LogLevel.Debug;
-            Console.Options.ObjectSerialization = ConsoleOptions.ObjectSerializationMethod.Json;
+            Console.Configure.UseNewtonsoftJson();
             var msgTypes = MessageTypes.AsArray();
             var timeLogInfo = new TimeLogInfo()
             {

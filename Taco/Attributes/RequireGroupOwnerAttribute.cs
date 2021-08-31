@@ -7,9 +7,9 @@ namespace Taco.Attributes
 {
     public class RequireGroupOwnerAttribute : PreconditionAttribute
     {
-        public override Task<PreconditionResult> Evaluate(Message message)
+        public override Task<PreconditionResult> Evaluate(CommandContext context)
         {
-            if (message.Channel is GroupChannel group && group.OwnerId == message.AuthorId)
+            if (context.Channel is GroupChannel group && group.OwnerId == context.Message.AuthorId)
                 return Task.FromResult(PreconditionResult.FromSuccess());
             return Task.FromResult(PreconditionResult.FromError("This command can only be ran by the owner of this group."));
         }

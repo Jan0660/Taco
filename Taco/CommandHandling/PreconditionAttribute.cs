@@ -7,6 +7,6 @@ namespace Taco.Attributes
 {
     public abstract class PreconditionAttribute : Attribute
     {
-        public abstract Task<PreconditionResult> Evaluate(Message message);
+        public abstract Task<PreconditionResult> Evaluate(CommandContext context);
     }
 }

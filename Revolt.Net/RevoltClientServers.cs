@@ -26,5 +26,16 @@ namespace Revolt
             var res = await Client._restClient.ExecutePostAsync(req);
             return (TextChannel)Client._deserializeChannel(res.Content);
         }
+
+        public Task<ServerMembers> GetMembersAsync(string serverId)
+            => Client._requestAsync<ServerMembers>($"/servers/{serverId}/members");
+    }
+
+    public struct ServerMembers
+    {
+        [JsonProperty("users")]
+        public User[] Users { get; internal set; }
+        [JsonProperty("members")]
+        public Member[] Members { get; internal set; }
     }
 }

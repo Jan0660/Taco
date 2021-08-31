@@ -14,9 +14,12 @@ namespace Revolt
         [JsonProperty("badges")] public int BadgesRaw { get; internal set; }
         [JsonProperty("relationship")] public RelationshipStatus Relationship { get; internal set; }
         [JsonProperty("online")] public bool Online { get; internal set; }
-        [JsonProperty("avatar")] public Attachment Avatar { get; internal set; }
+        [JsonProperty("avatar")] public Attachment? Avatar { get; internal set; }
         [JsonIgnore] public string DefaultAvatarUrl => $"{Client.ApiUrl}/users/{_id}/default_avatar";
-        [JsonIgnore] public string AvatarUrl => $"{Client.AutumnUrl}/{Avatar.Tag}/{Avatar._id}/{HttpUtility.UrlEncode(Avatar.Filename)}";
+        /// <summary>
+        /// Gets URL to user's avatar, if they don't have one, falls back to <see cref="DefaultAvatarUrl"/>.
+        /// </summary>
+        [JsonIgnore] public string AvatarUrl => Avatar == null ? DefaultAvatarUrl : $"{Client.AutumnUrl}/{Avatar.Tag}/{Avatar._id}/{HttpUtility.UrlEncode(Avatar.Filename)}";
 
         public Task<RelationshipStatus> AddFriendAsync()
             => Client.Users.AddFriendAsync(Username);

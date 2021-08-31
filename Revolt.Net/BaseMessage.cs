@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Revolt.Channels;
 
@@ -13,5 +14,8 @@ namespace Revolt
 
         [JsonProperty("attachments")] public Attachment[]? Attachments;
         // todo: edited?
+
+        public Task DeleteAsync()
+            => Client.Channels.DeleteMessageAsync(ChannelId, _id);
     }
 }

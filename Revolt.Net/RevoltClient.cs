@@ -261,7 +261,7 @@ namespace Revolt
                         {
                             {
                                 _pingTimer?.Stop();
-                                _pingTimer = new Timer(30000d);
+                                _pingTimer = new Timer(30_000d);
                                 _pingTimer.Elapsed += (sender, args) =>
                                 {
                                     _webSocket.Send(JsonConvert.SerializeObject(new
@@ -278,7 +278,7 @@ namespace Revolt
                                 foreach (var userToken in packet["users"]!)
                                 {
                                     var user = userToken.ToObject<User>();
-                                    user!.Client = this;
+                                    user!.AttachClient(this);
                                     _users.Add(user);
                                 }
 
@@ -291,7 +291,11 @@ namespace Revolt
                                 }
 
                                 foreach (var serverToken in packet["servers"]!)
-                                    ServersCache.Add(serverToken.ToObject<Server>());
+                                {
+                                    var server = serverToken.ToObject<Server>();
+                                    server!.Client = this;
+                                    ServersCache.Add(server);
+                                }
 
                                 foreach (var handler in _onReady)
                                 {
@@ -516,11 +520,53 @@ namespace Revolt
             return obj;
         }
 
-        internal async Task<T> _getObject<T>(string url) where T : RevoltObject
+        internal Task<T> _requestAsync<T>(string url, Method method = Method.GET, string body = null)
         {
-            var req = new RestRequest(url);
-            var res = await _restClient.ExecuteGetAsync(req);
-            return _deserialize<T>(res.Content);
+            var req = new RestRequest(url, method);
+            if (body != null)
+                req.AddJsonBody(body);
+            return _requestAsync<T>(req);
+        }
+
+        internal async Task<T> _requestAsync<T>(RestRequest request)
+        {
+            var res = await _restClient.ExecuteAsync(request);
+            T val;
+            try
+            {
+                val = JsonConvert.DeserializeObject<T>(res.Content, new JsonSerializerSettings()
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                });
+            }
+            // todo: catch json exception type JsonReaderException
+            catch(Exception exception)
+            {
+                Console.Exception(exception);
+                var err = JsonConvert.DeserializeObject<RevoltError>(res.Content);
+                if (res.StatusCode == HttpStatusCode.OK)
+                    throw new Exception(
+                        "Internal exception deserializing JSON response from Revolt, please check your Revolt.Net version.", exception);
+                throw new RevoltException(err!, res);
+            }
+
+            switch (val)
+            {
+                case User user:
+                    user.AttachClient(this);
+                    break;
+                case RevoltObject revoltObject:
+                    revoltObject.Client = this;
+                    break;
+                case RevoltObject[] revoltObjects:
+                {
+                    foreach (var obj in revoltObjects)
+                        obj.Client = this;
+                    break;
+                }
+            }
+
+            return val;
         }
 
         public VortexInformation GetVortexInfo()
@@ -557,5 +603,38 @@ namespace Revolt
     {
         [JsonProperty("id")] public string Id { get; set; }
         [JsonProperty("mention")] public bool Mention { get; set; }
+    }
+
+    public class RevoltException : Exception
+    {
+        public RevoltError Error { get; }
+
+        public RevoltException(RevoltError error, IRestResponse response) : base(
+            $"Revolt responded with {(int)response.StatusCode}: {error.Type}.") => (Error) = (error);
+    }
+
+    public class RevoltError
+    {
+        [JsonProperty("type")] public string Type { get; set; }
+    }
+
+    internal static class RevoltInternalExtensionMethods
+    {
+        public static void AttachClient(this User user, RevoltClient client)
+        {
+            user.Client = client;
+            if (user.Avatar != null)
+                user.Avatar.Client = client;
+        }
+
+        public static void AttachClient(this User[] users, RevoltClient client)
+        {
+            foreach (var user in users)
+            {
+                user.Client = client;
+                if (user.Avatar != null)
+                    user.Avatar.Client = client;
+            }
+        }
     }
 }

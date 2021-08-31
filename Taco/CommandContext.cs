@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Revolt;
 using Revolt.Channels;
 
@@ -55,6 +57,11 @@ namespace Taco
 
         public User User => Message.Author;
 
+        public Server Server =>
+            Program.Client.ServersCache.FirstOrDefault(s => s._id == (Message?.Channel as TextChannel)?.ServerId);
+
+        public Channel Channel => Message.Channel;
+
         public CommandContext(Message message)
         {
             Message = message;
@@ -66,6 +73,23 @@ namespace Taco
             if (data != null)
                 _cachedUserData = data;
             return data;
+        }
+
+        public async Task<ServerPermission> GetServerPermissionsAsync()
+        {
+            var members = (await Program.Client.Servers.GetMembersAsync(Server._id)).Members;
+            var member = members.FirstOrDefault(m => m._id.User == User._id);
+            ServerPermission serverPerms = (ServerPermission)Server.DefaultPermissionsRaw[0];
+            if (Server.Roles != null)
+            {
+                var roles = Server.Roles.Where(r => member.Roles.Contains(r.Key));
+                foreach (var role in roles)
+                {
+                    serverPerms = serverPerms | role.Value.ServerPermissions;
+                }
+            }
+
+            return serverPerms;
         }
     }
 }

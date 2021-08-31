@@ -1,10 +1,15 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
+using Revolt;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using Taco.Attributes;
 using Taco.CommandHandling;
+using Console = Log73.Console;
 
 namespace Taco.Modules
 {
@@ -142,6 +147,7 @@ namespace Taco.Modules
         [Command("roadmap")]
         public Task Roadmap()
             => ReplyAsync("Revolt's roadmap is available here: https://revolt.chat/roadmap");
+
         [Command("weblate")]
         public Task Weblate()
             => ReplyAsync("https://weblate.insrt.uk/engage/revolt/?utm_source=taco");
@@ -157,8 +163,45 @@ namespace Taco.Modules
         [Command("coc")]
         public Task FullCodeOfConduct() => ReplyAsync("> " + string.Join("\n> ", Program.Config.CodeOfConduct));
 
-        [Command("invite", "invites", "servers")]
-        public Task ServerInvites() => ReplyAsync(@"> [**Revolt Testers**](https://app.revolt.chat/invite/QakWe0fX)
-> [**Taco/Jan**](https://app.revolt.chat/invite/ewB5kwKG)");
+        [Command("permtest")]
+        public async Task PermissionTest()
+        {
+            var members = (await Program.Client.Servers.GetMembersAsync(Context.Server._id)).Members;
+            var member = members.FirstOrDefault(m => m._id.User == Context.User._id);
+            Console.Debug(member.Nickname);
+            ServerPermission serverPerms = (ServerPermission)Context.Server.DefaultPermissionsRaw[0];
+            ChannelPermission channelPerms = (ChannelPermission)Context.Server.DefaultPermissionsRaw[1];
+            if (Context.Server.Roles != null)
+            {
+                var roles = Context.Server.Roles.Where(r => member.Roles.Contains(r.Key));
+                foreach (var role in roles)
+                {
+                    channelPerms = channelPerms | role.Value.ChannelPermissions;
+                    serverPerms = serverPerms | role.Value.ServerPermissions;
+                }
+            }
+
+            StringBuilder perms = new();
+            perms.Append("> ## Server Permissions\n");
+            foreach (var enumVal in Enum.GetValues<ServerPermission>())
+            {
+                perms.AppendLine("> " + (serverPerms.HasFlag(enumVal) ? ":white_check_mark:" : ":x:") +
+                                 $" {enumVal.ToString()}");
+            }
+
+            perms.Append("> ## Channel Permissions\n");
+            foreach (var enumVal in Enum.GetValues<ChannelPermission>())
+            {
+                perms.AppendLine("> " + (channelPerms.HasFlag(enumVal) ? ":white_check_mark:" : ":x:") +
+                                 $" {enumVal.ToString()}");
+            }
+
+            await ReplyAsync(perms.ToString());
+        }
+
+        [Command("prectest")]
+        [RequireServerPermissions(ServerPermission.BanMembers | ServerPermission.ManageServer)]
+        public Task PreconditionTest()
+            => InlineReplyAsync("test maybe worked?");
     }
 }

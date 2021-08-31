@@ -3,8 +3,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevoltBot", "Taco\Taco.cspr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Revolt.Net", "Revolt.Net\Revolt.Net.csproj", "{51307A35-3ABF-4899-9B20-CF91D1FCA323}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Saltus", "Saltus\Saltus.csproj", "{3EEC9C82-B9E5-4BF8-9B6A-F75ADEAA30FF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBridge", "DiscordBridge\DiscordBridge.csproj", "{99660303-3636-45A6-B72B-ABCAD24A238D}"
 EndProject
 Global
@@ -21,10 +19,6 @@ Global
 		{51307A35-3ABF-4899-9B20-CF91D1FCA323}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51307A35-3ABF-4899-9B20-CF91D1FCA323}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51307A35-3ABF-4899-9B20-CF91D1FCA323}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3EEC9C82-B9E5-4BF8-9B6A-F75ADEAA30FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3EEC9C82-B9E5-4BF8-9B6A-F75ADEAA30FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3EEC9C82-B9E5-4BF8-9B6A-F75ADEAA30FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3EEC9C82-B9E5-4BF8-9B6A-F75ADEAA30FF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{99660303-3636-45A6-B72B-ABCAD24A238D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{99660303-3636-45A6-B72B-ABCAD24A238D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99660303-3636-45A6-B72B-ABCAD24A238D}.Release|Any CPU.ActiveCfg = Release|Any CPU

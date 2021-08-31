@@ -81,7 +81,7 @@ namespace Taco.CommandHandling
             var args = relevant.Remove(0, alias.Length + (alias.Length == relevant.Length ? 0 : 1));
             foreach (var precondition in command.Preconditions)
             {
-                var result = await precondition.Evaluate(message);
+                var result = await precondition.Evaluate(context);
                 if (!result.IsSuccess)
                 {
                     await message.Channel.SendMessageAsync(result.Message);

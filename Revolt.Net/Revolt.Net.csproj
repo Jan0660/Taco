@@ -7,7 +7,7 @@
         <Nullable>annotations</Nullable>
         <NullableContextOptions>enable</NullableContextOptions>
         <Version>0.0.6</Version>
-        <LangVersion>latest</LangVersion>
+        <LangVersion>preview</LangVersion>
         <Description>The .NET library for Revolt with a DOD and OOP design.</Description>
         <RootNamespace>Revolt</RootNamespace>
         <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
@@ -17,10 +17,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Log73" Version="0.6.1" />
+      <PackageReference Include="Log73" Version="0.7.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-      <PackageReference Include="RestSharp" Version="106.11.7" />
-      <PackageReference Include="Websocket.Client" Version="4.3.32" />
+      <PackageReference Include="RestSharp" Version="106.12.0" />
+      <PackageReference Include="Websocket.Client" Version="4.3.35" />
     </ItemGroup>
 
 </Project>

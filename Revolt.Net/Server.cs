@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -35,12 +36,12 @@ namespace Revolt
 
         [JsonProperty("default_permissions")] public int[] DefaultPermissionsRaw { get; internal set; }
 
-        [JsonIgnore] public Member[] MemberCache { get; private set; }
+        [JsonIgnore] public List<Member> MemberCache { get; private set; } = new();
 
         public async Task<ServerMembers> GetMembersAsync()
         {
             var members = await Client.Servers.GetMembersAsync(_id);
-            MemberCache = members.Members;
+            MemberCache = members.Members.ToList();
             // todo: make some magic internal method on client for caching a User that like yes
             return members;
         }

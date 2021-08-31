@@ -12,7 +12,6 @@ using Discord.Webhook;
 using Discord.WebSocket;
 using Log73;
 using Newtonsoft.Json;
-using RestSharp;
 using Revolt;
 using Revolt.Channels;
 using Attachment = Revolt.Attachment;
@@ -34,7 +33,7 @@ namespace DiscordBridge
         public static readonly Regex ReplaceDiscordMentions = new("<@!?[0-9]{1,20}>", RegexOptions.Compiled);
         public static readonly Regex ReplaceDiscordEmotes = new("<a?:.+?:[0-9]{1,20}>", RegexOptions.Compiled);
 
-        static async Task Main(string[] args)
+        static async Task Main()
         {
 #if DEBUG
             Console.Options.UseAnsi = false;
@@ -90,7 +89,7 @@ namespace DiscordBridge
                     if (replyToId == 0)
                         replyToId = DiscordRevoltMessages
                             .FirstOrDefault(m => m.Value == message.Replies?.FirstOrDefault()).Key;
-                    Task updateReply = null;
+                    Func<Task> updateReply = null;
                     if (replyToId != 0)
                     {
                         var index = embeds.Count;
@@ -101,7 +100,7 @@ namespace DiscordBridge
                                 $"https://discord.com/channels/{channel.DiscordServerId}/{channel.DiscordChannelId}/{replyToId}",
                             Color = new Color(47, 49, 54),
                         }.Build());
-                        updateReply = new Task(async () =>
+                        updateReply = async () =>
                         {
                             var msg = await DiscordClient.GetGuild(channel.DiscordServerId)
                                 .GetTextChannel(channel.DiscordChannelId)
@@ -120,7 +119,7 @@ namespace DiscordBridge
                             }.Build();
                             await channel.DiscordWebhook.ModifyMessageAsync(
                                 RevoltDiscordMessages[message._id].MessageId, x => x.Embeds = embeds);
-                        });
+                        };
                     }
 
                     if (message.Attachments != null)
@@ -149,7 +148,7 @@ namespace DiscordBridge
                             : message.Author.AvatarUrl + "?size=256", allowedMentions: new(), embeds: embeds);
                     RevoltDiscordMessages.Add(message._id, (msg, channel.DiscordChannelId));
                     if (updateReply != null)
-                        updateReply.Start();
+                        await updateReply();
                 }
                 catch (Exception exc)
                 {

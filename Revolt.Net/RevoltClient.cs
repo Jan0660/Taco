@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -12,15 +13,16 @@ using Newtonsoft.Json.Serialization;
 using RestSharp;
 using Revolt.Channels;
 using Websocket.Client;
+using Websocket.Client.Models;
 
 namespace Revolt
 {
     public class RevoltClient
     {
         internal RestClient _restClient = new("https://api.revolt.chat/");
-        public RevoltApiInfo ApiInfo { get; private set; }
-        internal WebsocketClient _webSocket { get; private set; }
-        internal Session _session { get; set; }
+        public RevoltApiInfo? ApiInfo { get; private set; }
+        internal WebsocketClient? _webSocket { get; private set; }
+        internal Session? _session { get; set; }
         internal List<User> _users = new();
         public IReadOnlyList<User> UsersCache => _users.AsReadOnly();
         private List<Channel> _channels = new();
@@ -161,6 +163,35 @@ namespace Revolt
             add => _channelUpdate.Add(value);
             remove => _channelUpdate.Remove(value);
         }
+        private List<Func<DisconnectionInfo, Task>> _disconnected = new();
+
+        public event Func<DisconnectionInfo, Task> Disconnected
+        {
+            add => _disconnected.Add(value);
+            remove => _disconnected.Remove(value);
+        }
+        private List<Func<ReconnectionInfo, Task>> _reconnected = new();
+
+        public event Func<ReconnectionInfo, Task> Reconnected
+        {
+            add => _reconnected.Add(value);
+            remove => _reconnected.Remove(value);
+        }
+        
+        private List<Func<Server, Task>> _serverDeleted = new();
+
+        public event Func<Server, Task> ServerDeleted
+        {
+            add => _serverDeleted.Add(value);
+            remove => _serverDeleted.Remove(value);
+        }
+        private List<Func<Member, Member, Task>> _serverMemberUpdated = new();
+
+        public event Func<Member, Member, Task> ServerMemberUpdated
+        {
+            add => _serverMemberUpdated.Add(value);
+            remove => _serverMemberUpdated.Remove(value);
+        }
 
         #endregion
 
@@ -185,11 +216,12 @@ namespace Revolt
             _useSession(session);
         }
 
-        public RevoltClient(string botToken) : this()
+        public RevoltClient(string botToken, string userId) : this()
         {
             _restClient.AddDefaultHeader("x-bot-token", botToken);
             _botToken = botToken;
             _authType = AuthType.Bot;
+            Self.UserId = userId;
         }
 
         private void _useSession(Session session)
@@ -198,6 +230,7 @@ namespace Revolt
             _restClient.AddDefaultHeader("x-user-id", session.UserId);
             _restClient.AddDefaultHeader("x-session-token", session.SessionToken);
             _authType = AuthType.User;
+            Self.UserId = _session.UserId;
         }
 
         /// <summary>
@@ -234,6 +267,10 @@ namespace Revolt
                 // is null if disconnected using DisconnectWebSocket()
                 if (_webSocket != null)
                     _webSocket.Start();
+                foreach (var handler in _disconnected)
+                {
+                    handler.Invoke(info);
+                }
             });
             _webSocket.ReconnectionHappened.Subscribe((info =>
             {
@@ -248,10 +285,15 @@ namespace Revolt
                     AuthType.Bot => new
                     {
                         type = "Authenticate", token = _botToken
-                    }
+                    },
+                    _ => throw new Exception("Invalid AuthType.")
                 }
                     );
                 _webSocket.Send(json);
+                foreach (var handler in _reconnected)
+                {
+                    handler.Invoke(info);
+                }
             }));
 
             _webSocket.MessageReceived.Subscribe((message =>
@@ -303,7 +345,7 @@ namespace Revolt
                             {
                                 _pingTimer?.Stop();
                                 _pingTimer = new Timer(30_000d);
-                                _pingTimer.Elapsed += (sender, args) =>
+                                _pingTimer.Elapsed += (_, _) =>
                                 {
                                     _webSocket.Send(JsonConvert.SerializeObject(new
                                     {
@@ -452,12 +494,50 @@ namespace Revolt
                             if (user == null)
                                 return;
                             JObject data = packet.Value<JObject>("data");
-                            if (data.ContainsKey("avatar"))
+                            if (data!.ContainsKey("avatar"))
                                 user.Avatar = data.Value<JObject>("avatar")!.ToObject<Attachment>()!;
 
                             if (data.ContainsKey("username"))
                                 user.Username = data.Value<string>("username")!;
 
+                            break;
+                        }
+                        case "ServerDelete":
+                        {
+                            var id = packet.Value<string>("id");
+                            var server = ServersCache.FirstOrDefault(s => s._id == id);
+                            foreach (var handler in _serverDeleted)
+                                handler.Invoke(server);
+                            break;
+                        }
+                        case "ServerMemberUpdate":
+                        {
+                            var serverId = packet.Value<string>("id");
+                            var partialMember = packet.Value<Member>("data");
+                            var server = ServersCache.First(s => s._id == serverId);
+                            var memberIndex = server.MemberCache.FindIndex(m => m._id == partialMember!._id);
+                            Member cached = null;
+                            if (memberIndex != -1)
+                                cached = server.MemberCache[memberIndex];
+                            var remove = packet.Value<string>("remove");
+                            // patch member by copying data from (already cached) onto the partial object received
+                            if (cached != null)
+                            {
+                                if (cached.Nickname != null && partialMember!.Nickname != null)
+                                    partialMember.Nickname = cached.Nickname;
+                                if (cached.Avatar != null && partialMember!.Avatar != null)
+                                    partialMember.Avatar = cached.Avatar;
+                                if (cached.Roles != null && partialMember!.Roles != null)
+                                    partialMember.Roles = cached.Roles;
+                            }
+                            if (remove == "Nickname")
+                                partialMember!.Nickname = null;
+                            if (remove == "Avatar")
+                                partialMember!.Avatar = null;
+                            if (memberIndex != -1)
+                                server.MemberCache[memberIndex] = partialMember;
+                            foreach (var handler in _serverMemberUpdated)
+                                handler.Invoke(cached, partialMember);
                             break;
                         }
                     }
@@ -560,7 +640,7 @@ namespace Revolt
             return obj;
         }
 
-        internal Task<T> _requestAsync<T>(string url, Method method = Method.GET, string body = null)
+        internal Task<T> _requestAsync<T>(string url, Method method = Method.GET, string? body = null)
         {
             var req = new RestRequest(url, method);
             if (body != null)
@@ -568,6 +648,16 @@ namespace Revolt
             return _requestAsync<T>(req);
         }
 
+        internal Task _requestAsync(string url, Method method = Method.GET, string? body = null)
+        {
+            var req = new RestRequest(url, method);
+            if (body != null)
+                req.AddJsonBody(body);
+            return _requestAsync(req);
+        }
+
+        internal Task _requestAsync(RestRequest request)
+            => _restClient.ExecuteAsync(request);
         internal async Task<T> _requestAsync<T>(RestRequest request)
         {
             var res = await _restClient.ExecuteAsync(request);
@@ -631,13 +721,21 @@ namespace Revolt
 
         public static string GenerateNonce()
             => DateTimeOffset.Now.ToUnixTimeSeconds() + rng.Next().ToString();
+
+        internal void CacheChannel(Channel channel)
+        {
+            var cached = _channels.FirstOrDefault(c => c._id == channel._id);
+            if (cached != null)
+                _channels.Remove(cached);
+            _channels.Add(channel);
+        }
     }
 
     public class SendMessageRequest
     {
         [JsonProperty("content")] public string Content;
         [JsonProperty("nonce")] public string Nonce = RevoltClient.GenerateNonce();
-        [JsonProperty("attachments")] public List<string>? Attachments = null;
+        [JsonProperty("attachments")] public List<string>? Attachments;
         [JsonProperty("replies")] public MessageReply[] Replies;
     }
 

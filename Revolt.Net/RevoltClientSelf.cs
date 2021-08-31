@@ -8,7 +8,7 @@ namespace Revolt
     public class RevoltClientSelf
     {
         public RevoltClient Client { get; }
-        public string UserId => Client._session.UserId;
+        public string UserId { get; internal set; }
 
         public RevoltClientSelf(RevoltClient client)
         {
@@ -16,12 +16,7 @@ namespace Revolt
         }
 
         public Task EditProfileAsync(UserInfo info)
-        {
-            var req = new RestRequest($"/users/01EX40TVKYNV114H8Q8VWEGBWQ/", Method.PATCH);
-            req.AddJsonBody(JsonConvert.SerializeObject(info));
-            var res = Client._restClient.ExecuteAsync(req).Result;
-            return Task.CompletedTask;
-        }
+            => Client._requestAsync($"{Client.ApiUrl}/users/{UserId}", Method.PATCH, JsonConvert.SerializeObject(info));
 
         // todo: edit username and passwd thing route
     }
@@ -35,6 +30,7 @@ namespace Revolt
     public class Status
     {
         [JsonProperty("text")] public string Text;
+
         // todo: presence enum
         [JsonProperty("presence")] public string Presence;
     }

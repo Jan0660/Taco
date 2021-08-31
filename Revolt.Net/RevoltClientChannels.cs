@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RestSharp;
@@ -19,16 +18,26 @@ namespace Revolt
         }
 
 
+        /// <summary>
+        /// Gets a channel from cache by id, if not cached, fetches it.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public Channel Get(string id)
         {
             Channel channel = Client.ChannelsCache.FirstOrDefault(u => u._id == id);
             if (channel != null)
                 return channel;
-            return Client._deserializeChannel(Client._restClient.Get(new RestRequest($"/channels/{id}/")).Content);
+            channel = Client._deserializeChannel(Client._restClient.Get(new RestRequest($"/channels/{id}/")).Content);
+            Client.CacheChannel(channel);
+            return channel;
         }
 
+        public Channel? GetCached(string id)
+            => Client.ChannelsCache.FirstOrDefault(c => c._id == id);
+
         public async Task<SelfMessage> SendMessageAsync(string channelId, string content,
-            List<string> attachmentIds = null, MessageReply[] replies = null)
+            List<string>? attachmentIds = null, MessageReply[]? replies = null)
         {
             if ((content == "" | content == null) && (attachmentIds == null))
                 throw new Exception("Cannot send empty message without an attachment.");
@@ -44,22 +53,18 @@ namespace Revolt
         }
 
         public Task BeginTypingAsync(string channelId)
-        {
-            return Client._webSocket.SendInstant(JsonConvert.SerializeObject(new
+            => Client._webSocket!.SendInstant(JsonConvert.SerializeObject(new
             {
                 type = "BeginTyping",
                 channel = channelId
             }));
-        }
 
         public Task EndTypingAsync(string channelId)
-        {
-            return Client._webSocket.SendInstant(JsonConvert.SerializeObject(new
+            => Client._webSocket!.SendInstant(JsonConvert.SerializeObject(new
             {
                 type = "EndTyping",
                 channel = channelId
             }));
-        }
 
         /// <summary>
         /// Closes DM channel or leaves group channel
@@ -78,20 +83,16 @@ namespace Revolt
                 Method.DELETE));
 
         public Task EditMessageAsync(string channelId, string messageId, string newContent)
-        {
-            var req = new RestRequest($"/channels/{channelId}/messages/{messageId}");
-            req.AddJsonBody(new
+            => Client._requestAsync($"{Client.ApiUrl}/channels/{channelId}/messages/{messageId}", Method.PATCH, JsonConvert.SerializeObject(new
             {
                 content = newContent
-            });
-            return Client._restClient.ExecuteAsync(req, Method.PATCH);
-        }
+            }));
 
         public Task DeleteMessageAsync(string channelId, string id)
-            => Client._restClient.ExecuteAsync(new RestRequest($"/channels/{channelId}/messages/{id}"), Method.DELETE);
+            => Client._requestAsync($"{Client.ApiUrl}/channels/{channelId}/messages/{id}", Method.DELETE);
 
-        public async Task<Message[]> GetMessagesAsync(string channelId, int limit, string before = null,
-            string after = null,
+        public async Task<Message[]> GetMessagesAsync(string channelId, int limit, string? before = null,
+            string? after = null,
             MessageSort sort = MessageSort.Latest)
         {
             var req = new RestRequest($"/channels/{channelId}/messages");

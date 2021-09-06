@@ -38,6 +38,12 @@ namespace Taco.Modules
         public async Task AddTag()
         {
             var split = Args.Split(' ');
+            if (Context.CommunityData.Tags.Any(t =>
+                t.Key.Equals(split[0], StringComparison.InvariantCultureIgnoreCase)))
+            {
+                await ReplyAsync("This tag already exists!");
+                return;
+            }
             Context.CommunityData.Tags ??= new();
             Context.CommunityData.Tags.Add(split[0], string.Join(' ', split[1..]));
             await Context.UpdateCommunityDataAsync();

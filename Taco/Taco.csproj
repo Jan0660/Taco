@@ -9,9 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AzurAPINet" Version="2.0.0-preview2" />
+      <PackageReference Include="AzurAPINet" Version="2.0.0-preview3" />
       <PackageReference Include="CryptoCurrencyApis" Version="0.1.0" />
-      <PackageReference Include="Hardware.Info" Version="1.1.0" />
       <PackageReference Include="Log73" Version="0.7.0" />
       <PackageReference Include="Log73.Extensions.NewtonsoftJson" Version="0.7.0" />
       <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
@@ -24,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Anargy.Revolt\Anargy.Revolt.csproj" />
       <ProjectReference Include="..\Revolt.Net\Revolt.Net.csproj" />
     </ItemGroup>
 

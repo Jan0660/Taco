@@ -3,6 +3,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Anargy.Info;
 using Jan0660.AzurAPINet.Ships;
 using Revolt;
 using Revolt.Channels;

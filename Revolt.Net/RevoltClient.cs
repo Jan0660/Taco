@@ -11,13 +11,14 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using RestSharp;
+using Revolt.Base;
 using Revolt.Channels;
 using Websocket.Client;
 using Websocket.Client.Models;
 
 namespace Revolt
 {
-    public class RevoltClient
+    public partial class RevoltClient
     {
         internal RestClient _restClient = new("https://api.revolt.chat/");
         public RevoltApiInfo? ApiInfo { get; private set; }
@@ -33,167 +34,6 @@ namespace Revolt
         public string ApiUrl { get; set; } = "https://api.revolt.chat";
         public string AutumnUrl { get; set; } = "https://autumn.revolt.chat";
         public string VortexUrl { get; set; } = "https://voso.revolt.chat";
-
-        #region events
-
-        private List<Func<Message, Task>> _messageReceived = new();
-
-        public event Func<Message, Task> MessageReceived
-        {
-            add => _messageReceived.Add(value);
-            remove => _messageReceived.Remove(value);
-        }
-
-        private List<Func<ObjectMessage, Task>> _systemMessageReceived = new();
-
-        public event Func<ObjectMessage, Task> SystemMessageReceived
-        {
-            add => _systemMessageReceived.Add(value);
-            remove => _systemMessageReceived.Remove(value);
-        }
-
-        private List<Func<Task>> _onReady = new();
-
-        public event Func<Task> OnReady
-        {
-            add => _onReady.Add(value);
-            remove => _onReady.Remove(value);
-        }
-
-        private List<Func<string, Task>> _messageDeleted = new();
-
-        public event Func<string, Task> MessageDeleted
-        {
-            add => _messageDeleted.Add(value);
-            remove => _messageDeleted.Remove(value);
-        }
-
-        private List<Func<string, RelationshipStatus, Task>> _userRelationshipUpdated = new();
-
-        public event Func<string, RelationshipStatus, Task> UserRelationshipUpdated
-        {
-            add => _userRelationshipUpdated.Add(value);
-            remove => _userRelationshipUpdated.Remove(value);
-        }
-
-        private List<Func<string, MessageEditData, Task>> _messageUpdated = new();
-
-        public event Func<string, MessageEditData, Task> MessageUpdated
-        {
-            add => _messageUpdated.Add(value);
-            remove => _messageUpdated.Remove(value);
-        }
-
-        private List<Func<string, JObject, ResponseMessage, Task>> _packetReceived = new();
-
-        /// <summary>
-        /// Raised before a packet is handled. Ran asynchronously/not awaited.
-        /// </summary>
-        public event Func<string, JObject, ResponseMessage, Task> PacketReceived
-        {
-            add => _packetReceived.Add(value);
-            remove => _packetReceived.Remove(value);
-        }
-
-        private List<Func<string?, JObject?, ResponseMessage, Exception, Task>> _packetError = new();
-
-        /// <summary>
-        /// Invoked when an exception occurs when handling a websocket packet.
-        /// </summary>
-        public event Func<string?, JObject?, ResponseMessage, Exception, Task> PacketError
-        {
-            add => _packetError.Add(value);
-            remove => _packetError.Remove(value);
-        }
-
-        private List<Func<Channel, Task>> _channelCreate = new();
-
-        public event Func<Channel, Task> ChannelCreate
-        {
-            add => _channelCreate.Add(value);
-            remove => _channelCreate.Remove(value);
-        }
-
-        // todo: ChannelUpdate
-        private List<Func<string, string, Task>> _channelGroupJoin = new();
-
-        /// <summary>
-        /// GroupId, UserId
-        /// </summary>
-        public event Func<string, string, Task> ChannelGroupJoin
-        {
-            add => _channelGroupJoin.Add(value);
-            remove => _channelGroupJoin.Remove(value);
-        }
-
-        private List<Func<string, string, Task>> _channelGroupLeave = new();
-
-        /// <summary>
-        /// GroupId, UserId
-        /// </summary>
-        public event Func<string, string, Task> ChannelGroupLeave
-        {
-            add => _channelGroupLeave.Add(value);
-            remove => _channelGroupLeave.Remove(value);
-        }
-
-        private List<Func<string, Task>> _channelDelete = new();
-
-        public event Func<string, Task> ChannelDelete
-        {
-            add => _channelDelete.Add(value);
-            remove => _channelDelete.Remove(value);
-        }
-
-        private List<Func<string, bool, Task>> _userPresence = new();
-
-        /// <summary>
-        /// UserId, Online
-        /// </summary>
-        public event Func<string, bool, Task> UserPresence
-        {
-            add => _userPresence.Add(value);
-            remove => _userPresence.Remove(value);
-        }
-
-        private List<Func<string, JObject, Task>> _channelUpdate = new();
-
-        public event Func<string, JObject, Task> ChannelUpdate
-        {
-            add => _channelUpdate.Add(value);
-            remove => _channelUpdate.Remove(value);
-        }
-        private List<Func<DisconnectionInfo, Task>> _disconnected = new();
-
-        public event Func<DisconnectionInfo, Task> Disconnected
-        {
-            add => _disconnected.Add(value);
-            remove => _disconnected.Remove(value);
-        }
-        private List<Func<ReconnectionInfo, Task>> _reconnected = new();
-
-        public event Func<ReconnectionInfo, Task> Reconnected
-        {
-            add => _reconnected.Add(value);
-            remove => _reconnected.Remove(value);
-        }
-        
-        private List<Func<Server, Task>> _serverDeleted = new();
-
-        public event Func<Server, Task> ServerDeleted
-        {
-            add => _serverDeleted.Add(value);
-            remove => _serverDeleted.Remove(value);
-        }
-        private List<Func<Member, Member, Task>> _serverMemberUpdated = new();
-
-        public event Func<Member, Member, Task> ServerMemberUpdated
-        {
-            add => _serverMemberUpdated.Add(value);
-            remove => _serverMemberUpdated.Remove(value);
-        }
-
-        #endregion
 
         public RevoltClientChannels Channels { get; private set; }
         public RevoltClientUsers Users { get; private set; }
@@ -267,10 +107,7 @@ namespace Revolt
                 // is null if disconnected using DisconnectWebSocket()
                 if (_webSocket != null)
                     _webSocket.Start();
-                foreach (var handler in _disconnected)
-                {
-                    handler.Invoke(info);
-                }
+                _disconnected.InvokeAsync(info);
             });
             _webSocket.ReconnectionHappened.Subscribe((info =>
             {
@@ -290,10 +127,7 @@ namespace Revolt
                 }
                     );
                 _webSocket.Send(json);
-                foreach (var handler in _reconnected)
-                {
-                    handler.Invoke(info);
-                }
+                _reconnected.InvokeAsync(info);
             }));
 
             _webSocket.MessageReceived.Subscribe((message =>
@@ -304,39 +138,26 @@ namespace Revolt
                 {
                     packet = JObject.Parse(message.Text);
                     packetType = packet.Value<string>("type");
-                    foreach (var handler in _packetReceived)
-                    {
-                        handler.Invoke(packetType, packet, message);
-                    }
-
+                    _packetReceived.InvokeAsync(packetType, packet, message);
                     switch (packetType)
                     {
                         case "Message":
                             try
                             {
                                 var msg = _deserialize<Message>(message.Text);
-                                foreach (var handler in _messageReceived)
-                                {
-                                    handler.Invoke(msg);
-                                }
+                                _messageReceived.InvokeAsync(msg);
                             }
                             catch
                             {
                                 var msg = _deserialize<ObjectMessage>(message.Text);
-                                foreach (var handler in _systemMessageReceived)
-                                {
-                                    handler.Invoke(msg);
-                                }
+                                _systemMessageReceived.InvokeAsync(msg);
                             }
 
                             break;
                         case "MessageDelete":
                         {
                             var id = packet.Value<string>("id");
-                            foreach (var handler in _messageDeleted)
-                            {
-                                handler.Invoke(id);
-                            }
+                            _messageDeleted.InvokeAsync(id);
 
                             break;
                         }
@@ -380,10 +201,7 @@ namespace Revolt
                                     ServersCache.Add(server);
                                 }
 
-                                foreach (var handler in _onReady)
-                                {
-                                    handler.Invoke();
-                                }
+                                _onReady.InvokeAsync();
                             }
                             break;
                         }
@@ -394,16 +212,13 @@ namespace Revolt
                             var user = Users.Get(userId);
                             if (user != null)
                                 user.Online = packet.Value<bool>("online");
-                            foreach (var handler in _userPresence)
-                            {
-                                handler.Invoke(userId, online);
-                            }
+                            _userPresence.InvokeAsync(userId, online);
 
                             break;
                         }
                         case "UserRelationship":
                         {
-                            var id = packet.Value<JObject>("user").Value<string>("_id");
+                            var id = packet.Value<JObject>("user")!.Value<string>("_id");
                             var status = (RelationshipStatus)Enum.Parse(typeof(RelationshipStatus),
                                 packet.Value<string>("status")!);
                             // update user if they're in cache
@@ -411,10 +226,7 @@ namespace Revolt
                             if (user != null)
                                 user.Relationship = status;
 
-                            foreach (var handler in _userRelationshipUpdated)
-                            {
-                                handler.Invoke(id, status);
-                            }
+                            _userRelationshipUpdated.InvokeAsync(id, status);
 
                             break;
                         }
@@ -422,52 +234,30 @@ namespace Revolt
                         {
                             var messageId = packet.Value<string>("id");
                             MessageEditData data = packet.Value<JObject>("data").ToObject<MessageEditData>();
-
-                            foreach (var handler in _messageUpdated)
-                            {
-                                handler.Invoke(messageId, data);
-                            }
+                            _messageUpdated.InvokeAsync(messageId, data);
 
                             break;
                         }
                         case "ChannelGroupJoin":
                         {
-                            var groupId = packet.Value<string>("id");
-                            var userId = packet.Value<string>("user");
-                            foreach (var handler in _channelGroupJoin)
-                            {
-                                handler.Invoke(groupId, userId);
-                            }
+                            _channelGroupJoin.InvokeAsync(packet.Value<string>("id"), packet.Value<string>("user"));
 
                             break;
                         }
                         case "ChannelGroupLeave":
                         {
-                            var groupId = packet.Value<string>("id");
-                            var userId = packet.Value<string>("user");
-                            foreach (var handler in _channelGroupLeave)
-                            {
-                                handler.Invoke(groupId, userId);
-                            }
-
+                            _channelGroupLeave.InvokeAsync(packet.Value<string>("id"), packet.Value<string>("user"));
                             break;
                         }
                         case "ChannelDelete":
-                            var channelId = packet.Value<string>("id");
-                            foreach (var handler in _channelDelete)
-                            {
-                                handler.Invoke(channelId);
-                            }
-
+                            _channelDelete.InvokeAsync(packet.Value<string>("id"));
                             break;
                         case "ChannelCreate":
                         {
                             var channel = packet.ToObject<Channel>();
                             _channels.Add(channel);
-                            foreach (var handler in _channelCreate)
-                            {
-                                handler.Invoke(channel);
-                            }
+                            // todo: TextChannel specific handling to add to Server
+                            _channelCreate.InvokeAsync(channel);
 
                             break;
                         }
@@ -478,11 +268,7 @@ namespace Revolt
                             var data = packet.Value<JObject>("data");
                             if (data!.TryGetValue("icon", out var icon))
                                 channel.Icon = icon.ToObject<Attachment>()!;
-
-                            foreach (var handler in _channelUpdate)
-                            {
-                                handler.Invoke(id, data);
-                            }
+                            _channelUpdate.InvokeAsync(id, data);
 
                             break;
                         }
@@ -506,8 +292,10 @@ namespace Revolt
                         {
                             var id = packet.Value<string>("id");
                             var server = ServersCache.FirstOrDefault(s => s._id == id);
-                            foreach (var handler in _serverDeleted)
-                                handler.Invoke(server);
+                            if (server != null)
+                                ServersCache.Remove(server);
+                            // todo: if not cached only id
+                            _serverDeleted.InvokeAsync(server);
                             break;
                         }
                         case "ServerMemberUpdate":
@@ -536,18 +324,14 @@ namespace Revolt
                                 partialMember!.Avatar = null;
                             if (memberIndex != -1)
                                 server.MemberCache[memberIndex] = partialMember;
-                            foreach (var handler in _serverMemberUpdated)
-                                handler.Invoke(cached, partialMember);
+                            _serverMemberUpdated.InvokeAsync(cached, partialMember);
                             break;
                         }
                     }
                 }
                 catch (Exception exc)
                 {
-                    foreach (var handler in _packetError)
-                    {
-                        handler.Invoke(packetType, packet, message, exc);
-                    }
+                    _packetError.InvokeAsync(packetType, packet, message, exc);
                 }
             }));
             await _webSocket.Start();
@@ -587,9 +371,9 @@ namespace Revolt
             return obj.Value<string>("id");
         }
 
-        public Task UpdateAvatarId(string id)
+        public Task<IRestResponse> UpdateAvatarId(string id)
         {
-            var req = new RestRequest("/users/id");
+            var req = new RestRequest("/users/@me", Method.PATCH);
             req.AddJsonBody(JsonConvert.SerializeObject(new
             {
                 avatar = id
@@ -743,6 +527,8 @@ namespace Revolt
     {
         [JsonProperty("id")] public string Id { get; set; }
         [JsonProperty("mention")] public bool Mention { get; set; }
+
+        public MessageReply(string id, bool mention = false) => (Id, Mention) = (id, mention);
     }
 
     public class RevoltException : Exception

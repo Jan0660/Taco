@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Anargy.Attributes;
 using Revolt;
 using Taco.Attributes;
 using Taco.CommandHandling;
@@ -11,8 +12,8 @@ using Taco.Util;
 
 namespace Taco.Modules
 {
-    [ModuleName("ImageGen")]
-    public class ImageGenCommands : ModuleBase
+    [Name("ImageGen")]
+    public class ImageGenCommands : TacoModuleBase
     {
         public static int BaseRounding = 8; // 32
         public const ushort BaseResolution = 16; // 64
@@ -25,10 +26,6 @@ namespace Taco.Modules
         public Task Suicide()
             => TemplateSend("Suicide.png", _getContextUserId(), new Point(36, 103), size: 64);
 
-        [Command("retard", "retardFound")]
-        public Task Retard()
-            => TemplateSend("RetardFound.png", _getContextUserId(), new Point(486, 18), rounded: false, size: 256);
-        
         [Command("02ily")]
         public Task ZeroTwoILoveThis()
             => TemplateSend("02ily.png", _getContextUserId(), new Point(131, 569), rounded: false, size: 256);

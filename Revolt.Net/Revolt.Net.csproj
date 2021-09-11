@@ -19,7 +19,8 @@
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="RestSharp" Version="106.12.0" />
-      <PackageReference Include="Websocket.Client" Version="4.3.36" />
+      <PackageReference Include="System.Collections.Immutable" Version="1.2.0" />
+      <PackageReference Include="Websocket.Client" Version="4.3.38" />
     </ItemGroup>
 
 </Project>

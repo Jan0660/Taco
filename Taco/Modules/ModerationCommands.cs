@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Anargy.Attributes;
+using Anargy.Revolt.Preconditions;
 using MongoDB.Driver;
 using Revolt;
 using Taco.Attributes;
@@ -8,8 +10,9 @@ using Taco.CommandHandling;
 
 namespace Taco.Modules
 {
+    [Name("Moderation")]
     [Summary("Commands for community moderation/administration and settings.")]
-    public class ModerationCommands : ModuleBase
+    public class ModerationCommands : TacoModuleBase
     {
         [Command("logchannel")]
         [TextChannelOnly]
@@ -21,7 +24,8 @@ namespace Taco.Modules
             await ReplyAsync("log channel set");
         }
 
-        [Command("tag", "t")]
+        [Command("tag")]
+        [Alias("t")]
         public Task GetTag()
         {
             if (Context.CommunityData.Tags == null)
@@ -48,6 +52,14 @@ namespace Taco.Modules
             Context.CommunityData.Tags.Add(split[0], string.Join(' ', split[1..]));
             await Context.UpdateCommunityDataAsync();
             await ReplyAsync($"Added tag by the name of `{split[0]}`.");
+        }
+
+        [Command("setprefix")]
+        public async Task SetPrefix(string newPrefix)
+        {
+            Context.CommunityData.CustomPrefix = newPrefix;
+            await Context.UpdateCommunityDataAsync();
+            await InlineReplyAsync($"Prefix changed to `{newPrefix}`!");
         }
     }
 }

@@ -2,6 +2,8 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Anargy.Attributes;
+using Anargy.Revolt.Preconditions;
 using Owoify;
 using Revolt.Channels;
 using Taco.Attributes;
@@ -9,9 +11,9 @@ using Taco.CommandHandling;
 
 namespace Taco.Modules
 {
-    [ModuleName("Fun")]
-    [Summary("r")]
-    public class FunCommands : ModuleBase
+    [Name("Fun")]
+    [Summary("Fun")]
+    public class FunCommands : TacoModuleBase
     {
         [Command("owo")]
         [Summary("OwOify input.")]
@@ -44,51 +46,28 @@ namespace Taco.Modules
 > **CoreFX:** {matches[2]}");
         }
 
-        [Command("bing-toggle")]
-        [Summary("Toggles Bing notifications in this channel.")]
-        [GroupOnly]
-        public async Task BingReminderToggle()
-        {
-            if (Message.AuthorId == "01EX40TVKYNV114H8Q8VWEGBWQ"
-                | Message.AuthorId == ((GroupChannel)Message.Channel).OwnerId)
-            {
-                if (Program.Config.BingReminderChannels.Contains(Message.ChannelId))
-                {
-                    Program.Config.BingReminderChannels.Remove(Message.ChannelId);
-                    await Program.SaveConfig();
-                    await ReplyAsync("Removed from bing reminders.");
-                }
-                else
-                {
-                    Program.Config.BingReminderChannels.Add(Message.ChannelId);
-                    await Program.SaveConfig();
-                    await ReplyAsync("Added to bing reminders.");
-                }
-            }
-            else
-            {
-                await ReplyAsync("no");
-            }
-        }
-
-        [Command("uber-fruit", "uber", "uberfruit")]
+        [Command("uber-fruit")]
+        [Alias("uber", "uberfruit")]
         [Summary("Sends some nice uber fruit.")]
         public Task UberFruit()
             => (new Random().Next(10) > 7)
                 ? Message.Channel.SendFileAsync("", "epic-uber.gif", "./Resources/EpicUberFruit.gif")
                 : Message.Channel.SendFileAsync("", "uber.png", "./Resources/UberFruit.png");
 
-        [Command("flooshed", "floosh")]
+        [Command("flooshed")]
+        [Alias("floosh")]
         [Summary(":flushed:")]
         public Task Flooshed()
             => Message.Channel.SendFileAsync("", "flooshed.png", "./Resources/flooshed.png");
 
-        [Command("flush", "flushed")]
+        [Command("flush")]
+        [Alias("flushed")]
         [Summary(":flushed:")]
         public Task Flushed()
             => ReplyAsync("# $\\huge\\text{😳}$");
 
-        [Command("gaytext", "gay")]
+        [Command("gaytext")]
+        [Alias("gay")]
         [Summary("Converts h*terosexual text to the gay.")]
         public Task GayText()
         {

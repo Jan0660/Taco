@@ -5,16 +5,18 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using Anargy.Attributes;
 using Revolt;
 using Revolt.Channels;
-using Taco.Attributes;
 using Taco.CommandHandling;
+using Taco.Util;
+using Console = Log73.Console;
 
 namespace Taco.Modules
 {
-    [ModuleName("Core", "base", "basic")]
+    [Name("Core")]
     [Summary("Core commands like `info` and `help`.")]
-    public class CoreCommands : ModuleBase
+    public class CoreCommands : TacoModuleBase
     {
         [Command("info")]
         [Summary("General information about the bot.")]
@@ -22,11 +24,13 @@ namespace Taco.Modules
         {
             var uptime = DateTime.Now - Program.StartTime;
             return ReplyAsync($@"> ## Taco
-> **Developed by:** `owouwuvu` <@01EX40TVKYNV114H8Q8VWEGBWQ>
+> **Developed by:** Jan0660 (<@01EX40TVKYNV114H8Q8VWEGBWQ>) (https://github.com/Jan0660)
+> **Repository:** https://github.com/Jan0660/Taco
 > **Uptime:** {(uptime.Days == 0 ? "" : uptime.Days + " Days")} {uptime.Hours} Hours {uptime.Minutes} Minutes
-> **Latest update at:** {new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime.ToString("dd/MM/yyyy")}
+> **Latest update at:** {new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime:dd/MM/yyyy}
 > **Groups count:** {Message.Client.ChannelsCache.OfType<GroupChannel>().Count()}
-> **Friends count:** {Message.Client.UsersCache.Where(user => user.Relationship == RelationshipStatus.Friend).Count()}"
+> **Servers count:** {Message.Client.ServersCache.Count}
+> **Friends count:** {Message.Client.UsersCache.Count(user => user.Relationship == RelationshipStatus.Friend)}"
 #if DEBUG
                               + "\nDEBUG BUILD"
 #endif
@@ -34,9 +38,10 @@ namespace Taco.Modules
         }
 
         [Command("help")]
-        [Summary("HELP ME HELP ME PLEASE SEND HELP")]
+        [Summary("Get general/category/commands help.")]
         public async Task Help()
         {
+            Console.Log("sus");
             if (Args == "")
             {
                 // main help
@@ -45,7 +50,7 @@ namespace Taco.Modules
 | Module | Description | Command count |
 |:------- |:------:|:-----:|
 ";
-                foreach (var module in CommandHandler.ModuleInfos)
+                foreach (var module in CommandHandler.Commands.Modules)
                 {
                     if (module.IsHidden())
                         continue;
@@ -68,40 +73,28 @@ namespace Taco.Modules
                 }
                 // Module
                 {
-                    var module =
-                        CommandHandler.ModuleInfos.FirstOrDefault(m =>
-                            m.Names?.AllNames.Any(a => a.ToLower() == Args.ToLower()) ??
-                            m.Name.ToLower() == Args.ToLower());
-                    if (module == null)
-                        goto after_module;
-                    var response = @$"> # {module.Name}
-> **No. of commands:** {module.Commands.Count}
-> ## Commands:
-> > | Command | Description |
-> > |:------- |:------:|
-";
-                    foreach (var command in module.Commands)
-                        response += $"> > | {command.Aliases.First()} | {command.Summary ?? "No summary"} |\n";
-                    await ReplyAsync(response);
-                    return;
+                    var response = HelpUtil.GetModuleHelpContent(Args);
+                    if (response != null)
+                    {
+                        await ReplyAsync(response);
+                        return;
+                    }
                 }
-                after_module: ;
                 // Command
                 {
-                    var command =
-                        CommandHandler.Commands.FirstOrDefault(c => c.Aliases.Any(a => a.ToLower() == Args.ToLower()));
+                    var command = CommandHandler.Commands.Search(Args).Commands.FirstOrDefault().Command;
                     if (command == null)
                         goto after_command;
                     var preconditions = "";
                     foreach (var precondition in command.Preconditions)
                         preconditions +=
-                            $"$\\color{{{((await precondition.Evaluate(Context)).IsSuccess ? "lime" : "red")}}}\\textsf{{{precondition.GetType().Name.Replace("Attribute", "")}}}$, ";
+                            $"$\\color{{{((await precondition.CheckPermissionsAsync(Context, command, null)).IsSuccess ? "lime" : "red")}}}\\textsf{{{precondition.GetType().Name.Replace("Attribute", "")}}}$, ";
                     if (preconditions != "")
                         preconditions = preconditions.Remove(preconditions.Length - 2);
                     await ReplyAsync($@"> ## {command.Aliases.First()}
 > {command.Summary}" + (preconditions != "" ? "\n> **Preconditions:** " + preconditions : "")
-                     + (command.Aliases.Length != 1
-                         ? $"\n> **Aliases:** {String.Join(", ", command.Aliases[1..])}"
+                     + (command.Aliases.Count != 1
+                         ? $"\n> **Aliases:** {String.Join(", ", command.Aliases.ToArray()[1..])}"
                          : "")
                      + (command.Module != null ? $"\n> **Module:** {command.Module.Name}" : ""));
                     return;
@@ -117,14 +110,8 @@ namespace Taco.Modules
         public Task Me()
         {
             return ReplyAsync($@"> ## {Context.User.Username}
-> **Permission Level:** {Context.UserData.PermissionLevel} - {((sbyte) Context.UserData.PermissionLevel)}");
+> **Permission Level:** {Context.UserData.PermissionLevel} - {((sbyte)Context.UserData.PermissionLevel)}");
         }
-
-        [Command("donate")]
-        public Task Donate()
-            => ReplyAsync($@"> ## Donate
-> **ETC:** `0xDd2c32F8c25Ae6e7aFC590593f5Dfd34639e4F14`
-> **DONATE TO INSERT TOO h:** https://ko-fi.com/insertish");
 
         [Command("ping")]
         [Summary("Ping!")]
@@ -139,11 +126,15 @@ namespace Taco.Modules
 **Websocket Ping:** doesnt exist");
         }
 
-        [Command("test", "test-alias")]
+        [Command("test")]
+        [Alias("test-alias")]
         [Summary("Test command.")]
-        public async Task TestCommand()
-        {
-            await ReplyAsync("test");
-        }
+        public Task TestCommand()
+            => ReplyAsync("test");
+
+        [Command("prefix")]
+        [Summary("Get prefix.")]
+        public Task GetPrefix()
+            => ReplyAsync($"My prefix here is `{Context.CommunityData.CustomPrefix ?? Program.Prefix}`.");
     }
 }

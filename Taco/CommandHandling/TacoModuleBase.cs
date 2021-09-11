@@ -1,22 +1,18 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Anargy;
+using Anargy.Revolt;
 using Revolt;
 
 namespace Taco.CommandHandling
 {
-    public class ModuleBase
+    public class TacoModuleBase : ModuleBase<TacoCommandContext>
     {
-        public Message Message;
+        public Message Message => Context.Message;
         public string Args;
-        public CommandContext Context;
-
-        internal void SetContext(CommandContext context)
-        {
-            Context = context;
-        }
 
         public Task<SelfMessage> ReplyAsync(string content)
-            => Message.Channel.SendMessageAsync(content);
+            => Context.Client.Channels.SendMessageAsync(Context.Message.ChannelId, content);
 
         public Task<SelfMessage> InlineReplyAsync(string content, bool mention = false)
             => Message.Channel.SendMessageAsync(content,

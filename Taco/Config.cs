@@ -7,18 +7,12 @@ namespace Taco
 {
     public class Config
     {
-        public string BingSnrCode;
-        public string BingCoreClr;
-        public string BingCoreFx;
-        public List<string> BingReminderChannels = new();
         public string MongoUrl;
         public string BotToken;
         public string DatabaseName;
-        public bool AnnoyToggle;
         public string Presence = "Idle";
-        public string Profile = "Cry about it nerd.";
-        public string Status = "Amogus";
-        public int UpdateTime = 20000;
+        public string Profile = "";
+        public string Status = "";
         public List<string> CodeOfConduct = new();
         public string UserId;
 

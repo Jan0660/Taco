@@ -3,93 +3,114 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Anargy;
+using Anargy.Extensions;
+using Anargy.Info;
+using Anargy.Results;
+using Revolt;
+using Revolt.Channels;
 using Taco.Attributes;
+using Taco.Util;
+using Console = Log73.Console;
 
 namespace Taco.CommandHandling
 {
     public static class CommandHandler
     {
-        public static List<CommandInfo> Commands = new();
-        public static List<ModuleInfo> ModuleInfos = new();
+        public static CommandService Commands { get; private set; }
+        private static string _mentionPrefix;
 
-        public static void LoadCommands()
+        public static async Task InitializeAsync()
         {
-            var types = Assembly.GetExecutingAssembly().GetTypes();
-            foreach (var type in types)
+            var commands = Commands = new CommandService(new CommandServiceConfig()
             {
-                if (type.IsInterface)
-                    continue;
-                // https://stackoverflow.com/questions/4963160/how-to-determine-if-a-type-implements-an-interface-with-c-sharp-reflection
-                if (typeof(ModuleBase).IsAssignableFrom(type))
-                {
-                    if (type == typeof(ModuleBase))
-                        continue;
-                    var module = new ModuleInfo()
-                    {
-                        Type = type,
-                        Summary = type.GetCustomAttribute<SummaryAttribute>()?.Text,
-                        Names = type.GetCustomAttribute<ModuleNameAttribute>(),
-                        Attributes = type.GetCustomAttributes().ToArray()
-                    };
-                    ModuleInfos.Add(module);
-                    foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance))
-                    {
-                        var att = method.GetCustomAttribute<CommandAttribute>();
-                        if (att == null)
-                            continue;
-                        var aliases = att.Aliases;
+                DefaultRunMode = RunMode.Async
+            });
+            // todo: where tf is ServiceCollection
+            await commands.AddModulesAsync(typeof(Program).Assembly, null);
+            commands.CommandExecuted += CommandExecuted;
+            _mentionPrefix = $"<@{Program.Client.Self.UserId}>";
+            Program.Client.MessageReceived += MessageReceived;
+        }
 
-                        var command = new CommandInfo
-                        {
-                            Aliases = aliases, Method = method,
-                            Preconditions = method.GetCustomAttributes<PreconditionAttribute>(true)
-                                .Concat(type.GetCustomAttributes<PreconditionAttribute>(true)).ToArray(),
-                            Summary = method.GetCustomAttribute<SummaryAttribute>()?.Text,
-                            Module = module
-                        };
-                        Commands.Add(command);
-                        module.Commands.Add(command);
+        private static async Task CommandExecuted(Optional<CommandInfo> arg1, ICommandContext arg2, IResult result)
+        {
+            var context = (TacoCommandContext)arg2;
+            if (!result.IsSuccess)
+            {
+                if (result.Error is CommandError.Exception && result is ExecuteResult executeResult)
+                {
+                    var exception = executeResult.Exception;
+                    await context.Channel.SendMessageAsync($@"> ## An internal exception occurred
+> 
+> ```csharp
+> ({exception.GetType().FullName}) {exception.Message.Replace("\n", "\n> ")}
+> ```");
+                }
+                else if (result.Error == CommandError.UnknownCommand)
+                {
+                    var content = context.Message.Content;
+                    int argPos = 0;
+                    if (context.Message.Content.HasPrefix(context.CommunityData.CustomPrefix, ref argPos))
+                    {
+                        content = content.Substring(argPos);
                     }
+
+                    var helpIndex = content.IndexOf(" help", StringComparison.InvariantCultureIgnoreCase);
+                    if (helpIndex != -1)
+                        content = content.Remove(helpIndex);
+                    var response = HelpUtil.GetModuleHelpContent(content);
+                    if (response != null)
+                        await context.Channel.SendMessageAsync(response);
+#if DEBUG
+                    else
+                    {
+                        await context.Channel.SendMessageAsync("[DEBUG] Command not found.",
+                            replies: new[] { new MessageReply(context.Message._id) });
+                    }
+#endif
                 }
             }
         }
 
-        public static async Task ExecuteCommandAsync(CommandContext context, int prefixLength)
+        private static bool HasPrefix(this string args, string? customPrefix, ref int argPos)
+            => args.HasStringPrefix(customPrefix ?? Program.Prefix, ref argPos) ||
+               args.HasStringPrefix(_mentionPrefix + " ", ref argPos) ||
+               args.HasStringPrefix(_mentionPrefix, ref argPos);
+
+        public static async Task MessageReceived(Message message)
         {
-            var message = context.Message;
-            var relevant = message.Content.Remove(0, prefixLength);
-            // get command 
-            var commands = Commands.Where(c => c.Aliases.Any(a => relevant.ToLower() == a.ToLower()))
-                .Concat(Commands.Where(c => c.Aliases.Any(a => relevant.ToLower().StartsWith(a.ToLower()))));
-            CommandInfo command = null;
-            int longest = 0;
-            foreach (var cmd in commands)
+            if (message.Channel is not TextChannel { ServerId: "01FDAY783TFJDQ86PNCHGPRQA3" })
+                return;
+            try
             {
-                foreach (var cmdAlias in cmd.Aliases.Where(a => relevant.ToLower().StartsWith(a.ToLower())))
-                {
-                    if (longest < cmdAlias.Length)
-                    {
-                        longest = cmdAlias.Length;
-                        command = cmd;
-                    }
-                }
-            }
-
-            if (command == null)
-                throw new Exception("COMMAND_NOT_FOUND");
-            var alias = command.Aliases.First(a => relevant.ToLower().StartsWith(a.ToLower()) && a.Length == longest);
-            var args = relevant.Remove(0, alias.Length + (alias.Length == relevant.Length ? 0 : 1));
-            foreach (var precondition in command.Preconditions)
-            {
-                var result = await precondition.Evaluate(context);
-                if (!result.IsSuccess)
-                {
-                    await message.Channel.SendMessageAsync(result.Message);
+                int argPos = 0;
+                var context = new TacoCommandContext(message);
+                if (
+                    // todo: is bot check
+                    context.Message.AuthorId == context.Client.Self.UserId ||
+                    !message.Content.HasPrefix(context.CommunityData.CustomPrefix, ref argPos)
+                )
                     return;
+                var userData = context.GetUserData();
+                if (userData != null)
+                {
+                    if (context.UserData.PermissionLevel == PermissionLevel.Blacklist)
+                    {
+                        await message.Channel.SendMessageAsync(context.UserData.BlacklistedMessage == null
+                            ? $"<@{message.AuthorId}> blacklisted"
+                            : String.Format(context.UserData.BlacklistedMessage, context.UserData.UserId));
+                        return;
+                    }
+                    else if (context.UserData.PermissionLevel == PermissionLevel.BlacklistSilent)
+                        return;
                 }
+                var what = await Commands.ExecuteAsync(context, message.Content.Substring(argPos), null, MultiMatchHandling.Best);
             }
-
-            await command.ExecuteAsync(context, args);
+            catch (Exception exc)
+            {
+                Console.Exception(exc);
+            }
         }
     }
 }

@@ -7,6 +7,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Anargy.Attributes;
+using Anargy.Revolt.Preconditions;
 using CryptoCurrencyApis;
 using Jan0660.AzurAPINet.Enums;
 using Newtonsoft.Json;
@@ -23,9 +25,9 @@ using Taco.Util;
 
 namespace Taco.Modules
 {
-    [ModuleName("Utility", "Programmer", "Nerd", "Utilities")]
+    [Name("Utility")]
     [Summary("Utilities")]
-    public class UtilityCommands : ModuleBase
+    public class UtilityCommands : TacoModuleBase
     {
         private static readonly SourceCacheContext Cache = new SourceCacheContext();
         private static readonly ILogger Logger = NullLogger.Instance;
@@ -99,7 +101,8 @@ namespace Taco.Modules
             );
         }
 
-        [Command("http", "http-status-code", "status-code")]
+        [Command("http")]
+        [Alias("http-status-code", "status-code")]
         [Summary("Information about a HTTP status code.")]
         public Task HttpStatusCode()
         {
@@ -140,7 +143,8 @@ namespace Taco.Modules
             // spec_href
         }
 
-        [Command("group", "groupinfo")]
+        [Command("group")]
+        [Alias("groupInfo")]
         [Summary("Retrieves information about current group.")]
         [GroupOnly]
         public Task GroupInfo()
@@ -153,7 +157,8 @@ namespace Taco.Modules
 > {group.RecipientIds.Length} Recipients");
         }
 
-        [Command("iplookup", "hack", "ip", "nslookup")]
+        [Command("iplookup")]
+        [Alias("hack", "ip")]
         [Summary("Retrieve information about an IP or domain.")]
         public async Task Hack()
         {
@@ -313,7 +318,8 @@ namespace Taco.Modules
 > [\[Website\]]({distro.HomePage})");
         }
 
-        [Command("save-attachment", "saveAttachment", "s-a")]
+        [Command("save-attachment")]
+        [Alias("saveAttachment", "s-a")]
         public async Task SaveAttachment()
         {
             if (Message.Attachments == null)
@@ -329,7 +335,8 @@ namespace Taco.Modules
             await ReplyAsync("Attachment saved.");
         }
 
-        [Command("unsave-attachment", "unsaveAttachment", "us-a")]
+        [Command("unsave-attachment")]
+        [Alias("unsaveAttachment", "us-a")]
         public Task UnsaveAttachment()
         {
             try
@@ -343,7 +350,8 @@ namespace Taco.Modules
             }
         }
 
-        [Command("saved-attachment", "savedAttachment", "s")]
+        [Command("saved-attachment")]
+        [Alias("savedAttachment", "s")]
         public Task SendSavedAttachment()
         {
             if (Context.UserData.SavedAttachments.TryGetValue(Args.ToLower(), out string url))
@@ -351,12 +359,15 @@ namespace Taco.Modules
             else
                 return InlineReplyAsync("Saved attachment not found.");
         }
+        // todo: commands to list saved attachments
 
         // get fucked lol
         [Command("invisible")]
+        [GroupOnly]
         public async Task Invisible()
         {
             List<string> hiding = new();
+            // todo: make thing only on group
             foreach (var user in await Message.Channel.GetMembersAsync())
             {
                 if (user.Status.Presence == "Invisible")

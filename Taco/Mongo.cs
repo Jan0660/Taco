@@ -177,6 +177,7 @@ namespace Taco
     {
         public bool AllowSnipe { get; set; }
         public Dictionary<string, string> Tags { get; set; }
+        public string CustomPrefix { get; set; }
 
         public CommunityData()
         {

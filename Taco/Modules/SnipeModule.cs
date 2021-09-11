@@ -1,15 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Anargy.Attributes;
 using Revolt;
 using Taco.Attributes;
 using Taco.CommandHandling;
 
 namespace Taco.Modules
 {
+    // todo: mv somewhere else
     [Summary("Snipe command")]
-    [ModuleName("Snipe")]
-    public class SnipeModule : ModuleBase
+    [Name("Snipe")]
+    public class SnipeModule : TacoModuleBase
     {
         private static List<Message> _messages = new();
         private static List<Message> _snipedMessages = new();

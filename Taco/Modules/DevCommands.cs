@@ -2,19 +2,22 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Anargy.Attributes;
+using Revolt;
 using Taco.Attributes;
 using Taco.CommandHandling;
 
 namespace Taco.Modules
 {
-    [ModuleName("Fuck you.")]
-    [Summary("Fuck you.")]
+    [Name("Developer")]
+    [Group("dev")]
+    [Summary("Developer-only commands.")]
     [RequireDeveloper]
     [Hidden]
-    public class DevCommands : ModuleBase
+    public class DevCommands : TacoModuleBase
     {
         [RequireDeveloper]
-        [Command("dev perm")]
+        [Command("perm")]
         public async Task SetPermissions()
         {
             var args = Args.Split(' ');
@@ -24,6 +27,7 @@ namespace Taco.Modules
                 await ReplyAsync("Sussus amogus.");
                 return;
             }
+
             sbyte level;
             if (!sbyte.TryParse(args.Last(), out level))
             {
@@ -31,7 +35,7 @@ namespace Taco.Modules
                 level = (sbyte)lvl;
             }
 
-            if ((sbyte) Context.UserData.PermissionLevel <= level && Context.User._id != Program.BotOwnerId)
+            if ((sbyte)Context.UserData.PermissionLevel <= level && Context.User._id != Program.BotOwnerId)
             {
                 await ReplyAsync("Can't set higher or same permission level.");
                 return;
@@ -58,11 +62,9 @@ namespace Taco.Modules
         }
 
         [Command("druh")]
-        [Summary("rape webcocket")]
         [RequireBotOwner]
-        public async Task Druh()
+        public async Task Druh(int delay = 30)
         {
-            var delay = 30;
             while (true)
             {
                 await Message.Channel.BeginTypingAsync();
@@ -72,77 +74,69 @@ namespace Taco.Modules
             }
         }
 
-        [Command("dev annoy")]
-        public async Task ToggleAnnoy()
-        {
-            Program.Config.AnnoyToggle = bool.Parse(Args.Split(' ').Last());
-            await Program.SaveConfig();
-            await ReplyAsync($"Toggled to `{Program.Config.AnnoyToggle}`.");
-        }
-
-        [Command("dev updatestatus")]
+        [Command("updatestatus")]
         [Summary("Force update status.")]
         public async Task UpdateStatus()
         {
-            await Annoy.Update();
+            await Program.Client.Self.EditProfileAsync(new UserInfo()
+            {
+                Status = new()
+                {
+                    Text = Program.Config.Status,
+                    Presence = Program.Config.Presence
+                },
+                Profile = new()
+                {
+                    Content = Program.Config.Profile
+                }
+            });
             await ReplyAsync("Updated status and soige,o.");
         }
 
-        [Command("dev setstatus")]
+        [Command("setstatus")]
         public async Task SetStatus()
         {
             Program.Config.Status = _nullableArgs(Args);
-            await Annoy.Update();
             await Program.SaveConfig();
             await ReplyAsync("UPdated le staustm,.");
         }
 
-        [Command("dev setpresence")]
+        [Command("setpresence")]
         public async Task SetPresence()
         {
             Program.Config.Presence = Args;
-            await Annoy.Update();
             await Program.SaveConfig();
             await ReplyAsync("updated le presenc");
         }
 
-        [Command("dev setprofile")]
+        [Command("setprofile")]
         public async Task SetProfile()
         {
             Program.Config.Profile = _nullableArgs(Args);
-            await Annoy.Update();
             await Program.SaveConfig();
             await ReplyAsync("profiel set!!!");
         }
 
-        [Command("dev settimer")]
-        public async Task SetTimer()
-        {
-            Program.Config.UpdateTime = int.Parse(Args);
-            await Program.SaveConfig();
-            await ReplyAsync($"Set le tiemr to `{Program.Config.UpdateTime}`,");
-        }
-
-        [Command("dev rateLimited")]
-        [Summary("List people that got rate limited.")]
-        public Task ListRateLimited()
-        {
-            var str = new StringBuilder();
-            foreach (var retard in Program.RateLimited)
-            {
-                str.AppendLine($"> <@{retard.Key}>");
-            }
-
-            return ReplyAsync(str.ToString());
-        }
-
-        [Command("dev unRateLimit")]
-        [Summary("Remove someone from the rate limit list.")]
-        public Task RemoveRateLimited()
-        {
-            Program.RateLimited.Remove(Args);
-            return ReplyAsync($"<@{Args}> has been removed from the rate limit list.");
-        }
+        // [Command("rateLimited")]
+        // [Summary("List people that got rate limited.")]
+        // public Task ListRateLimited()
+        // {
+        //     var str = new StringBuilder();
+        //     foreach (var retard in Program.RateLimited)
+        //     {
+        //         str.AppendLine($"> <@{retard.Key}>");
+        //     }
+        //
+        //     return ReplyAsync(str.ToString());
+        // }
+        //
+        // [Command("unRateLimit")]
+        // [Summary("Remove someone from the rate limit list.")]
+        // public Task RemoveRateLimited()
+        // {
+        //     Program.RateLimited.Remove(Args);
+        //     return ReplyAsync($"<@{Args}> has been removed from the rate limit list.");
+        // }
 
         [Command("coc set")]
         public Task CocSet()

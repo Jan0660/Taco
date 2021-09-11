@@ -30,20 +30,20 @@ namespace Taco
         public static DateTime StartTime { get; private set; }
         private static RevoltClient _client;
         public static RevoltClient Client => _client;
-        public const int RateLimitTriggerDuration = 3000;
-
-        /// <summary>
-        /// Number of messages to trigger rate limit in <see cref="RateLimitTriggerDuration"/> milliseconds.
-        /// </summary>
-        public const int ToTriggerRateLimit = 3;
-
-        /// <summary>
-        /// Rate limit duration in milliseconds.
-        /// </summary>
-        public const int RateLimitDuration = 30000;
-
-        public static Dictionary<string, DateTime> RateLimited = new();
-        public static Dictionary<string, (DateTime Start, int Times)> RateLimit = new();
+        // public const int RateLimitTriggerDuration = 3000;
+        //
+        // /// <summary>
+        // /// Number of messages to trigger rate limit in <see cref="RateLimitTriggerDuration"/> milliseconds.
+        // /// </summary>
+        // public const int ToTriggerRateLimit = 3;
+        //
+        // /// <summary>
+        // /// Rate limit duration in milliseconds.
+        // /// </summary>
+        // public const int RateLimitDuration = 30000;
+        //
+        // public static Dictionary<string, DateTime> RateLimited = new();
+        // public static Dictionary<string, (DateTime Start, int Times)> RateLimit = new();
 
         public const string CocMatchPrefix =
 #if !DEBUG
@@ -57,21 +57,32 @@ namespace Taco
 
         static async Task Main(string[] args)
         {
-            TaskScheduler.UnobservedTaskException += (sender, eventArgs) => { Console.Exception(eventArgs.Exception); };
+            TaskScheduler.UnobservedTaskException += (sender, eventArgs) =>
+            {
+                Console.Exception(eventArgs.Exception);
+            };
             var stopwatch = Stopwatch.StartNew();
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"))!;
 
             _configureLogging();
 
             _client = new RevoltClient(Config.BotToken, Config.UserId);
+            await _client.Self.EditProfileAsync(new UserInfo()
+            {
+                Profile = new()
+                {
+                    Content = @"ding ding ding ding
+ding ding ding"
+                }
+            });
 
             #region Event handlers
 
-            _client.PacketReceived += (packetType, packet, message) =>
-            {
-                Console.Debug($"Packet receive: Length: {message.Text.Length}; Type: {packetType};");
-                return Task.CompletedTask;
-            };
+            // _client.PacketReceived += (packetType, packet, message) =>
+            // {
+            //     Console.Debug($"Packet receive: Length: {message.Text.Length}; Type: {packetType};");
+            //     return Task.CompletedTask;
+            // };
             _client.PacketError += (packetType, packet, message, exception) =>
             {
                 Console.Error(
@@ -81,7 +92,7 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             };
             _client.OnReady += () =>
             {
-                Console.Info($"Ready! Users: {_client.UsersCache.Count}; Channels: {_client.ChannelsCache.Count};");
+                Console.Info($"Ready! Users: {_client.UsersCache.Count}; Channels: {_client.ChannelsCache.Count}; Servers: {_client.ServersCache.Count};");
                 return Task.CompletedTask;
             };
 
@@ -104,9 +115,8 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
 
             SnipeModule.Init(_client);
             _client.MessageReceived += ClientOnMessageReceived;
-            CommandHandler.LoadCommands();
+            await CommandHandler.InitializeAsync();
 
-            BingReminder.Init();
             StartTime = DateTime.Now;
             Console.Info($"Finished loading and connected in {stopwatch.ElapsedMilliseconds}ms.");
             Console.Info("Connecting to MongoDB...");
@@ -124,86 +134,11 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                     Content = Config.Profile
                 }
             });
-            await Annoy.Run();
             await Task.Delay(-1);
         }
 
         private static async Task ClientOnMessageReceived(Message message)
         {
-#if DEBUG
-            Console.Debug(
-                $"{message.Author.Username}[{message.AuthorId}] at [{message.ChannelId}] => {message.Content}");
-#endif
-            if (message.Content.StartsWith(Prefix))
-            {
-                try
-                {
-                    if (RateLimit.TryGetValue(message.AuthorId, out var limit))
-                    {
-                        if (limit.Start.AddMilliseconds(RateLimitTriggerDuration) > DateTime.Now)
-                        {
-                            // le h'ing
-                            limit.Times++;
-                            RateLimit[message.AuthorId] = limit;
-                        }
-                        else
-                        {
-                            RateLimit.Remove(message.AuthorId);
-                            limit.Times = 0;
-                        }
-
-                        if (limit.Times == ToTriggerRateLimit)
-                        {
-                            // get fucked
-                            RateLimited.Add(message.AuthorId, DateTime.Now);
-                            message.Channel
-                                .SendMessageAsync(
-                                    $"<@{message.AuthorId}> fuck you, rate limited, get fucked, cry about it.").Wait();
-                        }
-                    }
-                    else
-                    {
-                        RateLimit.Add(message.AuthorId, (DateTime.Now, 1));
-                    }
-
-                    //_rateLimited.Add(message.AuthorId, DateTime.Now);
-                    if (RateLimited.ContainsKey(message.AuthorId))
-                    {
-                        // fucked
-                        return;
-                    }
-
-                    var context = new CommandContext(message);
-                    var userData = context.GetUserData();
-                    if (userData != null)
-                    {
-                        if (context.UserData.PermissionLevel == PermissionLevel.Blacklist)
-                        {
-                            await message.Channel.SendMessageAsync(context.UserData.BlacklistedMessage == null
-                                ? $"<@{message.AuthorId}> why are you black."
-                                : String.Format(context.UserData.BlacklistedMessage, context.UserData.UserId));
-                            return;
-                        }
-                        else if (context.UserData.PermissionLevel == PermissionLevel.BlacklistSilent)
-                            return;
-                    }
-
-                    await CommandHandler.ExecuteCommandAsync(context, Prefix.Length);
-                }
-                catch (Exception exception)
-                {
-                    if (exception.Message == "One or more errors occurred. (COMMAND_NOT_FOUND)" |
-                        exception.Message == "COMMAND_NOT_FOUND")
-                        return;
-                    Console.Exception(exception);
-                    await message.Channel.SendMessageAsync($@"> ## An internal exception occurred
-> 
-> ```csharp
-> ({exception.GetType().FullName}) {exception.Message.Replace("\n", "\n> ")}
-> ```");
-                }
-            }
-
             // coc
             var cocMatch = CocMatchRegex.Match(message.Content);
             if (cocMatch.Success && message.Channel is TextChannel { ServerId: "01F7ZSBSFHQ8TA81725KQCSDDP" })

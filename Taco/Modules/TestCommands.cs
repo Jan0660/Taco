@@ -4,6 +4,8 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Anargy.Attributes;
+using Anargy.Revolt.Preconditions;
 using Revolt;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -13,9 +15,11 @@ using Console = Log73.Console;
 
 namespace Taco.Modules
 {
+    [Name("Test")]
     [Summary(":flushed:")]
-    public class TestModule : ModuleBase
+    public class TestModule : TacoModuleBase
     {
+        // todo: mv
         [Command("whois")]
         [Summary("Retrieve information about a user.")]
         public async Task WhoIs()

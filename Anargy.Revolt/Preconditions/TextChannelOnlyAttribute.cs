@@ -1,24 +1,21 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Anargy;
 using Anargy.Attributes;
 using Anargy.Info;
 using Anargy.Results;
-using Anargy.Revolt;
-using Revolt;
-using Taco.CommandHandling;
+using Revolt.Channels;
 
-namespace Taco.Attributes
+namespace Anargy.Revolt.Preconditions
 {
-    public class RequireBotOwnerAttribute : PreconditionAttribute
+    public class TextChannelOnlyAttribute : PreconditionAttribute
     {
         public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command,
             IServiceProvider services)
         {
             var revContext = (RevoltCommandContext)context;
-            if (revContext.Message.AuthorId == Program.BotOwnerId)
+            if (revContext.Channel is TextChannel)
                 return Task.FromResult(PreconditionResult.FromSuccess());
-            return Task.FromResult(PreconditionResult.FromError($"Sorry, but this command can only be executed by the developer of this bot, <@{Program.BotOwnerId}>."));
+            return Task.FromResult(PreconditionResult.FromError("This command can only be executed in a server."));
         }
     }
 }

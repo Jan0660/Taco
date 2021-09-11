@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Anargy.Attributes;
 using Jan0660.AzurAPINet;
 using Jan0660.AzurAPINet.Enums;
 using Taco.Attributes;
@@ -7,9 +8,9 @@ using Taco.CommandHandling;
 
 namespace Taco.Modules
 {
-    [ModuleName("Azur Lane", "AzurLane", "az")]
+    [Name("Azur Lane")]
     [Summary("ship, shipstats")]
-    public class AzurLaneModule : ModuleBase
+    public class AzurLaneModule : TacoModuleBase
     {
         public static AzurAPIClient Azurlane = new();
 
@@ -30,7 +31,8 @@ namespace Taco.Modules
 > ${{\footnotesize Footer {{\hspace{{1mm}}}} when?}}$");
         }
 
-        [Command("shipImage", "shipImg")]
+        [Command("shipImage")]
+        [Alias("shipImg")]
         [Summary("Get first skin for ship.")]
         public Task ShipFirstSkin()
         {

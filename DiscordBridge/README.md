@@ -7,11 +7,8 @@ Automatically makes sure @everyone and other pings dont actually ping.
 ```json
 {
   "DiscordBotToken": "",
-  "RevoltSession": {
-    "id": "",
-    "user_id": "",
-    "session_token": ""
-  },
+  "RevoltBotToken": "",
+  "RevoltUserId": "",
   "Channels": [
     {
       "WebhookId": "",

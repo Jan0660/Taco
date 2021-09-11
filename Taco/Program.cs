@@ -67,14 +67,6 @@ namespace Taco
             _configureLogging();
 
             _client = new RevoltClient(Config.BotToken, Config.UserId);
-            await _client.Self.EditProfileAsync(new UserInfo()
-            {
-                Profile = new()
-                {
-                    Content = @"ding ding ding ding
-ding ding ding"
-                }
-            });
 
             #region Event handlers
 

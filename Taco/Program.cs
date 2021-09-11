@@ -29,6 +29,7 @@ namespace Taco
         public const string BotOwnerId = "01EX40TVKYNV114H8Q8VWEGBWQ";
         public static DateTime StartTime { get; private set; }
         private static RevoltClient _client;
+
         public static RevoltClient Client => _client;
         // public const int RateLimitTriggerDuration = 3000;
         //
@@ -57,16 +58,13 @@ namespace Taco
 
         static async Task Main(string[] args)
         {
-            TaskScheduler.UnobservedTaskException += (sender, eventArgs) =>
-            {
-                Console.Exception(eventArgs.Exception);
-            };
+            TaskScheduler.UnobservedTaskException += (sender, eventArgs) => { Console.Exception(eventArgs.Exception); };
             var stopwatch = Stopwatch.StartNew();
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"))!;
 
             _configureLogging();
 
-            _client = new RevoltClient(Config.BotToken, Config.UserId);
+            _client = new RevoltClient(Config!.BotToken, Config.UserId);
 
             #region Event handlers
 
@@ -84,7 +82,8 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             };
             _client.OnReady += () =>
             {
-                Console.Info($"Ready! Users: {_client.UsersCache.Count}; Channels: {_client.ChannelsCache.Count}; Servers: {_client.ServersCache.Count};");
+                Console.Info(
+                    $"Ready! Users: {_client.UsersCache.Count}; Channels: {_client.ChannelsCache.Count}; Servers: {_client.ServersCache.Count};");
                 return Task.CompletedTask;
             };
 

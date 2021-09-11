@@ -52,7 +52,7 @@ namespace DiscordBridge
             Console.Log("h");
 
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"));
-            _client = new RevoltClient(Config.RevoltSession);
+            _client = new RevoltClient(Config.RevoltBotToken, Config.RevoltUserId);
             await _client.ConnectWebSocketAsync();
             _client.OnReady += () =>
             {
@@ -79,7 +79,7 @@ namespace DiscordBridge
                 var channel = Config.ByRevoltId(message.ChannelId);
                 if (channel == null)
                     return;
-                if (message.AuthorId == Config.RevoltSession.UserId && DiscordRevoltMessagesContent.Contains(message.Content))
+                if (message.AuthorId == Client.Self.UserId && DiscordRevoltMessagesContent.Contains(message.Content))
                     return;
                 try
                 {
@@ -325,7 +325,8 @@ namespace DiscordBridge
     {
         public List<BridgeChannel> Channels;
         public string DiscordBotToken;
-        public Session RevoltSession;
+        public string RevoltBotToken;
+        public string RevoltUserId;
 
         public BridgeChannel ByDiscordId(ulong id)
             => Channels.FirstOrDefault(c => c.DiscordChannelId == id);

@@ -27,7 +27,7 @@ namespace DiscordBridge
         public static DiscordSocketClient DiscordClient;
         public static Config Config;
         public static readonly Dictionary<string, (ulong MessageId, ulong ChannelId)> RevoltDiscordMessages = new();
-        public static readonly Dictionary<ulong, string> DiscordRevoltMessages = new();
+        public static readonly Dictionary<ulong, (string MessageId, string ChannelId)> DiscordRevoltMessages = new();
         public static readonly List<string> DiscordRevoltMessagesContent = new();
         public static readonly Regex ReplaceRevoltMentions = new("<@([0-9,A-Z]{26})+>", RegexOptions.Compiled);
         public static readonly Regex ReplaceDiscordMentions = new("<@!?[0-9]{1,20}>", RegexOptions.Compiled);
@@ -88,7 +88,7 @@ namespace DiscordBridge
                         .FirstOrDefault(m => m.Key == message.Replies?.FirstOrDefault()).Value.MessageId;
                     if (replyToId == 0)
                         replyToId = DiscordRevoltMessages
-                            .FirstOrDefault(m => m.Value == message.Replies?.FirstOrDefault()).Key;
+                            .FirstOrDefault(m => m.Value.MessageId == message.Replies?.FirstOrDefault()).Key;
                     Func<Task> updateReply = null;
                     if (replyToId != 0)
                     {
@@ -168,10 +168,20 @@ namespace DiscordBridge
             };
             _client.MessageDeleted += (messageId) =>
             {
+                // revolt to discord message delete
                 if (RevoltDiscordMessages.TryGetValue(messageId, out var discordSide))
                 {
                     return Config.ByDiscordId(discordSide.ChannelId).DiscordWebhook
                         .DeleteMessageAsync(discordSide.MessageId);
+                }
+
+                // discord to revolt message delete
+                var disMsg = DiscordRevoltMessages.FirstOrDefault(m => m.Value.MessageId == messageId);
+                if (disMsg.Value.MessageId != null)
+                {
+                    var discordChannelId = Config.Channels.First(c => c.RevoltChannelId == disMsg.Value.ChannelId)
+                        .DiscordChannelId;
+                    return ((SocketTextChannel)DiscordClient.GetChannel(discordChannelId)).DeleteMessageAsync(disMsg.Key);
                 }
 
                 return Task.CompletedTask;
@@ -253,7 +263,7 @@ namespace DiscordBridge
                         {
                             string replyToId = null;
                             if (DiscordRevoltMessages.TryGetValue(message.Reference.MessageId.Value, out var msgId))
-                                replyToId = msgId;
+                                replyToId = msgId.MessageId;
                             var h = RevoltDiscordMessages.FirstOrDefault(m =>
                                 m.Value.MessageId == message.Reference.MessageId.Value);
                             if (h.Key != null)
@@ -289,8 +299,8 @@ namespace DiscordBridge
                         msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,
                             content, replies: isReply ? new[] { reply } : null);
 
-                    if(msg._id != null)
-                        DiscordRevoltMessages.Add(message.Id, msg._id);
+                    if (msg._id != null)
+                        DiscordRevoltMessages.Add(message.Id, (msg._id, channel.RevoltChannelId));
                 }
                 catch (Exception exc)
                 {
@@ -301,18 +311,28 @@ namespace DiscordBridge
             {
                 if (message.Content == null)
                     return;
-                if (DiscordRevoltMessages.TryGetValue(cacheable.Id, out string revoltMessageId))
+                if (DiscordRevoltMessages.TryGetValue(cacheable.Id, out var revoltMessage))
                 {
                     await _client.Channels.EditMessageAsync(Config.ByDiscordId(channel.Id).RevoltChannelId,
-                        revoltMessageId,
+                        revoltMessage.MessageId,
                         message.ToGoodString());
                 }
             };
             DiscordClient.MessageDeleted += (cacheable, channel) =>
             {
-                if (DiscordRevoltMessages.TryGetValue(cacheable.Id, out string id))
+                // discord to revolt message delete
+                if (DiscordRevoltMessages.TryGetValue(cacheable.Id, out var revoltMessage))
                 {
-                    return _client.Channels.DeleteMessageAsync(Config.ByDiscordId(channel.Id).RevoltChannelId, id);
+                    return _client.Channels.DeleteMessageAsync(Config.ByDiscordId(channel.Id).RevoltChannelId,
+                        revoltMessage.MessageId);
+                }
+
+                // revolt to discord message delete
+                var revMsg = RevoltDiscordMessages.FirstOrDefault(r => r.Value.MessageId == cacheable.Id);
+                if (revMsg.Key != null)
+                {
+                    return _client.Channels.DeleteMessageAsync(Config.ByDiscordId(channel.Id).RevoltChannelId,
+                        revMsg.Key);
                 }
 
                 return Task.CompletedTask;

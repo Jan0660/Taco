@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -149,10 +150,10 @@ namespace Taco.Modules
         [GroupOnly]
         public Task GroupInfo()
         {
-            var group = (GroupChannel) Message.Channel;
+            var group = (GroupChannel)Message.Channel;
             return ReplyAsync($@"> ## {group.Name}
 > {group.Description}
-> **Owner:** <@{group.OwnerId}> [`{group.OwnerId}`]
+> **Owner:** [@{group.Owner.Username}](/@{group.OwnerId}) [`{group.OwnerId}`]
 > **ID:** `{group._id}`
 > {group.RecipientIds.Length} Recipients");
         }
@@ -181,38 +182,11 @@ namespace Taco.Modules
 > **Organization:** {res.Org}");
         }
 
-        [Command("etc")]
-        [Summary("Get ETC prices, wallet balance.")]
-        public async Task Etc()
-        {
-            if (Args == "")
-            {
-                var rates = await EtherScanApi.GetRatesCached("ETC");
-                await ReplyAsync(@$"> ## ETC Rates
-> :us: USD: {rates.USD}
-> :uk: GBP: {rates.GBP}
-> :european_union: EUR: {rates.EUR}
-> :czech_republic: CZK: {rates.CZK}");
-            }
-            else
-            {
-                var geth = new GethClient("https://blockscout.com/etc/mainnet/api/eth-rpc");
-                var balance = await geth.GetBalance(Args);
-                var rates = await EtherScanApi.GetRatesCached("ETC");
-                await ReplyAsync($@"> ## ETC Wallet Balance
-> ETC: {balance}
-> :us: USD: {balance * rates.USD}
-> :uk: GBP: {balance * rates.GBP}
-> :european_union: EUR: {balance * rates.EUR}
-> :czech_republic: CZK: {balance * rates.CZK}");
-            }
-        }
-
         [Command("arch")]
         [Summary("Get package info from Arch Linux' official repositories.")]
-        public async Task Arch()
+        public async Task Arch(string name)
         {
-            var search = await ArchReposApi.SearchPackage(Args);
+            var search = await ArchReposApi.SearchPackage(name);
             if (!search.Results.Any())
             {
                 await ReplyAsync("Sorry, no results.");
@@ -249,27 +223,20 @@ namespace Taco.Modules
     : $"{pkg.InstalledSize / 1000}KB")}");
         }
 
-        public static (string, string)[] CommonDistroNames = new[]
-        {
+        public readonly static (string, string)[] CommonDistroNames = {
             ("pios", "Raspberry Pi OS"),
             ("raspios", "Raspberry Pi OS"),
             ("raspbian", "Raspberry Pi OS"),
             ("raspberry pi", "Raspberry Pi OS"),
             ("arch", "arch linux"),
             ("arhc", "arch linux"),
-            ("the best distro there is", "Artix Linux"),
-            ("the distro that best distro is based on", "Arch Linux"),
-            ("the other best distro there is", "Gentoo Linux"),
             ("intal", "Gentoo Linux"),
             ("intal gento", "Gentoo Linux"),
-            ("fuck systemd", "Artix Linux"),
             ("based", "Gentoo Linux"),
             ("Independent", "Gentoo Linux"),
             ("gento", "Gentoo Linux"),
             ("openbased", "openbsd"),
-            ("systemd is bloat", "Artix Linux"),
             ("gentoo", "Gentoo Linux"),
-            ("the fucking", "Gentoo Linux")
         };
 
         public static LinuxDistro DistroSearch(string name)
@@ -320,7 +287,7 @@ namespace Taco.Modules
 
         [Command("save-attachment")]
         [Alias("saveAttachment", "s-a")]
-        public async Task SaveAttachment()
+        public async Task SaveAttachment(string name)
         {
             if (Message.Attachments == null)
             {
@@ -329,7 +296,7 @@ namespace Taco.Modules
             }
 
             var attachment = Message.Attachments.First();
-            Context.UserData.SavedAttachments.Add(Args.ToLower(),
+            Context.UserData.SavedAttachments.Add(name.ToLower(),
                 $"https://autumn.revolt.chat/attachments/{attachment._id}/{HttpUtility.UrlEncode(attachment.Filename)}");
             await Context.UserData.UpdateAsync();
             await ReplyAsync("Attachment saved.");
@@ -337,11 +304,12 @@ namespace Taco.Modules
 
         [Command("unsave-attachment")]
         [Alias("unsaveAttachment", "us-a")]
-        public Task UnsaveAttachment()
+        [Summary("Remove a saved attachment.")]
+        public Task UnsaveAttachment(string name)
         {
             try
             {
-                Context.UserData.SavedAttachments.Remove(Args);
+                Context.UserData.SavedAttachments.Remove(name);
                 return Context.UserData.UpdateAsync();
             }
             catch
@@ -352,30 +320,68 @@ namespace Taco.Modules
 
         [Command("saved-attachment")]
         [Alias("savedAttachment", "s")]
-        public Task SendSavedAttachment()
+        [Summary("Send a saved attachment.")]
+        public Task SendSavedAttachment(string name)
         {
-            if (Context.UserData.SavedAttachments.TryGetValue(Args.ToLower(), out string url))
+            if (Context.UserData.SavedAttachments.TryGetValue(name.ToLower(), out string url))
                 return InlineReplyAsync(url);
             else
                 return InlineReplyAsync("Saved attachment not found.");
         }
-        // todo: commands to list saved attachments
-
-        // get fucked lol
-        [Command("invisible")]
-        [GroupOnly]
-        public async Task Invisible()
+        [Command("savedAttachments")]
+        [Alias("saved-attachments")]
+        [Summary("List your saved attachments.")]
+        public Task ListSavedAttachments()
         {
-            List<string> hiding = new();
-            // todo: make thing only on group
-            foreach (var user in await Message.Channel.GetMembersAsync())
+            var res = new StringBuilder();
+            res.AppendLine("[](https://a.c)");
+            foreach (var att in Context.UserData.SavedAttachments)
             {
-                if (user.Status.Presence == "Invisible")
-                    hiding.Add(user.Username);
+                res.AppendLine($"- **[{att.Key}]({att.Value})**");
             }
 
-            await ReplyAsync($@"> ## Invisible users:
-> {String.Join("\n> @", hiding)}");
+            return InlineReplyAsync(res.ToString());
+        }
+
+        [Command("roles")]
+        [Summary("Lists roles.")]
+        [TextChannelOnly]
+        public async Task RolesList()
+        {
+            var res = new StringBuilder();
+            res.AppendLine($@"**Default Channel Permissions:** {Context.Server.ChannelPermissions}");
+            res.AppendLine($@"**Default Server Permissions:** {Context.Server.ServerPermissions}");
+            res.AppendLine("\\");
+            foreach (var role in Context.Server.Roles)
+            {
+                res.AppendLine(@$"$\color{{{role.Value.Color ?? "white"}}}\textsf{{{role.Value.Name}}}$
+> **Id:** `{role.Key}`");
+                if (role.Value.Color != null)
+                    res.AppendLine($"> **Color:** `{role.Value.Color}`");
+                var channelPerms = role.Value.ChannelPermissions ^
+                                   (Context.Server.ChannelPermissions & role.Value.ChannelPermissions);
+                if (role.Value.ChannelPermissions != Context.Server.ChannelPermissions && channelPerms != 0)
+                    res.AppendLine(
+                        $"**Channel Permissions:** {channelPerms}");
+                var serverPerms = role.Value.ServerPermissions ^
+                                  (Context.Server.ServerPermissions & role.Value.ServerPermissions);
+                if (role.Value.ServerPermissions != Context.Server.ServerPermissions)
+                    res.AppendLine(
+                        $"**Server Permissions:** {serverPerms}");
+                res.AppendLine("\n");
+            }
+
+            await ReplyAsync(res.ToString());
+        }
+
+        [Command("breetest")]
+        public async Task BreeTest()
+        {
+            while (true)
+            {
+                await Context.Channel.BeginTypingAsync();
+                await Task.Delay(2000);
+            }
         }
     }
 }

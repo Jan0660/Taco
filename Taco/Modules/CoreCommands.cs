@@ -23,14 +23,14 @@ namespace Taco.Modules
         public Task BotInformation()
         {
             var uptime = DateTime.Now - Program.StartTime;
-            return ReplyAsync($@"> ## Taco
+            return ReplyAsync($@"[](https://a.c)
+> ## Taco
 > **Developed by:** Jan0660 (<@01EX40TVKYNV114H8Q8VWEGBWQ>) (https://github.com/Jan0660)
 > **Repository:** https://github.com/Jan0660/Taco
 > **Uptime:** {(uptime.Days == 0 ? "" : uptime.Days + " Days")} {uptime.Hours} Hours {uptime.Minutes} Minutes
 > **Latest update at:** {new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime:dd/MM/yyyy}
 > **Groups count:** {Message.Client.ChannelsCache.OfType<GroupChannel>().Count()}
-> **Servers count:** {Message.Client.ServersCache.Count}
-> **Friends count:** {Message.Client.UsersCache.Count(user => user.Relationship == RelationshipStatus.Friend)}"
+> **Servers count:** {Message.Client.ServersCache.Count}"
 #if DEBUG
                               + "\nDEBUG BUILD"
 #endif

@@ -56,15 +56,16 @@ namespace Taco
 
         public static readonly Regex CocMatchRegex = new(CocMatchPrefix + "[0-9]{1,2}", RegexOptions.Compiled);
 
-        static async Task Main(string[] args)
+        static async Task Main()
         {
-            TaskScheduler.UnobservedTaskException += (sender, eventArgs) => { Console.Exception(eventArgs.Exception); };
+            TaskScheduler.UnobservedTaskException += (_, eventArgs) => { Console.Exception(eventArgs.Exception); };
             var stopwatch = Stopwatch.StartNew();
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"))!;
 
             _configureLogging();
 
-            _client = new RevoltClient(Config!.BotToken, Config.UserId);
+            _client = new RevoltClient();
+            await _client.LoginAsync(TokenType.Bot, Config!.BotToken, Config.UserId);
 
             #region Event handlers
 

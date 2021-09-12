@@ -17,6 +17,7 @@ using Revolt.Channels;
 using Attachment = Revolt.Attachment;
 using Console = Log73.Console;
 using Meth = System.Math;
+using TokenType = Revolt.TokenType;
 
 namespace DiscordBridge
 {
@@ -29,9 +30,15 @@ namespace DiscordBridge
         public static readonly Dictionary<string, (ulong MessageId, ulong ChannelId)> RevoltDiscordMessages = new();
         public static readonly Dictionary<ulong, (string MessageId, string ChannelId)> DiscordRevoltMessages = new();
         public static readonly List<string> DiscordRevoltMessagesContent = new();
-        public static readonly Regex ReplaceRevoltMentions = new("<@([0-9,A-Z]{26})+>", RegexOptions.Compiled);
-        public static readonly Regex ReplaceDiscordMentions = new("<@!?[0-9]{1,20}>", RegexOptions.Compiled);
-        public static readonly Regex ReplaceDiscordEmotes = new("<a?:.+?:[0-9]{1,20}>", RegexOptions.Compiled);
+
+        public static readonly Regex ReplaceRevoltMentions =
+            new("<@([0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26})+>", RegexOptions.Compiled);
+
+        public static readonly Regex ReplaceRevoltChannelMentions =
+            new("<#([0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26})+>", RegexOptions.Compiled);
+
+        public static readonly Regex ReplaceDiscordMentions = new("<@!?[0-9]{1,22}>", RegexOptions.Compiled);
+        public static readonly Regex ReplaceDiscordEmotes = new("<a?:.+?:[0-9]{1,22}>", RegexOptions.Compiled);
 
         static async Task Main()
         {
@@ -52,7 +59,8 @@ namespace DiscordBridge
             Console.Log("h");
 
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"));
-            _client = new RevoltClient(Config.RevoltBotToken, Config.RevoltUserId);
+            _client = new RevoltClient();
+            await _client.LoginAsync(TokenType.Bot, Config.RevoltBotToken, Config.RevoltUserId);
             await _client.ConnectWebSocketAsync();
             _client.OnReady += () =>
             {
@@ -141,7 +149,8 @@ namespace DiscordBridge
                             }.Build());
                         }
 
-                    var msg = await channel.DiscordWebhook.SendMessageAsync(message.Content.ReplaceRevoltMentions(),
+                    var msg = await channel.DiscordWebhook.SendMessageAsync(
+                        message.Content.ReplaceRevoltMentions().ReplaceRevoltChannelMentions(),
                         username: message.Author.Username,
                         avatarUrl: message.Author.Avatar == null
                             ? message.Author.DefaultAvatarUrl
@@ -161,7 +170,7 @@ namespace DiscordBridge
                 {
                     return Config.ByDiscordId(discordSide.ChannelId).DiscordWebhook.ModifyMessageAsync(
                         discordSide.MessageId,
-                        c => c.Content = data.Content.ReplaceRevoltMentions());
+                        c => c.Content = data.Content.ReplaceRevoltMentions().ReplaceRevoltChannelMentions());
                 }
 
                 return Task.CompletedTask;
@@ -181,7 +190,8 @@ namespace DiscordBridge
                 {
                     var discordChannelId = Config.Channels.First(c => c.RevoltChannelId == disMsg.Value.ChannelId)
                         .DiscordChannelId;
-                    return ((SocketTextChannel)DiscordClient.GetChannel(discordChannelId)).DeleteMessageAsync(disMsg.Key);
+                    return ((SocketTextChannel)DiscordClient.GetChannel(discordChannelId)).DeleteMessageAsync(
+                        disMsg.Key);
                 }
 
                 return Task.CompletedTask;
@@ -199,7 +209,7 @@ namespace DiscordBridge
                     username: "Revolt Bridge");
             };
             DiscordClient = new DiscordSocketClient();
-            await DiscordClient.LoginAsync(TokenType.Bot, Config.DiscordBotToken);
+            await DiscordClient.LoginAsync(Discord.TokenType.Bot, Config.DiscordBotToken);
             await DiscordClient.StartAsync();
             DiscordClient.Ready += async () =>
             {
@@ -418,6 +428,16 @@ namespace DiscordBridge
                 var mention = Program.Client.UsersCache.FirstOrDefault(u => u._id == id);
                 if (mention != null)
                     return '@' + mention.Username.Replace("_", "\\_");
+                return match.Value;
+            });
+
+        public static string ReplaceRevoltChannelMentions(this string str)
+            => Program.ReplaceRevoltChannelMentions.Replace(str, match =>
+            {
+                var id = match.Value[2..28];
+                var channel = Program.Client.ChannelsCache.FirstOrDefault(u => u._id == id);
+                if (channel != null)
+                    return '#' + ((channel as TextChannel)?.Name ?? id);
                 return match.Value;
             });
 

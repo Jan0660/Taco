@@ -15,6 +15,7 @@ namespace Revolt
         [JsonProperty("relationship")] public RelationshipStatus Relationship { get; internal set; }
         [JsonProperty("online")] public bool Online { get; internal set; }
         [JsonProperty("avatar")] public Attachment? Avatar { get; internal set; }
+        [JsonProperty("bot")] public UserBot? Bot { get; internal set; }
         [JsonIgnore] public string DefaultAvatarUrl => $"{Client.ApiUrl}/users/{_id}/default_avatar";
         /// <summary>
         /// Gets URL to user's avatar, if they don't have one, falls back to <see cref="DefaultAvatarUrl"/>.
@@ -41,6 +42,12 @@ namespace Revolt
 
         public Profile GetProfile()
             => Client.Users.GetProfile(_id);
+    }
+
+    public class UserBot
+    {
+        [JsonProperty("owner")]
+        public string OwnerId { get; internal set; }
     }
 
     [Flags]

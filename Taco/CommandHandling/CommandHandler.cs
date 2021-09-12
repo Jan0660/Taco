@@ -70,6 +70,11 @@ namespace Taco.CommandHandling
                     }
 #endif
                 }
+                else if (result.Error == CommandError.UnmetPrecondition)
+                {
+                    await context.Channel.SendMessageAsync(result.ToString()!,
+                        replies: new[] { new MessageReply(context.Message._id) });
+                }
             }
         }
 
@@ -80,14 +85,12 @@ namespace Taco.CommandHandling
 
         public static async Task MessageReceived(Message message)
         {
-            if (message.Channel is not TextChannel { ServerId: "01FDAY783TFJDQ86PNCHGPRQA3" })
-                return;
             try
             {
                 int argPos = 0;
                 var context = new TacoCommandContext(message);
                 if (
-                    // todo: is bot check
+                    context.User.Bot == null ||
                     context.Message.AuthorId == context.Client.Self.UserId ||
                     !message.Content.HasPrefix(context.CommunityData.CustomPrefix, ref argPos)
                 )
@@ -105,7 +108,7 @@ namespace Taco.CommandHandling
                     else if (context.UserData.PermissionLevel == PermissionLevel.BlacklistSilent)
                         return;
                 }
-                var what = await Commands.ExecuteAsync(context, message.Content.Substring(argPos), null, MultiMatchHandling.Best);
+                await Commands.ExecuteAsync(context, message.Content.Substring(argPos), null, MultiMatchHandling.Best);
             }
             catch (Exception exc)
             {

@@ -1,29 +1,38 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Timers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using RestSharp;
-using Revolt.Base;
 using Revolt.Channels;
 using Websocket.Client;
-using Websocket.Client.Models;
+
+#pragma warning disable 4014
 
 namespace Revolt
 {
+    public enum RevoltClientState
+    {
+        NotLoggedIn,
+        LoggedIn,
+        WebSocketConnected,
+        WebSocketReady,
+    }
+
     public partial class RevoltClient
     {
-        internal RestClient _restClient = new("https://api.revolt.chat/");
-        public RevoltApiInfo? ApiInfo { get; private set; }
+        // todo: temporary
+        private const string _defaultApiUrl = "https://api.revolt.chat/";
+        internal RestClient _restClient;
+        public RevoltApiInfo ApiInfo { get; private set; }
+        public AutumnInformation AutumnInfo { get; private set; }
         internal WebsocketClient? _webSocket { get; private set; }
-        internal Session? _session { get; set; }
+        public RevoltClientState State { get; private set; } = RevoltClientState.NotLoggedIn;
         internal List<User> _users = new();
         public IReadOnlyList<User> UsersCache => _users.AsReadOnly();
         private List<Channel> _channels = new();
@@ -31,46 +40,54 @@ namespace Revolt
 
         public List<Server> ServersCache { get; internal set; }
         private Timer _pingTimer;
-        public string ApiUrl { get; set; } = "https://api.revolt.chat";
-        public string AutumnUrl { get; set; } = "https://autumn.revolt.chat";
-        public string VortexUrl { get; set; } = "https://voso.revolt.chat";
+        public string ApiUrl { get; private set; } = _defaultApiUrl;
+        public string AutumnUrl => ApiInfo!.Features.Autumn.Url;
+        public string VortexUrl => ApiInfo!.Features.Vortex.Url;
 
         public RevoltClientChannels Channels { get; private set; }
         public RevoltClientUsers Users { get; private set; }
         public RevoltClientSelf Self { get; private set; }
         public RevoltClientServers Servers { get; private set; }
+        private static Random rng = new();
+        public TokenType TokenType { get; private set; }
+        private string token;
 
         /// <summary>
-        /// Create an unauthenticated client, use another constructor overload or <see cref="LoginAsync"/> for authenticating.
+        /// Create an unauthenticated client, use <see cref="LoginAsync"/> for authenticating.
         /// </summary>
-        public RevoltClient()
+        public RevoltClient(string apiUrl = _defaultApiUrl)
         {
+            ApiUrl = apiUrl;
+            _restClient = new(_defaultApiUrl);
             this.Channels = new RevoltClientChannels(this);
             this.Users = new RevoltClientUsers(this);
             this.Self = new RevoltClientSelf(this);
             this.Servers = new RevoltClientServers(this);
         }
 
-        public RevoltClient(Session session) : this()
+        /// <summary>
+        /// Log in with an existing token and finish initialization of the client.
+        /// </summary>
+        /// <param name="tokenType"></param>
+        /// <param name="token">User or bot token.</param>
+        /// <param name="userId">(will not be needed in the future)</param>
+        public async Task LoginAsync(TokenType tokenType, string token, string userId)
         {
-            _useSession(session);
+            ApiInfo = await GetApiInfoAsync();
+            AutumnInfo = await GetAutumnInfoAsync();
+            _useToken(tokenType, token, userId);
         }
 
-        public RevoltClient(string botToken, string userId) : this()
+        private void _useToken(TokenType tokenType, string token, string userId)
         {
-            _restClient.AddDefaultHeader("x-bot-token", botToken);
-            _botToken = botToken;
-            _authType = AuthType.Bot;
             Self.UserId = userId;
-        }
-
-        private void _useSession(Session session)
-        {
-            _session = session;
-            _restClient.AddDefaultHeader("x-user-id", session.UserId);
-            _restClient.AddDefaultHeader("x-session-token", session.SessionToken);
-            _authType = AuthType.User;
-            Self.UserId = _session.UserId;
+            this.token = token;
+            TokenType = tokenType;
+            if (tokenType == TokenType.User)
+                _restClient.AddDefaultHeader("x-session-token", token);
+            else if (tokenType == TokenType.Bot)
+                _restClient.AddDefaultHeader("x-bot-token", token);
+            State = RevoltClientState.LoggedIn;
         }
 
         /// <summary>
@@ -84,272 +101,15 @@ namespace Revolt
             {
                 email, password, device_name = deviceName, captcha
             }));
-            _useSession(session);
+            _useToken(TokenType.User, session.SessionToken, session.UserId);
             return session;
         }
 
-        /// <summary>
-        /// Connects the client to the websocket.
-        /// </summary>
-        public async Task ConnectWebSocketAsync()
+        private void ThrowIfNotLoggedIn(string msg = "Revolt client is not logged in!")
         {
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (this.ApiInfo == null || this._webSocket == null)
-            {
-                this.ApiInfo = GetApiInfo();
-                _webSocket = new(new Uri(ApiInfo.WebsocketUrl));
-            }
-
-            // todo: add disconnect and reconnect events
-            _webSocket.ReconnectTimeout = null;
-            _webSocket.DisconnectionHappened.Subscribe(info =>
-            {
-                // is null if disconnected using DisconnectWebSocket()
-                if (_webSocket != null)
-                    _webSocket.Start();
-                _disconnected.InvokeAsync(info);
-            });
-            _webSocket.ReconnectionHappened.Subscribe((info =>
-            {
-                var json = JsonConvert.SerializeObject(_authType switch
-                {
-                    AuthType.User => new
-                    {
-                        type = "Authenticate", id = _session.Id,
-                        user_id = _session.UserId,
-                        session_token = _session.SessionToken
-                    },
-                    AuthType.Bot => new
-                    {
-                        type = "Authenticate", token = _botToken
-                    },
-                    _ => throw new Exception("Invalid AuthType.")
-                }
-                    );
-                _webSocket.Send(json);
-                _reconnected.InvokeAsync(info);
-            }));
-
-            _webSocket.MessageReceived.Subscribe((message =>
-            {
-                JObject packet = null;
-                string packetType = null;
-                try
-                {
-                    packet = JObject.Parse(message.Text);
-                    packetType = packet.Value<string>("type");
-                    _packetReceived.InvokeAsync(packetType, packet, message);
-                    switch (packetType)
-                    {
-                        case "Message":
-                            try
-                            {
-                                var msg = _deserialize<Message>(message.Text);
-                                _messageReceived.InvokeAsync(msg);
-                            }
-                            catch
-                            {
-                                var msg = _deserialize<ObjectMessage>(message.Text);
-                                _systemMessageReceived.InvokeAsync(msg);
-                            }
-
-                            break;
-                        case "MessageDelete":
-                        {
-                            var id = packet.Value<string>("id");
-                            _messageDeleted.InvokeAsync(id);
-
-                            break;
-                        }
-                        case "Ready":
-                        {
-                            {
-                                _pingTimer?.Stop();
-                                _pingTimer = new Timer(30_000d);
-                                _pingTimer.Elapsed += (_, _) =>
-                                {
-                                    _webSocket.Send(JsonConvert.SerializeObject(new
-                                    {
-                                        type = "Ping",
-                                        time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-                                    }));
-                                };
-                                _pingTimer.Start();
-                                // initialize cache
-                                _users = new();
-                                _channels = new();
-                                ServersCache = new();
-                                foreach (var userToken in packet["users"]!)
-                                {
-                                    var user = userToken.ToObject<User>();
-                                    user!.AttachClient(this);
-                                    _users.Add(user);
-                                }
-
-                                foreach (var channelToken in packet["channels"]!)
-                                {
-                                    var channel = _deserializeChannel((JObject)channelToken);
-                                    if (channel is MessageChannel { LastMessage: { } } messageChannel)
-                                        messageChannel.LastMessage.Client = this;
-                                    _channels.Add(channel);
-                                }
-
-                                foreach (var serverToken in packet["servers"]!)
-                                {
-                                    var server = serverToken.ToObject<Server>();
-                                    server!.Client = this;
-                                    ServersCache.Add(server);
-                                }
-
-                                _onReady.InvokeAsync();
-                            }
-                            break;
-                        }
-                        case "UserPresence":
-                        {
-                            var userId = packet.Value<string>("id");
-                            var online = packet.Value<bool>("online");
-                            var user = Users.Get(userId);
-                            if (user != null)
-                                user.Online = packet.Value<bool>("online");
-                            _userPresence.InvokeAsync(userId, online);
-
-                            break;
-                        }
-                        case "UserRelationship":
-                        {
-                            var id = packet.Value<JObject>("user")!.Value<string>("_id");
-                            var status = (RelationshipStatus)Enum.Parse(typeof(RelationshipStatus),
-                                packet.Value<string>("status")!);
-                            // update user if they're in cache
-                            var user = _users.FirstOrDefault(u => u._id == id);
-                            if (user != null)
-                                user.Relationship = status;
-
-                            _userRelationshipUpdated.InvokeAsync(id, status);
-
-                            break;
-                        }
-                        case "MessageUpdate":
-                        {
-                            var messageId = packet.Value<string>("id");
-                            MessageEditData data = packet.Value<JObject>("data").ToObject<MessageEditData>();
-                            _messageUpdated.InvokeAsync(messageId, data);
-
-                            break;
-                        }
-                        case "ChannelGroupJoin":
-                        {
-                            _channelGroupJoin.InvokeAsync(packet.Value<string>("id"), packet.Value<string>("user"));
-
-                            break;
-                        }
-                        case "ChannelGroupLeave":
-                        {
-                            _channelGroupLeave.InvokeAsync(packet.Value<string>("id"), packet.Value<string>("user"));
-                            break;
-                        }
-                        case "ChannelDelete":
-                            _channelDelete.InvokeAsync(packet.Value<string>("id"));
-                            break;
-                        case "ChannelCreate":
-                        {
-                            var channel = packet.ToObject<Channel>();
-                            _channels.Add(channel);
-                            // todo: TextChannel specific handling to add to Server
-                            _channelCreate.InvokeAsync(channel);
-
-                            break;
-                        }
-                        case "ChannelUpdate":
-                        {
-                            var id = packet.Value<string>("id");
-                            var channel = (GroupChannel)_channels.First(c => c._id == id);
-                            var data = packet.Value<JObject>("data");
-                            if (data!.TryGetValue("icon", out var icon))
-                                channel.Icon = icon.ToObject<Attachment>()!;
-                            _channelUpdate.InvokeAsync(id, data);
-
-                            break;
-                        }
-                        case "UserUpdate":
-                        {
-                            // todo: handle status changes
-                            var id = packet.Value<string>("id");
-                            User user = UsersCache.FirstOrDefault(u => u._id == id);
-                            if (user == null)
-                                return;
-                            JObject data = packet.Value<JObject>("data");
-                            if (data!.ContainsKey("avatar"))
-                                user.Avatar = data.Value<JObject>("avatar")!.ToObject<Attachment>()!;
-
-                            if (data.ContainsKey("username"))
-                                user.Username = data.Value<string>("username")!;
-
-                            break;
-                        }
-                        case "ServerDelete":
-                        {
-                            var id = packet.Value<string>("id");
-                            var server = ServersCache.FirstOrDefault(s => s._id == id);
-                            if (server != null)
-                                ServersCache.Remove(server);
-                            // todo: if not cached only id
-                            _serverDeleted.InvokeAsync(server);
-                            break;
-                        }
-                        case "ServerMemberUpdate":
-                        {
-                            var serverId = packet.Value<string>("id");
-                            var partialMember = packet.Value<Member>("data");
-                            var server = ServersCache.First(s => s._id == serverId);
-                            var memberIndex = server.MemberCache.FindIndex(m => m._id == partialMember!._id);
-                            Member cached = null;
-                            if (memberIndex != -1)
-                                cached = server.MemberCache[memberIndex];
-                            var remove = packet.Value<string>("remove");
-                            // patch member by copying data from (already cached) onto the partial object received
-                            if (cached != null)
-                            {
-                                if (cached.Nickname != null && partialMember!.Nickname != null)
-                                    partialMember.Nickname = cached.Nickname;
-                                if (cached.Avatar != null && partialMember!.Avatar != null)
-                                    partialMember.Avatar = cached.Avatar;
-                                if (cached.Roles != null && partialMember!.Roles != null)
-                                    partialMember.Roles = cached.Roles;
-                            }
-                            if (remove == "Nickname")
-                                partialMember!.Nickname = null;
-                            if (remove == "Avatar")
-                                partialMember!.Avatar = null;
-                            if (memberIndex != -1)
-                                server.MemberCache[memberIndex] = partialMember;
-                            _serverMemberUpdated.InvokeAsync(cached, partialMember);
-                            break;
-                        }
-                    }
-                }
-                catch (Exception exc)
-                {
-                    _packetError.InvokeAsync(packetType, packet, message, exc);
-                }
-            }));
-            await _webSocket.Start();
+            if (State == RevoltClientState.NotLoggedIn)
+                throw new Exception(msg);
         }
-
-        public void DisconnectWebsocket()
-        {
-            var websocket = _webSocket;
-            _webSocket = null!;
-            websocket.Stop(WebSocketCloseStatus.NormalClosure, "sus");
-            websocket.Dispose();
-        }
-
-        public RevoltApiInfo GetApiInfo()
-            => JsonConvert.DeserializeObject<RevoltApiInfo>(new WebClient().DownloadString(ApiUrl))!;
-
-        public async Task<RevoltApiInfo> GetApiInfoAsync()
-            => JsonConvert.DeserializeObject<RevoltApiInfo>(await new HttpClient().GetStringAsync(ApiUrl))!;
 
         public async Task<string> UploadFile(string name, string path, string tag = "attachments")
         {
@@ -381,116 +141,6 @@ namespace Revolt
             return _restClient.ExecuteAsync(req);
         }
 
-
-        internal Channel _deserializeChannel(string json)
-        {
-            var obj = JObject.Parse(json);
-            return _deserializeChannel(obj);
-        }
-
-        internal Channel _deserializeChannel(JObject obj)
-        {
-            Channel channel;
-            switch (obj.Value<string>("channel_type"))
-            {
-                case "Group":
-                    channel = obj.ToObject<GroupChannel>();
-                    break;
-                case "DirectMessage":
-                    channel = obj.ToObject<DirectMessageChannel>();
-                    break;
-                case "SavedMessages":
-                    channel = obj.ToObject<SavedMessagesChannel>();
-                    break;
-                case "TextChannel":
-                    channel = obj.ToObject<TextChannel>(new JsonSerializer()
-                    {
-                        ContractResolver = new CamelCasePropertyNamesContractResolver()
-                    });
-                    break;
-                default:
-                    channel = obj.ToObject<Channel>();
-                    break;
-            }
-
-            channel!.Client = this;
-            return channel;
-        }
-
-        internal T _deserialize<T>(string json) where T : RevoltObject
-        {
-            T obj = JsonConvert.DeserializeObject<T>(json);
-            obj.Client = this;
-            return obj;
-        }
-
-        internal Task<T> _requestAsync<T>(string url, Method method = Method.GET, string? body = null)
-        {
-            var req = new RestRequest(url, method);
-            if (body != null)
-                req.AddJsonBody(body);
-            return _requestAsync<T>(req);
-        }
-
-        internal Task _requestAsync(string url, Method method = Method.GET, string? body = null)
-        {
-            var req = new RestRequest(url, method);
-            if (body != null)
-                req.AddJsonBody(body);
-            return _requestAsync(req);
-        }
-
-        internal Task _requestAsync(RestRequest request)
-            => _restClient.ExecuteAsync(request);
-        internal async Task<T> _requestAsync<T>(RestRequest request)
-        {
-            var res = await _restClient.ExecuteAsync(request);
-            T val;
-            try
-            {
-                val = JsonConvert.DeserializeObject<T>(res.Content, new JsonSerializerSettings()
-                {
-                    ContractResolver = new CamelCasePropertyNamesContractResolver()
-                });
-            }
-            // todo: catch json exception type JsonReaderException
-            catch (Exception exception)
-            {
-                var err = JsonConvert.DeserializeObject<RevoltError>(res.Content);
-                if (res.StatusCode == HttpStatusCode.OK)
-                    throw new Exception(
-                        "Internal exception deserializing JSON response from Revolt, please check your Revolt.Net version.",
-                        exception);
-                throw new RevoltException(err!, res);
-            }
-
-            switch (val)
-            {
-                case User user:
-                    user.AttachClient(this);
-                    break;
-                case RevoltObject revoltObject:
-                    revoltObject.Client = this;
-                    break;
-                case RevoltObject[] revoltObjects:
-                {
-                    foreach (var obj in revoltObjects)
-                        obj.Client = this;
-                    break;
-                }
-            }
-
-            return val;
-        }
-
-        public VortexInformation GetVortexInfo()
-            => JsonConvert.DeserializeObject<VortexInformation>(
-                new WebClient().DownloadString(VortexUrl))!;
-
-        public AutumnInformation GetAutumnInfo()
-            => JsonConvert.DeserializeObject<AutumnInformation>(
-                new WebClient().DownloadString(AutumnUrl))!;
-
         public async Task<VortexInformation> GetVortexInfoAsync()
             => JsonConvert.DeserializeObject<VortexInformation>(
                 await new HttpClient().GetStringAsync(VortexUrl))!;
@@ -499,12 +149,11 @@ namespace Revolt
             => JsonConvert.DeserializeObject<AutumnInformation>(
                 await new HttpClient().GetStringAsync(AutumnUrl))!;
 
-        private static Random rng = new();
-        private AuthType _authType;
-        private readonly string _botToken;
+        public async Task<RevoltApiInfo> GetApiInfoAsync()
+            => JsonConvert.DeserializeObject<RevoltApiInfo>(await new HttpClient().GetStringAsync(ApiUrl))!;
 
         public static string GenerateNonce()
-            => DateTimeOffset.Now.ToUnixTimeSeconds() + rng.Next().ToString();
+            => DateTimeOffset.Now.ToUnixTimeMilliseconds() + rng.Next().ToString();
 
         internal void CacheChannel(Channel channel)
         {
@@ -567,7 +216,7 @@ namespace Revolt
         }
     }
 
-    internal enum AuthType
+    public enum TokenType
     {
         Bot,
         User

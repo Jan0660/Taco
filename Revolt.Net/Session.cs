@@ -2,10 +2,12 @@
 
 namespace Revolt
 {
+    // todo: rename fields
     public class Session
     {
-        [JsonProperty("id")] public string? Id;
+        [JsonProperty("_id")] public string? Id;
         [JsonProperty("user_id")] public string UserId;
-        [JsonProperty("session_token")] public string SessionToken;
+        [JsonProperty("token")] public string SessionToken;
+        [JsonProperty("name")] public string Name;
     }
 }

@@ -45,7 +45,7 @@ namespace Taco.Modules
             var info = await Message.Client.GetApiInfoAsync();
             var vortex = await Message.Client.GetVortexInfoAsync();
             var autumn = await Message.Client.GetAutumnInfoAsync();
-            await ReplyAsync(@$"> # Revolt info (for app.revolt.chat)
+            await ReplyAsync(@$"> # Revolt info
 > ## Versions
 > **Api:** {info.Version}
 > **Vortex:** {vortex.Version}
@@ -207,5 +207,11 @@ namespace Taco.Modules
         [RequireServerPermissions(ServerPermission.BanMembers | ServerPermission.ManageServer)]
         public Task PreconditionTest()
             => InlineReplyAsync("test maybe worked?");
+
+        [Command("htest")]
+        public Task HTest()
+        {
+            return ReplyAsync(Context.Message.Replies[0]);
+        }
     }
 }

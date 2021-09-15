@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Revolt.Base
+namespace Revolt.Internal
 {
     // borrowed from Discord.Net :)
     internal static class Preconditions

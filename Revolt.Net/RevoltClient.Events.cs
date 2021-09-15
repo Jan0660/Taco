@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using Revolt.Base;
 using Revolt.Channels;
+using Revolt.Internal;
 using Websocket.Client;
 using Websocket.Client.Models;
 

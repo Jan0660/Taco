@@ -75,13 +75,13 @@ namespace Revolt
         internal async Task<T> _requestAsync<T>(RestRequest request)
         {
             var res = await _restClient.ExecuteAsync(request);
-            T val;
+            T val = default;
             try
             {
-                val = JsonConvert.DeserializeObject<T>(res.Content, new JsonSerializerSettings()
-                {
-                    ContractResolver = new CamelCasePropertyNamesContractResolver()
-                });
+                if (val is Channel)
+                    val = (T)(object)_deserializeChannel(res.Content);
+                else
+                    val = JsonConvert.DeserializeObject<T>(res.Content, _jsonSerializerSettings);
             }
             // todo: catch json exception type JsonReaderException
             catch (Exception exception)

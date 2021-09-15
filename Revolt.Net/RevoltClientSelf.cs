@@ -38,7 +38,7 @@ namespace Revolt
     public class Profile
     {
         [JsonIgnore]
-        public string Content
+        public string? Content
         {
             get => content;
             set
@@ -49,7 +49,8 @@ namespace Revolt
             }
         }
 
-        [JsonProperty] private string content;
+        [JsonProperty("content")] private string? content;
         public const int ContentMaxLength = 2000;
+        [JsonProperty("background")] public Attachment? Background { get; internal set; }
     }
 }

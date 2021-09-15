@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 
-namespace Revolt.Base
+namespace Revolt.Internal
 {
     // borrowed from Discord.Net :)
     internal class AsyncEvent<T>

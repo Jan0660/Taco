@@ -31,6 +31,7 @@ namespace Taco.CommandHandling
             commands.CommandExecuted += CommandExecuted;
             _mentionPrefix = $"<@{Program.Client.Self.UserId}>";
             Program.Client.MessageReceived += MessageReceived;
+            Console.Log("Initialized command handler.");
         }
 
         private static async Task CommandExecuted(Optional<CommandInfo> arg1, ICommandContext arg2, IResult result)
@@ -90,7 +91,7 @@ namespace Taco.CommandHandling
                 int argPos = 0;
                 var context = new TacoCommandContext(message);
                 if (
-                    context.User.Bot == null ||
+                    context.User.Bot != null ||
                     context.Message.AuthorId == context.Client.Self.UserId ||
                     !message.Content.HasPrefix(context.CommunityData.CustomPrefix, ref argPos)
                 )

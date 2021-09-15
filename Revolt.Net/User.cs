@@ -22,26 +22,27 @@ namespace Revolt
         /// </summary>
         [JsonIgnore] public string AvatarUrl => Avatar == null ? DefaultAvatarUrl : $"{Client.AutumnUrl}/{Avatar.Tag}/{Avatar._id}/{HttpUtility.UrlEncode(Avatar.Filename)}";
 
-        public Task<RelationshipStatus> AddFriendAsync()
-            => Client.Users.AddFriendAsync(Username);
+        public Task FriendAsync()
+            => Client.Users.FriendAsync(Username);
 
-        public Task<RelationshipStatus> RemoveFriendAsync()
-            => Client.Users.RemoveFriendAsync(_id);
+        public Task UnfriendAsync()
+            => Client.Users.UnfriendAsync(_id);
 
-        public Task<RelationshipStatus> BlockAsync()
+        public Task BlockAsync()
             => Client.Users.BlockAsync(_id);
 
-        public Task<RelationshipStatus> UnblockAsync()
+        public Task UnblockAsync()
             => Client.Users.UnblockAsync(_id);
 
         public override string ToString()
             => Username;
 
-        public MutualRelationships GetMutualRelationships()
-            => Client.Users.GetMutualRelationships(_id);
+        public Task<MutualFriends> FetchMutualFriendsAsync()
+            => Client.Users.FetchMutualFriendsAsync(_id);
 
-        public Profile GetProfile()
-            => Client.Users.GetProfile(_id);
+        public Task<Profile> FetchProfileAsync()
+            => Client.Users.FetchProfileAsync(_id);
+        // todo: more methods things
     }
 
     public class UserBot

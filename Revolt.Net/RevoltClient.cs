@@ -40,8 +40,17 @@ namespace Revolt
 
         public List<Server> ServersCache { get; internal set; }
         private Timer _pingTimer;
-        public string ApiUrl { get; private set; } = _defaultApiUrl;
+        /// <summary>
+        /// Url for the Revolt Api server, known as Delta.
+        /// </summary>
+        public string ApiUrl { get; private set; }
+        /// <summary>
+        /// Url for the Revolt CDN, known as Autumn.
+        /// </summary>
         public string AutumnUrl => ApiInfo!.Features.Autumn.Url;
+        /// <summary>
+        /// Url for the Revolt voice server, known as Vortex.
+        /// </summary>
         public string VortexUrl => ApiInfo!.Features.Vortex.Url;
 
         public RevoltClientChannels Channels { get; private set; }
@@ -51,6 +60,11 @@ namespace Revolt
         private static Random rng = new();
         public TokenType TokenType { get; private set; }
         private string token;
+        private readonly JsonSerializerSettings _jsonSerializerSettings = new()
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            NullValueHandling = NullValueHandling.Ignore
+        };
 
         /// <summary>
         /// Create an unauthenticated client, use <see cref="LoginAsync"/> for authenticating.
@@ -58,7 +72,7 @@ namespace Revolt
         public RevoltClient(string apiUrl = _defaultApiUrl)
         {
             ApiUrl = apiUrl;
-            _restClient = new(_defaultApiUrl);
+            _restClient = new(apiUrl);
             this.Channels = new RevoltClientChannels(this);
             this.Users = new RevoltClientUsers(this);
             this.Self = new RevoltClientSelf(this);
@@ -94,14 +108,14 @@ namespace Revolt
         /// Creates a session and automatically uses it.
         /// </summary>
         /// <returns>The session that was created.</returns>
-        public async Task<Session> LoginAsync(string email, string password, string? deviceName = null,
-            string? captcha = null)
+        public async Task<Session> LoginAsync(string email, string password, string? challenge = null,
+            string? friendlyName = null, string? captcha = null)
         {
-            var session = await _requestAsync<Session>($"{ApiUrl}/auth/login", body: JsonConvert.SerializeObject(new
+            var session = await _requestAsync<Session>($"{ApiUrl}/auth/session/login", body: JsonConvert.SerializeObject(new
             {
-                email, password, device_name = deviceName, captcha
-            }));
-            _useToken(TokenType.User, session.SessionToken, session.UserId);
+                email, password, friendly_name = friendlyName, captcha, challenge
+            }, _jsonSerializerSettings));
+            LoginAsync(TokenType.User, session.SessionToken, session.UserId);
             return session;
         }
 
@@ -118,7 +132,7 @@ namespace Revolt
             req.AddFile(name, path);
             var res = await aut.ExecutePostAsync(req);
             var obj = JObject.Parse(res.Content);
-            return obj.Value<string>("id");
+            return obj.Value<string>("id")!;
         }
 
         public async Task<string> UploadFile(string name, byte[] data, string tag = "attachments")
@@ -128,7 +142,7 @@ namespace Revolt
             req.AddFile(name, data, name);
             var res = await aut.ExecutePostAsync(req);
             var obj = JObject.Parse(res.Content);
-            return obj.Value<string>("id");
+            return obj.Value<string>("id")!;
         }
 
         public Task<IRestResponse> UpdateAvatarId(string id)
@@ -141,16 +155,14 @@ namespace Revolt
             return _restClient.ExecuteAsync(req);
         }
 
-        public async Task<VortexInformation> GetVortexInfoAsync()
-            => JsonConvert.DeserializeObject<VortexInformation>(
-                await new HttpClient().GetStringAsync(VortexUrl))!;
+        public Task<VortexInformation> GetVortexInfoAsync()
+            => _requestAsync<VortexInformation>(VortexUrl);
 
-        public async Task<AutumnInformation> GetAutumnInfoAsync()
-            => JsonConvert.DeserializeObject<AutumnInformation>(
-                await new HttpClient().GetStringAsync(AutumnUrl))!;
+        public Task<AutumnInformation> GetAutumnInfoAsync()
+            => _requestAsync<AutumnInformation>(AutumnUrl);
 
-        public async Task<RevoltApiInfo> GetApiInfoAsync()
-            => JsonConvert.DeserializeObject<RevoltApiInfo>(await new HttpClient().GetStringAsync(ApiUrl))!;
+        public Task<RevoltApiInfo> GetApiInfoAsync()
+            => _requestAsync<RevoltApiInfo>(ApiUrl);
 
         public static string GenerateNonce()
             => DateTimeOffset.Now.ToUnixTimeMilliseconds() + rng.Next().ToString();

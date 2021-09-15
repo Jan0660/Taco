@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 using System.Timers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Revolt.Base;
 using Revolt.Channels;
+using Revolt.Internal;
 
+#pragma warning disable 4014
 namespace Revolt
 {
     public partial class RevoltClient
     {
-
         /// <summary>
         /// Connects the client to the websocket.
         /// </summary>

@@ -32,9 +32,10 @@ namespace Taco.Modules
             }
 
             await ReplyAsync($@"> ## {user.Username}
-> Mention: <@{user._id}>
+> Mention: [{user.Username}](/@{user._id})
 > Id: `{user._id}`
 > Online: {user.Online}
+> Badges: {user.Badges} ({user.BadgesRaw})
 > [\[Default Avatar\]]({user.DefaultAvatarUrl}) [\[Avatar\]]({user.AvatarUrl})");
         }
 
@@ -69,12 +70,6 @@ namespace Taco.Modules
         {
             return $@"$\color{{{(value ? "lime" : "red")}}}\textsf{{{str}}}$";
         }
-
-        // [Command("discord")]
-        // public async Task Discord()
-        // {
-        //     await Message.Channel.SendFileAsync("bruh", "discord.jpg", @"C:\Users\Jan\Downloads\image0-53 (1).jpg");
-        // }
 
         [Command("fuck")]
         [Summary("Fuck someone.")]

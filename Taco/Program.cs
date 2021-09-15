@@ -87,16 +87,6 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
                     $"Ready! Users: {_client.UsersCache.Count}; Channels: {_client.ChannelsCache.Count}; Servers: {_client.ServersCache.Count};");
                 return Task.CompletedTask;
             };
-
-            _client.UserRelationshipUpdated += (userId, status) =>
-            {
-                if (status == RelationshipStatus.Incoming)
-                {
-                    return _client.Users.AddFriendAsync(_client.UsersCache.First(u => u._id == userId).Username);
-                }
-
-                return Task.CompletedTask;
-            };
             ServerLogging.RegisterEvents();
 
             #endregion

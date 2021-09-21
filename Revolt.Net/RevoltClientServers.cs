@@ -5,26 +5,13 @@ using Revolt.Channels;
 
 namespace Revolt
 {
-    public class RevoltClientServers
+    public class RevoltClientServers : RevoltRestClientServers
     {
         public RevoltClient Client { get; }
 
-        public RevoltClientServers(RevoltClient client)
+        public RevoltClientServers(RevoltClient client) : base(client)
         {
             this.Client = client;
-        }
-
-        public async Task<TextChannel> CreateChannel(string serverId, string name, string description = null)
-        {
-            var req = new RestRequest($"/servers/{serverId}/channels");
-            req.AddJsonBody(JsonConvert.SerializeObject(new
-            {
-                name = name,
-                description = description,
-                nonce = RevoltClient.GenerateNonce()
-            }));
-            var res = await Client._restClient.ExecutePostAsync(req);
-            return (TextChannel)Client._deserializeChannel(res.Content);
         }
 
         public Task<ServerMembers> GetMembersAsync(string serverId)
@@ -33,9 +20,7 @@ namespace Revolt
 
     public struct ServerMembers
     {
-        [JsonProperty("users")]
-        public User[] Users { get; internal set; }
-        [JsonProperty("members")]
-        public Member[] Members { get; internal set; }
+        [JsonProperty("users")] public User[] Users { get; internal set; }
+        [JsonProperty("members")] public Member[] Members { get; internal set; }
     }
 }

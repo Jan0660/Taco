@@ -17,8 +17,11 @@ namespace Revolt
 
         #region User Information
 
-        public async Task<User> FetchUserAsync(string id)
-            => (await Client._requestAsync<User>($"{Client.ApiUrl}/users/{id}")).AttachClient(Client);
+        public Task<User> FetchUserAsync(string id)
+            => Client._requestAsync<User>($"{Client.ApiUrl}/users/{id}");
+
+        public Task<User> FetchSelfAsync()
+            => Client._requestAsync<User>($"{Client.ApiUrl}/users/@me");
 
         /// <summary>
         /// Will be renamed/moved in the future.

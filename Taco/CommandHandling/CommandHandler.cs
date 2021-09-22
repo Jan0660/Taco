@@ -29,7 +29,7 @@ namespace Taco.CommandHandling
             // todo: where tf is ServiceCollection
             await commands.AddModulesAsync(typeof(Program).Assembly, null);
             commands.CommandExecuted += CommandExecuted;
-            _mentionPrefix = $"<@{Program.Client.Self.UserId}>";
+            _mentionPrefix = $"<@{Program.Client.User._id}>";
             Program.Client.MessageReceived += MessageReceived;
             Console.Log("Initialized command handler.");
         }
@@ -92,7 +92,7 @@ namespace Taco.CommandHandling
                 var context = new TacoCommandContext(message);
                 if (
                     context.User.Bot != null ||
-                    context.Message.AuthorId == context.Client.Self.UserId ||
+                    context.Message.AuthorId == context.Client.User._id ||
                     !message.Content.HasPrefix(context.CommunityData.CustomPrefix, ref argPos)
                 )
                     return;

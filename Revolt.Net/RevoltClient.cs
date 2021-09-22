@@ -65,6 +65,10 @@ namespace Revolt
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
             NullValueHandling = NullValueHandling.Ignore
         };
+        /// <summary>
+        /// The logged in user.
+        /// </summary>
+        public User User { get; set; }
 
         /// <summary>
         /// Create an unauthenticated client, use <see cref="LoginAsync"/> for authenticating.
@@ -89,12 +93,12 @@ namespace Revolt
         {
             ApiInfo = await GetApiInfoAsync();
             AutumnInfo = await GetAutumnInfoAsync();
-            _useToken(tokenType, token, userId);
+            _useToken(tokenType, token);
+            User = await Users.FetchSelfAsync();
         }
 
-        private void _useToken(TokenType tokenType, string token, string userId)
+        private void _useToken(TokenType tokenType, string token)
         {
-            Self.UserId = userId;
             this.token = token;
             TokenType = tokenType;
             if (tokenType == TokenType.User)

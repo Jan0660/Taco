@@ -87,7 +87,7 @@ namespace DiscordBridge
                 var channel = Config.ByRevoltId(message.ChannelId);
                 if (channel == null)
                     return;
-                if (message.AuthorId == Client.Self.UserId && DiscordRevoltMessagesContent.Contains(message.Content))
+                if (message.AuthorId == Client.User._id && DiscordRevoltMessagesContent.Contains(message.Content))
                     return;
                 try
                 {
@@ -227,8 +227,11 @@ namespace DiscordBridge
                                 Config.ByDiscordId(h.Id) == null)
                             {
                                 var wh = await textH.CreateWebhookAsync("REVOLT Bridge");
-                                var ch = await _client.Servers.CreateChannel(channel.RevoltServerId, h.Name,
-                                    $"Bridged from Discord(Id: {h.Id})");
+                                var ch = await _client.Servers.CreateChannelAsync(channel.RevoltServerId, new()
+                                {
+                                    Name = h.Name,
+                                    Description = $"Bridged from Discord(Id: {h.Id})"
+                                });
                                 Config.Channels.Add(new BridgeChannel
                                 {
                                     RevoltChannelId = ch._id,

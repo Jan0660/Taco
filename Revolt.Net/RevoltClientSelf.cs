@@ -8,7 +8,6 @@ namespace Revolt
     public class RevoltClientSelf
     {
         public RevoltClient Client { get; }
-        public string UserId { get; internal set; }
 
         public RevoltClientSelf(RevoltClient client)
         {
@@ -16,7 +15,7 @@ namespace Revolt
         }
 
         public Task EditProfileAsync(UserInfo info)
-            => Client._requestAsync($"{Client.ApiUrl}/users/{UserId}", Method.PATCH, JsonConvert.SerializeObject(info));
+            => Client._requestAsync($"{Client.ApiUrl}/users/@me", Method.PATCH, JsonConvert.SerializeObject(info));
 
         // todo: edit username and passwd thing route
     }

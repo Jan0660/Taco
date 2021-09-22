@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -16,6 +18,7 @@ using Revolt;
 using Revolt.Channels;
 using Attachment = Revolt.Attachment;
 using Console = Log73.Console;
+using MessageType = Discord.MessageType;
 using Meth = System.Math;
 using TokenType = Revolt.TokenType;
 
@@ -201,11 +204,10 @@ namespace DiscordBridge
                 var channel = Config.ByRevoltId(msg.ChannelId);
                 if (channel == null)
                     return Task.CompletedTask;
-                if (msg.Channel is not GroupChannel group)
-                    return Task.CompletedTask;
+                var icon = (msg.Channel as GroupChannel)?.Icon?.GetUrl() ?? "https://app.revolt.chat/assets/group.png";
                 return channel.DiscordWebhook.SendMessageAsync(msg.Stringify(), allowedMentions: new AllowedMentions(),
                     avatarUrl: (msg.Content.Id == null ? null : Client.Users.Get(msg.Content.Id).AvatarUrl) ??
-                               group.Icon?.GetUrl() ?? "https://app.revolt.chat/assets/group.png",
+                               icon,
                     username: "Revolt Bridge");
             };
             DiscordClient = new DiscordSocketClient();
@@ -226,7 +228,7 @@ namespace DiscordBridge
                             if (channel.RevoltServerId != null && h is SocketTextChannel textH &&
                                 Config.ByDiscordId(h.Id) == null)
                             {
-                                var wh = await textH.CreateWebhookAsync("REVOLT Bridge");
+                                var wh = await textH.CreateWebhookAsync("Revolt Bridge");
                                 var ch = await _client.Servers.CreateChannelAsync(channel.RevoltServerId, new()
                                 {
                                     Name = h.Name,
@@ -254,6 +256,19 @@ namespace DiscordBridge
                     return;
                 if (message.Author.Id == channel.WebhookId)
                     return;
+                if (message is SocketSystemMessage systemMessage)
+                {
+                    var content = systemMessage.Type switch
+                    {
+                        MessageType.GuildMemberJoin => $"{systemMessage.Author} has joined the Discord server.",
+                        MessageType.UserPremiumGuildSubscription =>
+                            $"{systemMessage.Author} has boosted the Discord server."
+                    };
+                    DiscordRevoltMessagesContent.LimitedAdd(content, 50);
+                    var msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId, content);
+                    DiscordRevoltMessages.Add(message.Id, (msg._id, channel.RevoltChannelId));
+                    return;
+                }
                 if (message.Content == "-uber" && message.Author.IsBot == false)
                 {
                     await message.Channel.SendFileAsync("../Taco/Resources/UberFruit.png");
@@ -297,20 +312,32 @@ namespace DiscordBridge
                     }
 
                     Message msg;
-                    var content = message.ToGoodString();
-                    DiscordRevoltMessagesContent.LimitedAdd(content, 50);
-                    if (message.Attachments.Any())
+                    if (message.Content is "" or null && message.Embeds.Any(e => e.Type == EmbedType.Rich))
                     {
-                        var http = new HttpClient();
-                        var attachment = await http.GetByteArrayAsync(message.Attachments.First().ProxyUrl);
-                        var attachmentId = await _client.UploadFile(message.Attachments.First().Filename, attachment);
-                        msg = await _client.Channels.SendMessageAsync(
-                            channel.RevoltChannelId, content,
-                            new() { attachmentId }, isReply ? new[] { reply } : null);
+                        var content = message.Embeds.First(e => e.Type == EmbedType.Rich).Stringify();
+                        DiscordRevoltMessagesContent.LimitedAdd(content, 50);
+                        msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,
+                            content,
+                            replies: isReply ? new[] { reply } : null);
                     }
                     else
-                        msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,
-                            content, replies: isReply ? new[] { reply } : null);
+                    {
+                        var content = message.ToGoodString();
+                        DiscordRevoltMessagesContent.LimitedAdd(content, 50);
+                        if (message.Attachments.Any())
+                        {
+                            var http = new HttpClient();
+                            var attachment = await http.GetByteArrayAsync(message.Attachments.First().ProxyUrl);
+                            var attachmentId =
+                                await _client.UploadFile(message.Attachments.First().Filename, attachment);
+                            msg = await _client.Channels.SendMessageAsync(
+                                channel.RevoltChannelId, content,
+                                new() { attachmentId }, isReply ? new[] { reply } : null);
+                        }
+                        else
+                            msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,
+                                content, replies: isReply ? new[] { reply } : null);
+                    }
 
                     if (msg._id != null)
                         DiscordRevoltMessages.Add(message.Id, (msg._id, channel.RevoltChannelId));
@@ -486,6 +513,53 @@ namespace DiscordBridge
             list.Add(item);
             if (list.Count == maxCount)
                 list.Remove(list.FirstOrDefault());
+        }
+
+        /// <summary>
+        /// Translate embed title, description, author and footer to markdown.
+        /// </summary>
+        /// <param name="embed"></param>
+        /// <returns></returns>
+        public static string Stringify(this Embed embed)
+        {
+            var res = new StringBuilder(2000);
+
+            void TryWrite(string str)
+            {
+                try
+                {
+                    res.Append(str);
+                }
+                catch
+                {
+                    // probly limited
+                }
+            }
+
+            if (embed.Author.HasValue)
+            {
+                if (embed.Author.Value.Url != null)
+                    TryWrite($"> #### [{embed.Author.Value.Name}]({embed.Author.Value.Url})\n");
+                else
+                    TryWrite($"> #### {embed.Author.Value.Name}\n");
+            }
+
+            if (embed.Title != null)
+            {
+                if (embed.Url != null)
+                    TryWrite($"> # [{embed.Title}]({embed.Url})\n");
+                else
+                    TryWrite($"> # {embed.Title}\n");
+            }
+
+            if (embed.Description != null)
+                TryWrite($"> {embed.Description.Replace("\n", "\n> ")}\n");
+            if (embed.Footer.HasValue)
+            {
+                TryWrite($"> ##### {embed.Footer.Value.Text}\n");
+            }
+
+            return res.ToString();
         }
     }
 }

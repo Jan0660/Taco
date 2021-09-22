@@ -16,6 +16,19 @@ namespace Revolt
 
         public Task<ServerMembers> GetMembersAsync(string serverId)
             => Client._requestAsync<ServerMembers>($"/servers/{serverId}/members");
+        
+        public async Task EditServerAsync(string serverId, EditServerRequest request)
+        {
+            var req = new RestRequest($"/servers/{serverId}");
+            req.AddJsonBody(JsonConvert.SerializeObject(request));
+            var res = await Client._restClient.ExecuteAsync(req, Method.PATCH);
+        }
+    }
+
+    public class EditServerRequest
+    {
+        [JsonProperty("name")] public string Name { get; set; }
+        [JsonProperty("categories")] public Category[] Categories { get; set; }
     }
 
     public struct ServerMembers

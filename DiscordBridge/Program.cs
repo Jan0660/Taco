@@ -63,11 +63,18 @@ namespace DiscordBridge
 
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"));
             _client = new RevoltClient();
-            await _client.LoginAsync(TokenType.Bot, Config.RevoltBotToken, Config.RevoltUserId);
+            await _client.LoginAsync(TokenType.Bot, Config!.RevoltBotToken, Config.RevoltUserId);
             await _client.ConnectWebSocketAsync();
             _client.OnReady += () =>
             {
                 Console.Log("Revolt ready!");
+                _client.CacheAll().ContinueWith(_ =>
+                {
+                    var membersCacheCount = 0;
+                    foreach (var server in _client.ServersCache)
+                        membersCacheCount += server.MemberCache.Count;
+                    Console.Info($"Revolt members and users cached! Count: {membersCacheCount}");
+                });
                 return Task.CompletedTask;
             };
             var info = _client.ApiInfo;

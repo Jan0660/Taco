@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Timers;
 using Newtonsoft.Json;
@@ -26,8 +24,7 @@ namespace Revolt
 
     public partial class RevoltClient
     {
-        // todo: temporary
-        private const string _defaultApiUrl = "https://api.revolt.chat/";
+        public const string DefaultApiUrl = "https://api.revolt.chat/";
         internal RestClient _restClient;
         public RevoltApiInfo ApiInfo { get; private set; }
         public AutumnInformation AutumnInfo { get; private set; }
@@ -68,12 +65,12 @@ namespace Revolt
         /// <summary>
         /// The logged in user.
         /// </summary>
-        public User User { get; set; }
+        public User User { get; private set; }
 
         /// <summary>
         /// Create an unauthenticated client, use <see cref="LoginAsync"/> for authenticating.
         /// </summary>
-        public RevoltClient(string apiUrl = _defaultApiUrl)
+        public RevoltClient(string apiUrl = DefaultApiUrl)
         {
             ApiUrl = apiUrl;
             _restClient = new(apiUrl);
@@ -178,6 +175,29 @@ namespace Revolt
                 _channels.Remove(cached);
             _channels.Add(channel);
         }
+
+        internal void CacheUsers(User[] users)
+        {
+            foreach (var user in users)
+            {
+                var index = _users.IndexOf(user);
+                if (index == -1)
+                    _users.Add(user);
+                else
+                    _users[index] = user;
+            }
+        }
+
+        /// <summary>
+        /// Cache all server members.
+        /// </summary>
+        public async Task CacheAll()
+        {
+            List<Task> tasks = new();
+            foreach(var server in ServersCache)
+                tasks.Add(server.GetMembersAsync());
+            await Task.WhenAll(tasks);
+        }
     }
 
     public class SendMessageRequest
@@ -236,5 +256,11 @@ namespace Revolt
     {
         Bot,
         User
+    }
+
+    public enum CacheStrategy
+    {
+        None,
+        Full
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Revolt.Channels;
@@ -11,7 +10,6 @@ namespace Revolt
 {
     public partial class RevoltClient
     {
-
         private AsyncEvent<Func<Message, Task>> _messageReceived = new();
 
         public event Func<Message, Task> MessageReceived

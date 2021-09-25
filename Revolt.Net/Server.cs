@@ -42,6 +42,7 @@ namespace Revolt
         {
             var members = await Client.Servers.GetMembersAsync(_id);
             MemberCache = members.Members.ToList();
+            
             // todo: make some magic internal method on client for caching a User that like yes
             return members;
         }

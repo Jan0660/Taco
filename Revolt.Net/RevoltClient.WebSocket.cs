@@ -212,31 +212,24 @@ namespace Revolt
                         }
                         case "ServerMemberUpdate":
                         {
-                            var serverId = packet.Value<string>("id");
-                            var partialMember = packet.Value<Member>("data");
+                            var ids = packet.Value<JObject>("id");
+                            var serverId = ids.Value<string>("server");
+                            var userId = ids.Value<string>("user");
                             var server = ServersCache.First(s => s._id == serverId);
-                            var memberIndex = server.MemberCache.FindIndex(m => m._id == partialMember!._id);
+                            var memberIndex = server.MemberCache.FindIndex(m => m._id.User == userId);
                             Member cached = null;
                             if (memberIndex != -1)
                                 cached = server.MemberCache[memberIndex];
-                            var remove = packet.Value<string>("remove");
-                            // patch member by copying data from (already cached) onto the partial object received
-                            if (cached != null)
+                            var partialMember = packet.SelectToken("data")?.ToObject<Member>();
+                            if (partialMember != null)
                             {
-                                if (cached.Nickname != null && partialMember!.Nickname != null)
-                                    partialMember.Nickname = cached.Nickname;
-                                if (cached.Avatar != null && partialMember!.Avatar != null)
-                                    partialMember.Avatar = cached.Avatar;
-                                if (cached.Roles != null && partialMember!.Roles != null)
-                                    partialMember.Roles = cached.Roles;
+                                cached.FillPartial(partialMember, packet.Value<string>("remove"));
+                                if (memberIndex != -1)
+                                    server.MemberCache[memberIndex] = partialMember;
+                                else
+                                    server.MemberCache.Add(partialMember);
                             }
 
-                            if (remove == "Nickname")
-                                partialMember!.Nickname = null;
-                            if (remove == "Avatar")
-                                partialMember!.Avatar = null;
-                            if (memberIndex != -1)
-                                server.MemberCache[memberIndex] = partialMember;
                             _serverMemberUpdated.InvokeAsync(cached, partialMember);
                             break;
                         }

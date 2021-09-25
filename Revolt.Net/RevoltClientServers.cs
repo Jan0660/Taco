@@ -14,8 +14,8 @@ namespace Revolt
             this.Client = client;
         }
 
-        public Task<ServerMembers> GetMembersAsync(string serverId)
-            => Client._requestAsync<ServerMembers>($"/servers/{serverId}/members");
+        public async Task<ServerMembers> GetMembersAsync(string serverId)
+            => (await Client._requestAsync<ServerMembers>($"/servers/{serverId}/members")).CacheUsers(Client);
         
         public async Task EditServerAsync(string serverId, EditServerRequest request)
         {

@@ -10,6 +10,7 @@ using Log73;
 using Log73.ColorSchemes;
 using Log73.Extensions;
 using Newtonsoft.Json;
+using NuGet.Packaging;
 using Revolt;
 using Revolt.Channels;
 using Taco.CommandHandling;
@@ -85,6 +86,14 @@ exception.Message: {exception.Message}; exception.Source: {exception.Source};");
             {
                 Console.Info(
                     $"Ready! Users: {_client.UsersCache.Count}; Channels: {_client.ChannelsCache.Count}; Servers: {_client.ServersCache.Count};");
+                var stopwatch = Stopwatch.StartNew();
+                _client.CacheAll().ContinueWith(_ =>
+                {
+                    var membersCacheCount = 0;
+                    foreach (var server in _client.ServersCache)
+                        membersCacheCount += server.MemberCache.Count;
+                    Console.Info($"Members and users cached in {stopwatch.ElapsedMilliseconds}ms! Count: {membersCacheCount}");
+                });
                 return Task.CompletedTask;
             };
             ServerLogging.RegisterEvents();

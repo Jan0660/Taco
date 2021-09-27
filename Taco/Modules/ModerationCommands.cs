@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Anargy.Attributes;
 using Anargy.Revolt.Preconditions;
-using MongoDB.Driver;
 using Revolt;
-using Taco.Attributes;
 using Taco.CommandHandling;
 
 namespace Taco.Modules
@@ -26,15 +25,32 @@ namespace Taco.Modules
 
         [Command("tag")]
         [Alias("t")]
-        public Task GetTag()
+        public Task GetTag([Name("tag")] string tagName)
         {
             if (Context.CommunityData.Tags == null)
                 return InlineReplyAsync("This server doesn't have any tags defined!");
             var tag = Context.CommunityData.Tags.FirstOrDefault(t =>
-                t.Key.Equals(Args, StringComparison.InvariantCultureIgnoreCase));
+                t.Key.Equals(tagName, StringComparison.InvariantCultureIgnoreCase));
             if (tag.Value != null)
                 return InlineReplyAsync(tag.Value);
+            if (tagName.ToLower() == "list")
+                return ListTags();
             return InlineReplyAsync("Tag not found!", true);
+        }
+
+        [Command("list tag")]
+        public Task ListTags()
+        {
+            var res = new StringBuilder();
+            foreach(var tag in Context.CommunityData.Tags)
+            {
+                res.Append($"> `{tag.Value}`: ");
+                if (tag.Value.Contains('\n'))
+                    res.AppendLine(tag.Value.Replace("\n", "\n> > "));
+                else
+                    res.AppendLine(tag.Value);
+            }
+            return ReplyAsync(res.ToString());
         }
 
         [Command("add tag")]

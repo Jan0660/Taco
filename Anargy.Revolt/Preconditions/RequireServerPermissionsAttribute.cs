@@ -18,8 +18,9 @@ namespace Anargy.Revolt.Preconditions
             var revContext = (RevoltCommandContext)context;
             foreach (var enumVal in Enum.GetValues<ServerPermission>())
             {
+                var perms = revContext.Server.GetPermissionsFor(revContext.User._id);
                 if (Permissions.HasFlag(enumVal))
-                    if (!(await revContext.GetServerPermissionsAsync()).HasFlag(enumVal))
+                    if (!perms.Server.HasFlag(enumVal))
                     {
                         return PreconditionResult.FromError(
                             $"You need the {enumVal} server permission to execute this command.");

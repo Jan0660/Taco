@@ -164,5 +164,9 @@ namespace Taco.Modules
         }
 
         private string _nullableArgs(string str) => str == "null" ? null : str;
+
+        [Command("ownertest")]
+        [RequireBotOwnerAttribute]
+        public Task OwnerTest() => ReplyAsync("sus");
     }
 }

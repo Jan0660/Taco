@@ -162,40 +162,29 @@ namespace Taco.Modules
         [Command("coc")]
         public Task FullCodeOfConduct() => ReplyAsync("> " + string.Join("\n> ", Program.Config.CodeOfConduct));
 
-        [Command("permtest")]
+        [Command("permissions")]
+        [Alias("perms")]
         public async Task PermissionTest()
         {
-            var members = (await Program.Client.Servers.GetMembersAsync(Context.Server._id)).Members;
-            var member = members.FirstOrDefault(m => m._id.User == Context.User._id);
-            Console.Debug(member.Nickname);
-            ServerPermission serverPerms = (ServerPermission)Context.Server.DefaultPermissionsRaw[0];
-            ChannelPermission channelPerms = (ChannelPermission)Context.Server.DefaultPermissionsRaw[1];
-            if (Context.Server.Roles != null)
-            {
-                var roles = Context.Server.Roles.Where(r => member.Roles.Contains(r.Key));
-                foreach (var role in roles)
-                {
-                    channelPerms = channelPerms | role.Value.ChannelPermissions;
-                    serverPerms = serverPerms | role.Value.ServerPermissions;
-                }
-            }
+            var perms = Context.Server.GetPermissionsFor(Context.User._id);
 
-            StringBuilder perms = new();
-            perms.Append("> ## Server Permissions\n");
+            StringBuilder res = new();
+            res.Append("> ## Server Permissions\n");
             foreach (var enumVal in Enum.GetValues<ServerPermission>())
             {
-                perms.AppendLine("> " + (serverPerms.HasFlag(enumVal) ? ":white_check_mark:" : ":x:") +
+                res.AppendLine("> " + (perms.Server.HasFlag(enumVal) ? ":white_check_mark:" : ":x:") +
                                  $" {enumVal.ToString()}");
             }
 
-            perms.Append("> ## Channel Permissions\n");
+            res.Append("> ## Channel Permissions\n");
             foreach (var enumVal in Enum.GetValues<ChannelPermission>())
             {
-                perms.AppendLine("> " + (channelPerms.HasFlag(enumVal) ? ":white_check_mark:" : ":x:") +
+                res.AppendLine("> " + (perms.Channel.HasFlag(enumVal) ? ":white_check_mark:" : ":x:") +
                                  $" {enumVal.ToString()}");
             }
+            // todo: this channel permissions
 
-            await ReplyAsync(perms.ToString());
+            await ReplyAsync(res.ToString());
         }
 
         [Command("prectest")]

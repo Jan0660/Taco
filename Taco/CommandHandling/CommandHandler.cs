@@ -63,13 +63,13 @@ namespace Taco.CommandHandling
                     var response = HelpUtil.GetModuleHelpContent(content);
                     if (response != null)
                         await context.Channel.SendMessageAsync(response);
-#if DEBUG
-                    else
-                    {
-                        await context.Channel.SendMessageAsync("[DEBUG] Command not found.",
-                            replies: new[] { new MessageReply(context.Message._id) });
-                    }
-#endif
+// #if DEBUG
+//                     else
+//                     {
+//                         await context.Channel.SendMessageAsync("[DEBUG] Command not found.",
+//                             replies: new[] { new MessageReply(context.Message._id) });
+//                     }
+// #endif
                 }
                 else if (result.Error == CommandError.UnmetPrecondition)
                 {

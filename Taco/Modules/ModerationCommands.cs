@@ -24,8 +24,9 @@ namespace Taco.Modules
         }
 
         [Command("tag")]
-        [Alias("t")]
-        public Task GetTag([Name("tag")] string tagName)
+        [Summary("Get a tag.")]
+        [Alias("tags", "t")]
+        public Task GetTag([Name("tag")] string? tagName)
         {
             if (Context.CommunityData.Tags == null)
                 return InlineReplyAsync("This server doesn't have any tags defined!");
@@ -33,12 +34,13 @@ namespace Taco.Modules
                 t.Key.Equals(tagName, StringComparison.InvariantCultureIgnoreCase));
             if (tag.Value != null)
                 return InlineReplyAsync(tag.Value);
-            if (tagName.ToLower() == "list")
+            if (tagName?.ToLower() == "list" || tagName is null or "")
                 return ListTags();
             return InlineReplyAsync("Tag not found!", true);
         }
 
         [Command("list tag")]
+        [Summary("List tags.")]
         public Task ListTags()
         {
             var res = new StringBuilder();
@@ -54,6 +56,7 @@ namespace Taco.Modules
         }
 
         [Command("add tag")]
+        [Summary("Add a tag.")]
         [RequireServerPermissions(ServerPermission.ManageServer)]
         public async Task AddTag()
         {
@@ -71,6 +74,7 @@ namespace Taco.Modules
         }
 
         [Command("setprefix")]
+        [Summary("Set the prefix in this server.")]
         public async Task SetPrefix(string newPrefix)
         {
             Context.CommunityData.CustomPrefix = newPrefix;

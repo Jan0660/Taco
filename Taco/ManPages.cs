@@ -8,8 +8,10 @@ namespace Taco
         public readonly static ManPage[] Pages = {
             new()
             {
-                Name = "obama",
-                Content = "obama is cool dude bro ikr"
+                Name = "tags",
+                Content = @"- To get a tag use `tag <name>`.
+- To create a tag use `add tag <name> <content>`.
+- To list tags use `list tag`."
             }
         };
 

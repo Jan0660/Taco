@@ -23,7 +23,8 @@ namespace Revolt
         [JsonProperty("permissions")] public int[] PermissionsRaw { get; internal set; }
         [JsonProperty("colour")] public string? Color { get; set; }
 
-        [JsonProperty("hoist")] public string? Hoist { get; internal set; }
+        [JsonProperty("hoist")] public bool? Hoist { get; internal set; }
+        // todo: do we nullable this?
         [JsonProperty("rank")] public int Rank { get; internal set; }
     }
 }

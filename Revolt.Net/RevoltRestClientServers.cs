@@ -44,6 +44,9 @@ namespace Revolt
 
         #region Server Members
 
+        public Task<Member> FetchMemberAsync(string id, string userId)
+            => Client._requestAsync<Member>($"{Client.ApiUrl}/servers/{id}/members/{userId}");
+
         public Task KickMemberAsync(string id, string userId)
             => Client._requestAsync($"{Client.ApiUrl}/servers/{id}/members/{userId}", Method.DELETE);
 

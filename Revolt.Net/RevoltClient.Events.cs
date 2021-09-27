@@ -137,6 +137,7 @@ namespace Revolt
             add => _channelUpdate.Add(value);
             remove => _channelUpdate.Remove(value);
         }
+
         private AsyncEvent<Func<DisconnectionInfo, Task>> _disconnected = new();
 
         public event Func<DisconnectionInfo, Task> Disconnected
@@ -144,6 +145,7 @@ namespace Revolt
             add => _disconnected.Add(value);
             remove => _disconnected.Remove(value);
         }
+
         private AsyncEvent<Func<ReconnectionInfo, Task>> _reconnected = new();
 
         public event Func<ReconnectionInfo, Task> Reconnected
@@ -151,7 +153,7 @@ namespace Revolt
             add => _reconnected.Add(value);
             remove => _reconnected.Remove(value);
         }
-        
+
         private AsyncEvent<Func<Server, Task>> _serverDeleted = new();
 
         public event Func<Server, Task> ServerDeleted
@@ -159,6 +161,7 @@ namespace Revolt
             add => _serverDeleted.Add(value);
             remove => _serverDeleted.Remove(value);
         }
+
         private AsyncEvent<Func<Member, Member, Task>> _serverMemberUpdated = new();
 
         public event Func<Member, Member, Task> ServerMemberUpdated
@@ -167,5 +170,36 @@ namespace Revolt
             remove => _serverMemberUpdated.Remove(value);
         }
 
+        private AsyncEvent<Func<string, string, Task>> _serverMemberLeave = new();
+
+        public event Func<string, string, Task> ServerMemberLeave
+        {
+            add => _serverMemberLeave.Add(value);
+            remove => _serverMemberLeave.Remove(value);
+        }
+
+        private AsyncEvent<Func<string, string, Task>> _serverMemberJoin = new();
+
+        public event Func<string, string, Task> ServerMemberJoin
+        {
+            add => _serverMemberJoin.Add(value);
+            remove => _serverMemberJoin.Remove(value);
+        }
+
+        private AsyncEvent<Func<Server, Role, Task>> _serverRoleDeleted = new();
+
+        public event Func<Server, Role, Task> ServerRoleDeleted
+        {
+            add => _serverRoleDeleted.Add(value);
+            remove => _serverRoleDeleted.Remove(value);
+        }
+
+        private AsyncEvent<Func<Role, Role, Task>> _serverRoleUpdated = new();
+
+        public event Func<Role, Role, Task> ServerRoleUpdated
+        {
+            add => _serverRoleUpdated.Add(value);
+            remove => _serverRoleUpdated.Remove(value);
+        }
     }
 }

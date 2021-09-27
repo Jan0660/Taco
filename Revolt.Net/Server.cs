@@ -16,7 +16,7 @@ namespace Revolt
 
         // todo: categories
         // todo: system_messages
-        [JsonProperty("roles")] public Dictionary<string, Role> Roles { get; internal set; }
+        [JsonProperty("roles")] public Dictionary<string, Role>? Roles { get; internal set; }
         [JsonProperty("icon")] public Attachment Icon { get; internal set; }
         [JsonProperty("banner")] public Attachment Banners { get; internal set; }
 
@@ -38,6 +38,26 @@ namespace Revolt
 
         [JsonIgnore] public List<Member> MemberCache { get; private set; } = new();
 
+        public (ServerPermission Server, ChannelPermission Channel) GetPermissionsFor(string userId)
+        {
+            var member = GetMember(userId);
+            var serverPerms = ServerPermissions;
+            var channelPerms = ChannelPermissions;
+            if (Roles != null)
+            {
+                var roles = Roles.Where(r => member.Roles?.Contains(r.Key) ?? false);
+                foreach (var role in roles)
+                {
+                    serverPerms |= role.Value.ServerPermissions;
+                    channelPerms |= role.Value.ChannelPermissions;
+                }
+            }
+
+            return (serverPerms, channelPerms);
+        }
+
+        public Member GetMember(string userId)
+            => MemberCache.FirstOrDefault(m => m._id.User == userId) ?? Client.Servers.FetchMemberAsync(_id, userId).Result;
         public async Task<ServerMembers> GetMembersAsync()
         {
             var members = await Client.Servers.GetMembersAsync(_id);

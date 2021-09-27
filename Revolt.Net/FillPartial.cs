@@ -4,7 +4,7 @@
     // under the condition of: if cached.field is not null AND partial.field is null
     public static class FillPartialMethods
     {
-        public static void FillPartial(this Member? old, Member partial, string? remove = null)
+        public static void FillPartial(this Member? old, Member partial, string? clear = null)
         {
             if (old != null)
             {
@@ -16,10 +16,26 @@
                     partial.Roles = old.Roles;
             }
 
-            if (remove == "Nickname")
+            if (clear == "Nickname")
                 partial!.Nickname = null;
-            if (remove == "Avatar")
+            if (clear == "Avatar")
                 partial!.Avatar = null;
+        }
+
+        public static void FillPartial(this Role old, Role partial, string? clear = null)
+        {
+            Role now = old;
+            if (partial != null)
+            {
+                partial.Name ??= old.Name;
+                partial.PermissionsRaw ??= old.PermissionsRaw;
+                partial.Color ??= old.Color;
+                partial.Hoist ??= old.Hoist;
+                now = partial;
+            }
+
+            if (clear == "Colour")
+                now.Color = null;
         }
     }
 }

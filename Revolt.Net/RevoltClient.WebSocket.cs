@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Timers;
 using Newtonsoft.Json;
@@ -223,7 +224,7 @@ namespace Revolt
                             var partialMember = packet.SelectToken("data")?.ToObject<Member>();
                             if (partialMember != null)
                             {
-                                cached.FillPartial(partialMember, packet.Value<string>("remove"));
+                                cached.FillPartial(partialMember, packet.Value<string>("clear"));
                                 if (memberIndex != -1)
                                     server.MemberCache[memberIndex] = partialMember;
                                 else
@@ -231,6 +232,44 @@ namespace Revolt
                             }
 
                             _serverMemberUpdated.InvokeAsync(cached, partialMember);
+                            break;
+                        }
+                        case "ServerMemberJoin":
+                        {
+                            _serverMemberJoin.InvokeAsync(packet.Value<string>("id"), packet.Value<string>("user"));
+                            break;
+                        }
+                        case "ServerMemberLeave":
+                        {
+                            _serverMemberLeave.InvokeAsync(packet.Value<string>("id"), packet.Value<string>("user"));
+                            break;
+                        }
+                        case "ServerRoleDelete":
+                        {
+                            var serverId = packet.Value<string>("id");
+                            var roleId = packet.Value<string>("role_id");
+                            var server = ServersCache.FirstOrDefault(s => s._id == serverId);
+                            if (server != null)
+                            {
+                                var role = server.Roles[roleId!];
+                                server.Roles.Remove(roleId);
+                                _serverRoleDeleted.InvokeAsync(server, role);
+                            }
+                            break;
+                        }
+                        case "ServerRoleUpdate":
+                        {
+                            var serverId = packet.Value<string>("id");
+                            var roleId = packet.Value<string>("role_id");
+                            var server = ServersCache.FirstOrDefault(s => s._id == serverId);
+                            if (server != null)
+                            {
+                                var role = server.Roles[roleId!];
+                                var partial = packet.Value<JObject>("data")?.ToObject<Role>();
+                                role.FillPartial(partial!, packet.Value<string>("clear"));
+                                server.Roles[roleId] = partial;
+                                _serverRoleUpdated.InvokeAsync(role, partial);
+                            }
                             break;
                         }
                     }

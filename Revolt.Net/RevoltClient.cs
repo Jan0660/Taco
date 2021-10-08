@@ -86,7 +86,7 @@ namespace Revolt
         /// <param name="tokenType"></param>
         /// <param name="token">User or bot token.</param>
         /// <param name="userId">(will not be needed in the future)</param>
-        public async Task LoginAsync(TokenType tokenType, string token, string userId)
+        public async Task LoginAsync(TokenType tokenType, string token)
         {
             ApiInfo = await GetApiInfoAsync();
             AutumnInfo = await GetAutumnInfoAsync();
@@ -116,7 +116,7 @@ namespace Revolt
             {
                 email, password, friendly_name = friendlyName, captcha, challenge
             }, _jsonSerializerSettings));
-            LoginAsync(TokenType.User, session.SessionToken, session.UserId);
+            LoginAsync(TokenType.User, session.SessionToken);
             return session;
         }
 

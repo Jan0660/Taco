@@ -41,7 +41,7 @@ namespace Revolt
 
     public class VortexInformation
     {
-        [JsonProperty("voso")] public string Version { get; private set; }
+        [JsonProperty("vortex")] public string Version { get; private set; }
         [JsonProperty("ws")] public string WebsocketUrl { get; private set; }
         [JsonProperty("features")] public VortexFeatures Features { get; private set; }
     }

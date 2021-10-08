@@ -63,7 +63,7 @@ namespace DiscordBridge
 
             Config = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync("./config.json"));
             _client = new RevoltClient();
-            await _client.LoginAsync(TokenType.Bot, Config!.RevoltBotToken, Config.RevoltUserId);
+            await _client.LoginAsync(TokenType.Bot, Config!.RevoltBotToken);
             await _client.ConnectWebSocketAsync();
             _client.OnReady += () =>
             {

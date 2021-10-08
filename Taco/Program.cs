@@ -66,7 +66,7 @@ namespace Taco
             _configureLogging();
 
             _client = new RevoltClient();
-            await _client.LoginAsync(TokenType.Bot, Config!.BotToken, Config.UserId);
+            await _client.LoginAsync(TokenType.Bot, Config!.BotToken);
 
             #region Event handlers
 

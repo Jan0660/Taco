@@ -8,7 +8,6 @@ Automatically makes sure @everyone and other pings dont actually ping.
 {
   "DiscordBotToken": "",
   "RevoltBotToken": "",
-  "RevoltUserId": "",
   "Channels": [
     {
       "WebhookId": "",

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -44,23 +45,39 @@ namespace Taco.Modules
         public async Task RevoltInfo()
         {
             var info = await Message.Client.GetApiInfoAsync();
-            var vortex = await Message.Client.GetVortexInfoAsync();
-            var autumn = await Message.Client.GetAutumnInfoAsync();
-            await ReplyAsync(@$"> # Revolt info
-> ## Versions
-> **Api:** {info.Version}
-> **Vortex:** {vortex.Version}
-> **Autumn:** {autumn.Version}
-> ## Features
-> **Registration:** {StringBooled(info.Features.Registration)}
-> **Email:** {StringBooled(info.Features.Email)}
-> **Invite-only:** {StringBooled(info.Features.InviteOnly)}
-> **Captcha:** {StringBooled(info.Features.Captcha.Enabled)}
-> **Autumn:** {StringBooled(info.Features.Autumn.Enabled)}
-> **Vortex:** {StringBooled(info.Features.Vortex?.Enabled ?? false)}
-> **Vortex.RTP:** {StringBooled(vortex.Features.Rtp)}
-> **Autumn.JpegQuality:** {autumn.JpegQuality}
-> **Maximum Attachment Size:** {autumn.Tags.Attachments.MaxSize / 1000 / 1000}MB");
+            VortexInformation vortex = null;
+            AutumnInformation autumn = null;
+            await Task.WhenAll(Task.Run(async () => autumn = await Message.Client.GetAutumnInfoAsync()),
+                Task.Run(async () =>
+                    vortex = info.Features.Vortex.Enabled ? await Message.Client.GetVortexInfoAsync() : null));
+            var str = new StringBuilder();
+            str.AppendLine($"> **Delta v{info.Version}** [\\[URL\\]]({Message.Client.ApiUrl})");
+            str.AppendLine(">");
+            if ((info.Features.Vortex?.Enabled ?? false) && vortex != null)
+            {
+                str.AppendLine($"> **Vortex v{vortex.Version}** [\\[URL\\]]({info.Features.Vortex.Url})");
+                str.AppendLine(">");
+            }
+
+            var autumnTable = new Dictionary<string, AutumnInfoTag>()
+            {
+                ["Attachments"] = autumn.Tags.Attachments,
+                ["Avatars"] = autumn.Tags.Avatars,
+                ["Icons"] = autumn.Tags.Icons,
+                ["Profile Backgrounds"] = autumn.Tags.Backgrounds,
+                ["Server Banners"] = autumn.Tags.Banners
+            };
+            str.AppendLine($"> **Autumn v{autumn.Version}** [\\[URL\\]]({Message.Client.AutumnUrl})");
+            str.AppendLine("> | Tag | Max. Size |");
+            str.AppendLine("> |:--- | ----:|");
+            foreach (var tag in autumnTable)
+            {
+                if (!tag.Value.Enabled)
+                    continue;
+                str.AppendLine($"> | {tag.Key} | {tag.Value.MaxSize / 1000 / 1000}MB |");
+            }
+
+            await ReplyAsync(str.ToString());
         }
 
         public string StringBooled(bool value)
@@ -173,14 +190,14 @@ namespace Taco.Modules
             foreach (var enumVal in Enum.GetValues<ServerPermission>())
             {
                 res.AppendLine("> " + (perms.Server.HasFlag(enumVal) ? ":white_check_mark:" : ":x:") +
-                                 $" {enumVal.ToString()}");
+                               $" {enumVal.ToString()}");
             }
 
             res.Append("> ## Channel Permissions\n");
             foreach (var enumVal in Enum.GetValues<ChannelPermission>())
             {
                 res.AppendLine("> " + (perms.Channel.HasFlag(enumVal) ? ":white_check_mark:" : ":x:") +
-                                 $" {enumVal.ToString()}");
+                               $" {enumVal.ToString()}");
             }
             // todo: this channel permissions
 

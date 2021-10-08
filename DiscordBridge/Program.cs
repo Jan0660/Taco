@@ -393,7 +393,6 @@ namespace DiscordBridge
         public List<BridgeChannel> Channels;
         public string DiscordBotToken;
         public string RevoltBotToken;
-        public string RevoltUserId;
 
         public BridgeChannel ByDiscordId(ulong id)
             => Channels.FirstOrDefault(c => c.DiscordChannelId == id);

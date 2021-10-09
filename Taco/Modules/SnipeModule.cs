@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Anargy.Attributes;
 using Revolt;
+using Revolt.Commands.Attributes;
 using Taco.Attributes;
 using Taco.CommandHandling;
 

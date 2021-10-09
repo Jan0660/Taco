@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Anargy.Revolt\Anargy.Revolt.csproj" />
+      <ProjectReference Include="..\Revolt.Net.Commands\Revolt.Net.Commands.csproj" />
       <ProjectReference Include="..\Revolt.Net\Revolt.Net.csproj" />
     </ItemGroup>
 

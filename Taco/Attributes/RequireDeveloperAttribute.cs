@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Anargy;
-using Anargy.Attributes;
-using Anargy.Info;
-using Anargy.Results;
-using Anargy.Revolt;
 using Revolt;
+using Revolt.Commands;
+using Revolt.Commands.Attributes;
+using Revolt.Commands.Info;
+using Revolt.Commands.Results;
 using Taco.CommandHandling;
 
 namespace Taco.Attributes

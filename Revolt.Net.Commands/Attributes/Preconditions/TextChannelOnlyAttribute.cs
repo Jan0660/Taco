@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Anargy.Attributes;
-using Anargy.Info;
-using Anargy.Results;
 using Revolt.Channels;
+using Revolt.Commands.Info;
+using Revolt.Commands.Results;
 
-namespace Anargy.Revolt.Preconditions
+namespace Revolt.Commands.Attributes.Preconditions
 {
-    public class GroupOnlyAttribute : PreconditionAttribute
+    public class TextChannelOnlyAttribute : PreconditionAttribute
     {
         public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command,
             IServiceProvider services)
         {
             var revContext = (RevoltCommandContext)context;
-            if (revContext.Channel is GroupChannel)
+            if (revContext.Channel is TextChannel)
                 return Task.FromResult(PreconditionResult.FromSuccess());
-            return Task.FromResult(PreconditionResult.FromError("This command can only be executed in a group channel."));
+            return Task.FromResult(PreconditionResult.FromError("This command can only be executed in a server."));
         }
     }
 }

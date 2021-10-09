@@ -31,5 +31,13 @@ namespace Revolt
             Client._users.Add(user);
             return user;
         }
+
+        /// <summary>
+        /// Gets a user from cache.
+        /// </summary>
+        /// <param name="id">User ID.</param>
+        /// <returns>The user.</returns>
+        public User? GetCached(string id)
+            => Client.UsersCache.FirstOrDefault(u => u._id == id);
     }
 }

@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Anargy.Attributes;
-using Anargy.Revolt.Preconditions;
 using Revolt;
+using Revolt.Commands.Attributes;
+using Revolt.Commands.Attributes.Preconditions;
 using Taco.CommandHandling;
 
 namespace Taco.Modules

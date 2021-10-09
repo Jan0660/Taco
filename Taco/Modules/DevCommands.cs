@@ -2,8 +2,9 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Anargy.Attributes;
 using Revolt;
+using Revolt.Commands.Attributes;
+using Revolt.Commands.Attributes.Preconditions;
 using Taco.Attributes;
 using Taco.CommandHandling;
 
@@ -166,7 +167,7 @@ namespace Taco.Modules
         private string _nullableArgs(string str) => str == "null" ? null : str;
 
         [Command("ownertest")]
-        [RequireBotOwnerAttribute]
+        [RequireBotOwner]
         public Task OwnerTest() => ReplyAsync("sus");
     }
 }

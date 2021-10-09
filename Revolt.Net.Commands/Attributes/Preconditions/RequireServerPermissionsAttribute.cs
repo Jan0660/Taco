@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Anargy.Attributes;
-using Anargy.Info;
-using Anargy.Results;
-using Revolt;
+using Revolt.Commands.Info;
+using Revolt.Commands.Results;
 
-namespace Anargy.Revolt.Preconditions
+namespace Revolt.Commands.Attributes.Preconditions
 {
     public class RequireServerPermissionsAttribute : PreconditionAttribute
     {

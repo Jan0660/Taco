@@ -2,10 +2,10 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
+        <RootNamespace>Revolt.Commands</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Anargy\Anargy\Anargy.csproj" />
       <ProjectReference Include="..\Revolt.Net\Revolt.Net.csproj" />
     </ItemGroup>
 

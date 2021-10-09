@@ -5,9 +5,9 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Anargy.Attributes;
-using Anargy.Revolt.Preconditions;
 using Revolt;
+using Revolt.Commands.Attributes;
+using Revolt.Commands.Attributes.Preconditions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using Taco.Attributes;
@@ -23,17 +23,15 @@ namespace Taco.Modules
         // todo: mv
         [Command("whois")]
         [Summary("Retrieve information about a user.")]
-        public async Task WhoIs()
+        public Task WhoIs(User user)
         {
-            var user = GetMention(Args);
             if (user == null)
             {
-                await ReplyAsync(":x: Specify a user by mentioning them, their name or id.");
-                return;
+                return ReplyAsync(":x: Specify a user by mentioning them, their name or id.");
             }
 
-            await ReplyAsync($@"> ## {user.Username}
-> Mention: [{user.Username}](/@{user._id})
+            return ReplyAsync($@"> ## {user.Username}
+> Mention: [@{user.Username}](/@{user._id})
 > Id: `{user._id}`
 > Online: {user.Online}
 > Badges: {user.Badges} ({user.BadgesRaw})

@@ -1,8 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Anargy;
-using Anargy.Revolt;
 using Revolt;
+using Revolt.Commands;
 
 namespace Taco.CommandHandling
 {

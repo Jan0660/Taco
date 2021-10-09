@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Anargy.Attributes;
 using Jan0660.AzurAPINet;
 using Jan0660.AzurAPINet.Enums;
+using Revolt.Commands.Attributes;
 using Taco.Attributes;
 using Taco.CommandHandling;
 

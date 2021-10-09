@@ -3,11 +3,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevoltBot", "Taco\Taco.cspr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Revolt.Net", "Revolt.Net\Revolt.Net.csproj", "{51307A35-3ABF-4899-9B20-CF91D1FCA323}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Revolt.Net.Commands", "Revolt.Net.Commands/Revolt.Net.Commands.csproj", "{3F0890DB-D048-48D8-A960-7DE7644D8C38}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBridge", "DiscordBridge\DiscordBridge.csproj", "{99660303-3636-45A6-B72B-ABCAD24A238D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anargy.Revolt", "Anargy.Revolt\Anargy.Revolt.csproj", "{944713AC-E42C-498E-9D41-97B2910DACAA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anargy", "Anargy\Anargy\Anargy.csproj", "{3F0890DB-D048-48D8-A960-7DE7644D8C38}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,10 +25,6 @@ Global
 		{99660303-3636-45A6-B72B-ABCAD24A238D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99660303-3636-45A6-B72B-ABCAD24A238D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99660303-3636-45A6-B72B-ABCAD24A238D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{944713AC-E42C-498E-9D41-97B2910DACAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{944713AC-E42C-498E-9D41-97B2910DACAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{944713AC-E42C-498E-9D41-97B2910DACAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{944713AC-E42C-498E-9D41-97B2910DACAA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3F0890DB-D048-48D8-A960-7DE7644D8C38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3F0890DB-D048-48D8-A960-7DE7644D8C38}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F0890DB-D048-48D8-A960-7DE7644D8C38}.Release|Any CPU.ActiveCfg = Release|Any CPU

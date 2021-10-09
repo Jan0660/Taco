@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Anargy;
-using Anargy.Attributes;
-using Anargy.Info;
-using Anargy.Results;
-using Anargy.Revolt;
+using Revolt.Commands.Info;
+using Revolt.Commands.Results;
 
-namespace Taco.Attributes
+namespace Revolt.Commands.Attributes.Preconditions
 {
     public class RequireBotOwnerAttribute : PreconditionAttribute
     {

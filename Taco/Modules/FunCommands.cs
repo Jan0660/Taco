@@ -2,10 +2,9 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Anargy.Attributes;
-using Anargy.Revolt.Preconditions;
 using Owoify;
 using Revolt.Channels;
+using Revolt.Commands.Attributes;
 using Taco.Attributes;
 using Taco.CommandHandling;
 

@@ -75,6 +75,8 @@ namespace Revolt
         internal async Task<T> _requestAsync<T>(RestRequest request)
         {
             var res = await _restClient.ExecuteAsync(request);
+            if (res.StatusCode == HttpStatusCode.NotFound)
+                return default;
             if (!res.IsSuccessful)
                 throw new RevoltException(JsonConvert.DeserializeObject<RevoltError>(res.Content)!, res);
             T val = default;

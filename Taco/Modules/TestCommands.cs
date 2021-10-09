@@ -23,12 +23,9 @@ namespace Taco.Modules
         // todo: mv
         [Command("whois")]
         [Summary("Retrieve information about a user.")]
-        public Task WhoIs(User user)
+        public Task WhoIs(User user = null)
         {
-            if (user == null)
-            {
-                return ReplyAsync(":x: Specify a user by mentioning them, their name or id.");
-            }
+            user ??= Context.User;
 
             return ReplyAsync($@"> ## {user.Username}
 > Mention: [@{user.Username}](/@{user._id})
@@ -88,20 +85,14 @@ namespace Taco.Modules
 
         [Command("fuck")]
         [Summary("Fuck someone.")]
-        public async Task Fuck()
+        public async Task Fuck(User user = null)
         {
-            var mention = GetMention(Args);
-            if (mention == null)
-            {
-                await ReplyAsync("mention someone h");
-                return;
-            }
-
+            user ??= Context.User;
             var web = new WebClient();
             var authorPfp =
                 await Image.LoadAsync(new MemoryStream(await web.DownloadDataTaskAsync(Message.Author.AvatarUrl)));
             var mentionPfp =
-                await Image.LoadAsync(new MemoryStream(await web.DownloadDataTaskAsync(mention.AvatarUrl)));
+                await Image.LoadAsync(new MemoryStream(await web.DownloadDataTaskAsync(user.AvatarUrl)));
             authorPfp.Mutate(c => c.Resize(new Size(166, 166)));
             mentionPfp.Mutate(c => c.Resize(new Size(110, 110)));
             var image = await Image.LoadAsync(@"./Resources/Fuck.png");

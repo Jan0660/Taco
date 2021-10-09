@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Revolt.Commands.Results;
 
@@ -10,24 +14,35 @@ namespace Revolt.Commands.Readers
         public override async Task<TypeReaderResult> ReadAsync(ICommandContext context, string input,
             IServiceProvider services)
         {
-            User result = null;
+            var results = new Dictionary<string, TypeReaderValue>();
             string id = null;
-            // mention
+            // By mention and id (1.0)
             if (input.Length == 29 && input.StartsWith("<@") && input.EndsWith(">"))
                 id = input[2..^1];
-            // id
             else if (input.Length == 26)
                 id = input;
             if (id != null)
             {
-                result = context.Client.Users.GetCached(id);
-                result ??= await context.User.Client.Users.FetchUserAsync(id);
+                var res = context.Client.Users.GetCached(id);
+                res ??= await context.User.Client.Users.FetchUserAsync(id);
+                AddResult(results, res as T, 1.0f);
             }
 
-            if (result != null)
-                return TypeReaderResult.FromSuccess(result);
+            // By Username (0.9)
+            AddResult(results, context.Client.UsersCache.FirstOrDefault(user =>
+                string.Equals(input, user.Username, StringComparison.OrdinalIgnoreCase)) as T, 0.9f);
+            // todo: By Nickname
 
-            return TypeReaderResult.FromError(CommandError.ParseFailed, "Input could not be parsed as a boolean.");
+            if (results.Count != 0)
+                return TypeReaderResult.FromSuccess(results.Values.ToImmutableArray());
+
+            return TypeReaderResult.FromError(CommandError.ObjectNotFound, "User not found.");
+        }
+
+        private void AddResult(Dictionary<string, TypeReaderValue> results, T user, float score)
+        {
+            if (user != null && !results.ContainsKey(user._id))
+                results.Add(user._id, new TypeReaderValue(user, score));
         }
     }
 }

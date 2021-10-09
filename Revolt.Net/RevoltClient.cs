@@ -183,8 +183,8 @@ namespace Revolt
                 var index = _users.IndexOf(user);
                 if (index == -1)
                     _users.Add(user);
-                else
-                    _users[index] = user;
+                // else
+                //     _users[index] = user;
             }
         }
 

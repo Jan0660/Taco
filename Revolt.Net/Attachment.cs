@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Web;
+using Newtonsoft.Json;
 
 namespace Revolt
 {
@@ -9,6 +10,7 @@ namespace Revolt
         [JsonProperty("content_type")] public string ContentType { get; private set; }
         [JsonProperty("size")] public ulong Size { get; private set; }
         [JsonProperty("tag")] public string Tag { get; private set; }
+        [JsonIgnore] public string Url => $"{Client.AutumnUrl}/{Tag}/{_id}/{HttpUtility.UrlEncode(Filename)}";
     }
 
     public class AttachmentMetadata

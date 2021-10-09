@@ -9,7 +9,7 @@ namespace Revolt.Channels
         [JsonProperty("owner")] public string OwnerId { get; internal set; }
         [JsonIgnore] public User Owner => Client.Users.Get(OwnerId);
         [JsonProperty("description")] public string Description { get; internal set; }
-        [JsonProperty("icon")] public Attachment Icon { get; internal set; }
+        [JsonProperty("icon")] public Attachment? Icon { get; internal set; }
 
         public Task AddMemberAsync(string userId)
             => Client.Channels.AddGroupMemberAsync(_id, userId);

@@ -57,13 +57,15 @@ namespace Revolt
         }
 
         public Member GetMember(string userId)
-            => MemberCache.FirstOrDefault(m => m._id.User == userId) ?? Client.Servers.FetchMemberAsync(_id, userId).Result;
+            => MemberCache.FirstOrDefault(m => m._id.User == userId) ??
+               Client.Servers.FetchMemberAsync(_id, userId).Result;
+
         public async Task<ServerMembers> GetMembersAsync()
         {
             var members = await Client.Servers.GetMembersAsync(_id);
             MemberCache = members.Members.ToList();
-            
-            // todo: make some magic internal method on client for caching a User that like yes
+            members.Users.AttachClient(Client);
+            Client.CacheUsers(members.Users);
             return members;
         }
     }

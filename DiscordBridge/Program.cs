@@ -140,27 +140,29 @@ namespace DiscordBridge
                         };
                     }
 
-                    if (message.Attachments != null)
+                    if (message.Attachments != null && !(string.IsNullOrEmpty(message.Content) &&
+                        message.Attachments.Length == 1))
                         foreach (var attachment in message.Attachments)
                         {
                             embeds.Add(new EmbedBuilder()
                             {
                                 Title = attachment.Filename,
-                                ImageUrl =
-                                    $"https://autumn.revolt.chat/attachments/{attachment._id}/{HttpUtility.UrlEncode(attachment.Filename)}",
+                                ImageUrl = attachment.Url,
                                 Color = new Color(47, 49, 54),
                                 Footer = new()
                                 {
                                     Text =
                                         $"{attachment.SizeToString()} • {attachment.Metadata.Width}x{attachment.Metadata.Height}"
                                 },
-                                Url =
-                                    $"https://autumn.revolt.chat/attachments/{attachment._id}/{HttpUtility.UrlEncode(attachment.Filename)}"
+                                Url = attachment.Url
                             }.Build());
                         }
 
                     var msg = await channel.DiscordWebhook.SendMessageAsync(
-                        message.Content.ReplaceRevoltMentions().ReplaceRevoltChannelMentions(),
+                        string.IsNullOrEmpty(message.Content) && message.Attachments?.Length == 1
+                            // message is empty and has only a single attachment, send attachment url
+                            ? message.Attachments.First().Url
+                            : message.Content.ReplaceRevoltMentions().ReplaceRevoltChannelMentions(),
                         username: message.Author.Username,
                         avatarUrl: message.Author.Avatar == null
                             ? message.Author.DefaultAvatarUrl
@@ -211,7 +213,7 @@ namespace DiscordBridge
                 var channel = Config.ByRevoltId(msg.ChannelId);
                 if (channel == null)
                     return Task.CompletedTask;
-                var icon = (msg.Channel as GroupChannel)?.Icon?.GetUrl() ?? "https://app.revolt.chat/assets/group.png";
+                var icon = (msg.Channel as GroupChannel)?.Icon?.Url ?? "https://app.revolt.chat/assets/group.png";
                 return channel.DiscordWebhook.SendMessageAsync(msg.Stringify(), allowedMentions: new AllowedMentions(),
                     avatarUrl: (msg.Content.Id == null ? null : Client.Users.Get(msg.Content.Id).AvatarUrl) ??
                                icon,
@@ -276,6 +278,7 @@ namespace DiscordBridge
                     DiscordRevoltMessages.Add(message.Id, (msg._id, channel.RevoltChannelId));
                     return;
                 }
+
                 if (message.Content == "-uber" && message.Author.IsBot == false)
                 {
                     await message.Channel.SendFileAsync("../Taco/Resources/UberFruit.png");
@@ -486,10 +489,6 @@ namespace DiscordBridge
                 return Meth.Round(size / 1000, 2) + "KB";
             return size + "B";
         }
-
-        public static string GetUrl(this Attachment attachment)
-            =>
-                $"{Program.Client.ApiInfo.Features.Autumn.Url}/{attachment.Tag}/{attachment._id}/{HttpUtility.UrlEncode(attachment.Filename)}";
 
         public static string Stringify(this ObjectMessage msg)
         {

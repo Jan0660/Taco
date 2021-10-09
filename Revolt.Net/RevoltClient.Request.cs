@@ -50,6 +50,9 @@ namespace Revolt
         {
             T obj = JsonConvert.DeserializeObject<T>(json);
             obj.Client = this;
+            if (obj is Message { Attachments: { } } msg)
+                foreach (var att in msg.Attachments)
+                    att.Client = this;
             return obj;
         }
 

@@ -20,7 +20,7 @@ namespace Revolt
         /// <summary>
         /// Gets URL to user's avatar, if they don't have one, falls back to <see cref="DefaultAvatarUrl"/>.
         /// </summary>
-        [JsonIgnore] public string AvatarUrl => Avatar == null ? DefaultAvatarUrl : $"{Client.AutumnUrl}/{Avatar.Tag}/{Avatar._id}/{HttpUtility.UrlEncode(Avatar.Filename)}";
+        [JsonIgnore] public string AvatarUrl => Avatar == null ? DefaultAvatarUrl : Avatar.Url;
 
         public Task FriendAsync()
             => Client.Users.FriendAsync(Username);

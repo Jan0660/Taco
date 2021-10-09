@@ -19,43 +19,31 @@ namespace Taco.Modules
         public const ushort BaseResolution = 16; // 64
 
         [Command("jesusCarry")]
-        public Task JesusCarry()
-            => TemplateSend("JesusCarry.png", _getContextUserId(), new Point(162, 182));
+        public Task JesusCarry(User user = null)
+            => TemplateSend("JesusCarry.png", user ?? Context.User, new Point(162, 182));
 
         [Command("suicide")]
-        public Task Suicide()
-            => TemplateSend("Suicide.png", _getContextUserId(), new Point(36, 103), size: 64);
+        public Task Suicide(User user = null)
+            => TemplateSend("Suicide.png", user ?? Context.User, new Point(36, 103), size: 64);
 
         [Command("02ily")]
-        public Task ZeroTwoILoveThis()
-            => TemplateSend("02ily.png", _getContextUserId(), new Point(131, 569), rounded: false, size: 256);
+        public Task ZeroTwoILoveThis(User user = null)
+            => TemplateSend("02ily.png", user ?? Context.User, new Point(131, 569), rounded: false, size: 256);
         
         [Command("killList")]
-        public Task KillList()
-            => TemplateSend("KillList.png", _getContextUserId(), new Point(69, 53), rounded: false, size: 256);
+        public Task KillList(User user = null)
+            => TemplateSend("KillList.png", user ?? Context.User, new Point(69, 53), rounded: false, size: 256);
         
         [Command("lovedList")]
-        public Task LovedList()
-            => TemplateSend("LovedList.png", _getContextUserId(), new Point(69, 53), rounded: false, size: 256);
+        public Task LovedList(User user = null)
+            => TemplateSend("LovedList.png", user ?? Context.User, new Point(69, 53), rounded: false, size: 256);
 
-        private string _getContextUserId()
-        {
-            if (Args == "")
-                return Message.AuthorId;
-            if (Args.Length == 26)
-                return Args;
-            if (Args.Length == 29)
-                return Args.Replace("<@", "").Replace(">", "");
-            return Context.Message.Client.UsersCache.FirstOrDefault(u => u.Username.ToLower() == Args.ToLower())?._id ??
-                   "amogus";
-        }
-
-        public async Task<Message> TemplateSend(string template, string userId, Point location, bool rounded = true,
+        public async Task<Message> TemplateSend(string template, User user, Point location, bool rounded = true,
             int size = 128)
         {
             var httpClient = new HttpClient();
             var pfp = new Bitmap(
-                await httpClient.GetStreamAsync($"{Context.Message.Client.UsersCache.First(u => u._id == userId).AvatarUrl}?size={size}"));
+                await httpClient.GetStreamAsync($"{user.AvatarUrl}?size={size}"));
             if (pfp.Height != size)
             {
                 pfp = pfp.Resize(new Size(size, size), ImageFormat.Png);

@@ -19,10 +19,8 @@ namespace Taco.Modules
     {
         [RequireDeveloper]
         [Command("perm")]
-        public async Task SetPermissions()
+        public async Task SetPermissions(string userId, string levelStr)
         {
-            var args = Args.Split(' ');
-            var userId = args[0];
             if (userId == Program.BotOwnerId)
             {
                 await ReplyAsync("Sussus amogus.");
@@ -30,9 +28,9 @@ namespace Taco.Modules
             }
 
             sbyte level;
-            if (!sbyte.TryParse(args.Last(), out level))
+            if (!sbyte.TryParse(levelStr, out level))
             {
-                Enum.TryParse(args.Last(), ignoreCase: true, out PermissionLevel lvl);
+                Enum.TryParse(levelStr, ignoreCase: true, out PermissionLevel lvl);
                 level = (sbyte)lvl;
             }
 
@@ -95,25 +93,25 @@ namespace Taco.Modules
         }
 
         [Command("setstatus")]
-        public async Task SetStatus()
+        public async Task SetStatus([Remainder] string arg)
         {
-            Program.Config.Status = _nullableArgs(Args);
+            Program.Config.Status = _nullableArgs(arg);
             await Program.SaveConfig();
             await ReplyAsync("UPdated le staustm,.");
         }
 
         [Command("setpresence")]
-        public async Task SetPresence()
+        public async Task SetPresence([Remainder] string arg)
         {
-            Program.Config.Presence = Args;
+            Program.Config.Presence = arg;
             await Program.SaveConfig();
             await ReplyAsync("updated le presenc");
         }
 
         [Command("setprofile")]
-        public async Task SetProfile()
+        public async Task SetProfile([Remainder] string arg)
         {
-            Program.Config.Profile = _nullableArgs(Args);
+            Program.Config.Profile = _nullableArgs(arg);
             await Program.SaveConfig();
             await ReplyAsync("profiel set!!!");
         }
@@ -140,26 +138,25 @@ namespace Taco.Modules
         // }
 
         [Command("coc set")]
-        public Task CocSet()
+        public Task CocSet(int index, [Remainder] string str)
         {
-            var h = Args.Split(' ');
-            Program.Config.CodeOfConduct[int.Parse(h[0])] = String.Join(' ', h[1..]);
+            Program.Config.CodeOfConduct[index] = str;
             Program.SaveConfig();
             return ReplyAsync("set;");
         }
 
         [Command("coc add")]
-        public Task CocAdd()
+        public Task CocAdd([Remainder] string str)
         {
-            Program.Config.CodeOfConduct.Add(Args);
+            Program.Config.CodeOfConduct.Add(str);
             Program.SaveConfig();
             return ReplyAsync("add;");
         }
 
         [Command("coc rm")]
-        public Task CocRemove()
+        public Task CocRemove(int index)
         {
-            Program.Config.CodeOfConduct.RemoveAt(int.Parse(Args.Split(' ')[0]));
+            Program.Config.CodeOfConduct.RemoveAt(index);
             Program.SaveConfig();
             return ReplyAsync("rm;");
         }

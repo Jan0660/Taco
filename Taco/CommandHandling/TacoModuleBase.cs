@@ -2,13 +2,13 @@
 using System.Threading.Tasks;
 using Revolt;
 using Revolt.Commands;
+using Taco.Attributes;
 
 namespace Taco.CommandHandling
 {
     public class TacoModuleBase : ModuleBase<TacoCommandContext>
     {
         public Message Message => Context.Message;
-        public string Args;
 
         public Task<SelfMessage> ReplyAsync(string content)
             => Context.Client.Channels.SendMessageAsync(Context.Message.ChannelId, content);

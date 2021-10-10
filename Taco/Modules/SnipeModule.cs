@@ -11,6 +11,7 @@ namespace Taco.Modules
     // todo: mv somewhere else
     [Summary("Snipe command")]
     [Name("Snipe")]
+    [Hidden]
     public class SnipeModule : TacoModuleBase
     {
         private static List<Message> _messages = new();

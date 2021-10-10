@@ -55,7 +55,7 @@ namespace Taco.Modules
         // todo: if no exact match then display results
         [Command("nuget")]
         [Summary("Information about a package on NuGet.")]
-        public async Task NuGetPackage()
+        public async Task NuGetPackage(string name)
         {
             #region bloat
 
@@ -64,7 +64,7 @@ namespace Taco.Modules
             PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>();
 
             IEnumerable<IPackageSearchMetadata> packages = await resource.GetMetadataAsync(
-                Args,
+                name,
                 includePrerelease: false,
                 includeUnlisted: false,
                 Cache,
@@ -105,10 +105,10 @@ namespace Taco.Modules
         [Command("http")]
         [Alias("http-status-code", "status-code")]
         [Summary("Information about a HTTP status code.")]
-        public Task HttpStatusCode()
+        public Task HttpStatusCode(string query)
         {
-            var code = httpCodes.Value.FirstOrDefault(c => c.Code.ToLower() == Args.ToLower())
-                       ?? httpCodes.Value.FirstOrDefault(c => c.Phrase.ToLower() == Args.ToLower());
+            var code = httpCodes.Value.FirstOrDefault(c => c.Code.ToLower() == query.ToLower())
+                       ?? httpCodes.Value.FirstOrDefault(c => c.Phrase.ToLower() == query.ToLower());
             if (code == null)
                 return ReplyAsync(":x: Sorry, but I don't have information about this HTTP status code.");
             return ReplyAsync($@"> ## HTTP {code.Code} - {code.Phrase}
@@ -116,9 +116,9 @@ namespace Taco.Modules
         }
 
         [Command("http-header")]
-        public Task HttpHeaderInfo()
+        public Task HttpHeaderInfo(string query)
         {
-            var header = httpHeaders.Value.FirstOrDefault(h => h.Header.ToLower() == Args.ToLower());
+            var header = httpHeaders.Value.FirstOrDefault(h => h.Header.ToLower() == query.ToLower());
             if (header == null)
                 return ReplyAsync(":x: Sorry, but I don't have information about this HTTP header.");
             return ReplyAsync($@"> ## {header.Header}
@@ -161,11 +161,11 @@ namespace Taco.Modules
         [Command("iplookup")]
         [Alias("hack", "ip")]
         [Summary("Retrieve information about an IP or domain.")]
-        public async Task Hack()
+        public async Task Hack(string query)
         {
-            var res = await IpApi.GetAsync(Args);
+            var res = await IpApi.GetAsync(query);
             // check for death response
-            if (res.Query == Args && res.Country == null)
+            if (res.Query == query && res.Country == null)
             {
                 await ReplyAsync(":x: I can't find that IP or domain.");
                 return;
@@ -194,7 +194,7 @@ namespace Taco.Modules
             }
 
             var pkg = search.Results.FirstOrDefault(p =>
-                p.Name.Equals(Args, StringComparison.InvariantCultureIgnoreCase));
+                p.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
             if (pkg == null)
             {
                 // no exact match, show results
@@ -246,18 +246,18 @@ namespace Taco.Modules
                ?? linuxDistros.Value.FirstOrDefault(d => d.FullName.ToLowerTrimmed() == name.ToLowerTrimmed());
 
         [Command("distro")]
-        public Task LinuxDistro()
+        public Task LinuxDistro(string name)
         {
-            var distro = DistroSearch(Args);
+            var distro = DistroSearch(name);
             if (distro == null)
             {
-                var endsWithLinux = !Args.ToLowerTrimmed().EndsWith("linux")
+                var endsWithLinux = !name.ToLowerTrimmed().EndsWith("linux")
                     ? linuxDistros.Value.FirstOrDefault(d =>
                     {
                         try
                         {
                             return d.FullName.ToLowerTrimmed().Remove(d.FullName.ToLowerTrimmed().Length - 5) ==
-                                   Args.ToLowerTrimmed();
+                                   name.ToLowerTrimmed();
                         }
                         catch
                         {
@@ -268,7 +268,7 @@ namespace Taco.Modules
                 if (endsWithLinux != null)
                     distro = endsWithLinux;
 
-                var tryCommon = CommonDistroNames.FirstOrDefault(d => d.Item1.ToLower() == Args.ToLower());
+                var tryCommon = CommonDistroNames.FirstOrDefault(d => d.Item1.ToLower() == name.ToLower());
                 if (tryCommon.Item1 != null)
                     distro = DistroSearch(tryCommon.Item2.ToLower());
 
@@ -334,11 +334,8 @@ namespace Taco.Modules
         public Task ListSavedAttachments()
         {
             var res = new StringBuilder();
-            res.AppendLine("[](https://a.c)");
             foreach (var att in Context.UserData.SavedAttachments)
-            {
-                res.AppendLine($"- **[{att.Key}]({att.Value})**");
-            }
+                res.AppendLine($"- **[{att.Key}](<{att.Value}>)**");
 
             return InlineReplyAsync(res.ToString());
         }

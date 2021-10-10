@@ -58,19 +58,18 @@ namespace Taco.Modules
         [Command("add tag")]
         [Summary("Add a tag.")]
         [RequireServerPermissions(ServerPermission.ManageServer)]
-        public async Task AddTag()
+        public async Task AddTag(string name, [Remainder] string content)
         {
-            var split = Args.Split(' ');
             if (Context.CommunityData.Tags.Any(t =>
-                t.Key.Equals(split[0], StringComparison.InvariantCultureIgnoreCase)))
+                t.Key.Equals(name, StringComparison.InvariantCultureIgnoreCase)))
             {
                 await ReplyAsync("This tag already exists!");
                 return;
             }
             Context.CommunityData.Tags ??= new();
-            Context.CommunityData.Tags.Add(split[0], string.Join(' ', split[1..]));
+            Context.CommunityData.Tags.Add(name, content);
             await Context.UpdateCommunityDataAsync();
-            await ReplyAsync($"Added tag by the name of `{split[0]}`.");
+            await ReplyAsync($"Added tag by the name of `{name}`.");
         }
 
         [Command("setprefix")]

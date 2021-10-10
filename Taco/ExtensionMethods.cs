@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
@@ -70,9 +71,22 @@ namespace Taco
             if (list.Count == maxCount)
                 list.Remove(list.FirstOrDefault());
         }
-        
+
         [Pure]
         public static string Shorten(this string str, int length)
             => str.Length > length ? str[..(length - 5)] + "(...)" : str;
+
+        public static T GetAttribute<T>(this ModuleInfo module) where T : Attribute
+        {
+            foreach (var att in module.Attributes)
+            {
+                if (att is T)
+                {
+                    return (T)att;
+                }
+            }
+
+            return null;
+        }
     }
 }

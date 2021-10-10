@@ -117,7 +117,7 @@ namespace Taco
     {
         BlacklistSilent = -2,
         Blacklist = -1,
-        NotSpecial = 0,
+        None = 0,
         Developer = 100
     }
 

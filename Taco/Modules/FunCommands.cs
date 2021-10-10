@@ -16,20 +16,20 @@ namespace Taco.Modules
     {
         [Command("owo")]
         [Summary("OwOify input.")]
-        public Task OwO()
-            => ReplyAsync(Owoifier.Owoify(Args));
+        public Task OwO([Remainder] string text)
+            => ReplyAsync(Owoifier.Owoify(text));
 
 
         [Command("uwu")]
         [Summary("UwUify input.")]
-        public Task UwU()
-            => ReplyAsync(Owoifier.Owoify(Args, Owoifier.OwoifyLevel.Uwu));
+        public Task UwU([Remainder] string text)
+            => ReplyAsync(Owoifier.Owoify(text, Owoifier.OwoifyLevel.Uwu));
 
 
         [Command("uvu")]
         [Summary("UvUify input.")]
-        public Task UvU()
-            => ReplyAsync(Owoifier.Owoify(Args, Owoifier.OwoifyLevel.Uvu));
+        public Task UvU([Remainder] string text)
+            => ReplyAsync(Owoifier.Owoify(text, Owoifier.OwoifyLevel.Uvu));
 
         [Command("bing")]
         [Summary("Gets current bing versions.")]
@@ -68,7 +68,7 @@ namespace Taco.Modules
         [Command("gaytext")]
         [Alias("gay")]
         [Summary("Converts h*terosexual text to the gay.")]
-        public Task GayText()
+        public Task GayText([Remainder] string text)
         {
             var cycle = new[]
             {
@@ -76,7 +76,7 @@ namespace Taco.Modules
             };
             var res = @"$\textsf{";
             int i = 0;
-            foreach (char ch in Args)
+            foreach (char ch in text)
             {
                 string str = ch switch
                 {
@@ -92,7 +92,10 @@ namespace Taco.Modules
             }
 
             res += "}$";
-            return ReplyAsync(res);
+            if (res.Length < 2000)
+                return ReplyAsync(res);
+            else
+                return ReplyAsync("Result too big.");
         }
     }
 }

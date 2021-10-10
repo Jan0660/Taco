@@ -16,9 +16,9 @@ namespace Taco.Modules
 
         [Command("ship")]
         [Summary("Basic information about a ship.")]
-        public Task Ship()
+        public Task Ship(string query)
         {
-            var ship = Azurlane.getShip(Args);
+            var ship = Azurlane.getShip(query);
             if (ship == null)
                 return ReplyAsync("Ship not found.");
             return Message.Channel.SendMessageAsync(
@@ -26,7 +26,7 @@ namespace Taco.Modules
 > **Nationality:** {ship.Nationality}
 > **Class:** {ship.Class}
 > **Build Time:** {(ship.Construction.Constructable ? ship.Construction.ConstructionTime.ToString("hh\\:mm\\:ss") : "Cannot be constructed")}
-> **Rarity:** $\color{{{GetRarityColor(ship.GetRarityEnum().ToGeneralRarity())}}}\textsf{{{ship.Rarity}}}$ **|** $\color{{orange}}\textsf{{{ship.Stars.StarsString}}}$
+> **Rarity:** $\color{{{GetRarityColor(ship.GetRarityEnum().ToGeneralRarity())}}}\textsf{{{ship.Rarity}}}$ **|** $\color{{orange}}\textsf{{{new string('★', ship.Stars)}}}$
 > **Scrap Value:** {(ship.ScrapValue.CanScrap ? $@"{ship.ScrapValue.Coin} Coins; {ship.ScrapValue.Oil} Oil; {ship.ScrapValue.Medal} Medals;" : "Cannot be scraped")}
 > ${{\footnotesize Footer {{\hspace{{1mm}}}} when?}}$");
         }
@@ -34,9 +34,9 @@ namespace Taco.Modules
         [Command("shipImage")]
         [Alias("shipImg")]
         [Summary("Get first skin for ship.")]
-        public Task ShipFirstSkin()
+        public Task ShipFirstSkin(string query)
         {
-            var ship = Azurlane.getShip(Args);
+            var ship = Azurlane.getShip(query);
             if (ship == null)
                 return ReplyAsync("Ship not found.");
             return ReplyAsync(ship.Skins.First().Image);
@@ -44,9 +44,9 @@ namespace Taco.Modules
 
         [Command("shipstats")]
         [Summary("Level 0, 100, 120 (retrofit?) stats for a ship.")]
-        public Task ShipStats()
+        public Task ShipStats(string query)
         {
-            var ship = Azurlane.getShip(Args);
+            var ship = Azurlane.getShip(query);
             if (ship == null)
                 return ReplyAsync("Ship not found.");
             // var data = await web.DownloadDataTaskAsync(ship.Skins.First().Image);

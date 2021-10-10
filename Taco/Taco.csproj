@@ -9,11 +9,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AzurAPINet" Version="2.0.0-preview3" />
+      <PackageReference Include="AzurAPINet" Version="2.0.0-preview4" />
       <PackageReference Include="CryptoCurrencyApis" Version="0.1.0" />
       <PackageReference Include="Log73" Version="0.7.0" />
       <PackageReference Include="Log73.Extensions.NewtonsoftJson" Version="0.7.0" />
-      <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
+      <PackageReference Include="MongoDB.Driver" Version="2.13.2" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="NuGet.Protocol" Version="5.11.0" />
       <PackageReference Include="Owoify.Net" Version="1.1.0" />

@@ -39,10 +39,9 @@ namespace Taco.Modules
 
         [Command("help")]
         [Summary("Get general/category/commands help.")]
-        public async Task Help()
+        public async Task Help([Remainder] string query = null)
         {
-            Console.Log("sus");
-            if (Args == "")
+            if (query == null)
             {
                 // main help
                 var description =
@@ -52,7 +51,7 @@ namespace Taco.Modules
 ";
                 foreach (var module in CommandHandler.Commands.Modules)
                 {
-                    if (module.IsHidden())
+                    if (module.IsHidden() || module.Commands.Count == 0)
                         continue;
                     description += $"| {module.Name} | {module.Summary ?? "No summary"} | {module.Commands.Count} |\n";
                 }
@@ -64,7 +63,7 @@ namespace Taco.Modules
             {
                 // ManPages
                 {
-                    var page = ManPages.Get(Args);
+                    var page = ManPages.Get(query);
                     if (page != null)
                     {
                         await ReplyAsync(page.Content);
@@ -73,7 +72,7 @@ namespace Taco.Modules
                 }
                 // Module
                 {
-                    var response = HelpUtil.GetModuleHelpContent(Args);
+                    var response = HelpUtil.GetModuleHelpContent(query);
                     if (response != null)
                     {
                         await ReplyAsync(response);
@@ -82,7 +81,7 @@ namespace Taco.Modules
                 }
                 // Command
                 {
-                    var command = CommandHandler.Commands.Search(Args).Commands.FirstOrDefault().Command;
+                    var command = CommandHandler.Commands.Search(query).Commands.FirstOrDefault().Command;
                     if (command == null)
                         goto after_command;
                     var preconditions = "";

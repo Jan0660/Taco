@@ -170,9 +170,10 @@ namespace Taco.Modules
 
         [Command("permissions")]
         [Alias("perms")]
-        public async Task PermissionTest()
+        public async Task PermissionTest(User user = null)
         {
-            var perms = Context.Server.GetPermissionsFor(Context.User._id);
+            user ??= Context.User;
+            var perms = Context.Server.GetPermissionsFor(user._id);
 
             StringBuilder res = new();
             res.Append("> ## Server Permissions\n");

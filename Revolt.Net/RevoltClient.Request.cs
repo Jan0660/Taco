@@ -64,7 +64,7 @@ namespace Revolt
             return _requestAsync<T>(req);
         }
 
-        internal Task _requestAsync(string url, Method method = Method.GET, string? body = null)
+        internal Task<IRestResponse> _requestAsync(string url, Method method = Method.GET, string? body = null)
         {
             var req = new RestRequest(url, method);
             if (body != null)
@@ -72,7 +72,7 @@ namespace Revolt
             return _requestAsync(req);
         }
 
-        internal Task _requestAsync(RestRequest request)
+        internal Task<IRestResponse> _requestAsync(RestRequest request)
             => _restClient.ExecuteAsync(request);
 
         internal async Task<T> _requestAsync<T>(RestRequest request)

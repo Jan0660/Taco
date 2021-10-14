@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Revolt;
@@ -44,7 +45,7 @@ namespace Taco.Modules
         public Task ListTags()
         {
             var res = new StringBuilder();
-            foreach(var tag in Context.CommunityData.Tags)
+            foreach (var tag in Context.CommunityData.Tags)
             {
                 res.Append($"> `{tag.Value}`: ");
                 if (tag.Value.Contains('\n'))
@@ -52,6 +53,7 @@ namespace Taco.Modules
                 else
                     res.AppendLine(tag.Value);
             }
+
             return ReplyAsync(res.ToString());
         }
 
@@ -66,6 +68,7 @@ namespace Taco.Modules
                 await ReplyAsync("This tag already exists!");
                 return;
             }
+
             Context.CommunityData.Tags ??= new();
             Context.CommunityData.Tags.Add(name, content);
             await Context.UpdateCommunityDataAsync();
@@ -79,6 +82,44 @@ namespace Taco.Modules
             Context.CommunityData.CustomPrefix = newPrefix;
             await Context.UpdateCommunityDataAsync();
             await InlineReplyAsync($"Prefix changed to `{newPrefix}`!");
+        }
+
+        [Command("ban")]
+        [Summary("Ban a user.")]
+        [TextChannelOnly]
+        [RequireServerPermissions(ServerPermission.BanMembers)]
+        [RequireBotServerPermission(ServerPermission.BanMembers)]
+        public async Task Ban(User user, string reason = null)
+        {
+            await Context.Client.Servers.BanMemberAsync(Context.Server._id, user._id, reason);
+            await ReplyAsync("User banned.");
+        }
+
+        [Command("ban")]
+        [Summary("Ban a user by id.")]
+        [TextChannelOnly]
+        [RequireServerPermissions(ServerPermission.BanMembers)]
+        [RequireBotServerPermission(ServerPermission.BanMembers)]
+        public async Task Ban(string userId, string reason = null)
+        {
+            await Context.Client.Servers.BanMemberAsync(Context.Server._id, userId, reason);
+            await ReplyAsync("User banned.");
+        }
+
+        [Command("unban")]
+        [Summary("Unban a user by id.")]
+        [TextChannelOnly]
+        [RequireServerPermissions(ServerPermission.BanMembers)]
+        [RequireBotServerPermission(ServerPermission.BanMembers)]
+        public async Task Unban(string userId)
+        {
+            var res = await Context.Client.Servers.UnbanMemberAsync(Context.Server._id, userId);
+            if (res.StatusCode == HttpStatusCode.NotFound)
+            {
+                await ReplyAsync("User is not banned.");
+                return;
+            }
+            await ReplyAsync("User unbanned.");
         }
     }
 }

@@ -370,15 +370,5 @@ namespace Taco.Modules
 
             await ReplyAsync(res.ToString());
         }
-
-        [Command("breetest")]
-        public async Task BreeTest()
-        {
-            while (true)
-            {
-                await Context.Channel.BeginTypingAsync();
-                await Task.Delay(2000);
-            }
-        }
     }
 }

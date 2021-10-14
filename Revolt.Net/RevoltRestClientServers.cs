@@ -50,10 +50,14 @@ namespace Revolt
         public Task KickMemberAsync(string id, string userId)
             => Client._requestAsync($"{Client.ApiUrl}/servers/{id}/members/{userId}", Method.DELETE);
 
-        public Task BanMemberAsync(string id, string userId)
-            => Client._requestAsync($"{Client.ApiUrl}/servers/{id}/bans/{userId}", Method.PUT);
+        public Task<IRestResponse> BanMemberAsync(string id, string userId, string? reason = null)
+            => Client._requestAsync($"{Client.ApiUrl}/servers/{id}/bans/{userId}", Method.PUT,
+                JsonConvert.SerializeObject(new
+                {
+                    reason
+                }));
 
-        public Task UnbanMemberAsync(string id, string userId)
+        public Task<IRestResponse> UnbanMemberAsync(string id, string userId)
             => Client._requestAsync($"{Client.ApiUrl}/servers/{id}/bans/{userId}", Method.DELETE);
 
         #endregion

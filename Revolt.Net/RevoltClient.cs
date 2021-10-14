@@ -85,7 +85,6 @@ namespace Revolt
         /// </summary>
         /// <param name="tokenType"></param>
         /// <param name="token">User or bot token.</param>
-        /// <param name="userId">(will not be needed in the future)</param>
         public async Task LoginAsync(TokenType tokenType, string token)
         {
             ApiInfo = await GetApiInfoAsync();

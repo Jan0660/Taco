@@ -194,7 +194,10 @@ namespace Revolt
                                 return;
                             JObject data = packet.Value<JObject>("data");
                             if (data!.ContainsKey("avatar"))
+                            {
                                 user.Avatar = data.Value<JObject>("avatar")!.ToObject<Attachment>()!;
+                                user.Avatar!.Client = this;
+                            }
 
                             if (data.ContainsKey("username"))
                                 user.Username = data.Value<string>("username")!;

@@ -47,6 +47,7 @@ namespace Taco.CommandHandling
 > ```csharp
 > ({exception.GetType().FullName}) {exception.Message.Replace("\n", "\n> ")}
 > ```");
+                    Console.Exception(exception);
                 }
                 else if (result.Error == CommandError.UnknownCommand)
                 {

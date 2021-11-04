@@ -205,6 +205,13 @@ namespace Revolt
         [JsonProperty("nonce")] public string Nonce = RevoltClient.GenerateNonce();
         [JsonProperty("attachments")] public List<string>? Attachments;
         [JsonProperty("replies")] public MessageReply[] Replies;
+        [JsonProperty("masquerade")] public MessageMasquerade Mask;
+    }
+    
+    public class MessageMasquerade
+    {
+        [JsonProperty("name")] public string Name;
+        [JsonProperty("avatar")] public string AvatarUrl;
     }
 
     public struct MessageReply

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
@@ -8,7 +7,6 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
 using Discord;
 using Discord.Webhook;
 using Discord.WebSocket;
@@ -321,6 +319,12 @@ namespace DiscordBridge
                         }
                     }
 
+                    var mask = new MessageMasquerade()
+                    {
+                        Name = message.Author.ToString(),
+                        AvatarUrl = message.Author.GetAvatarUrl() ?? "https://cdn.discordapp.com/embed/avatars/0.png",
+                    };
+
                     Message msg;
                     if (message.Content is "" or null && message.Embeds.Any(e => e.Type == EmbedType.Rich))
                     {
@@ -328,7 +332,7 @@ namespace DiscordBridge
                         DiscordRevoltMessagesContent.LimitedAdd(content, 50);
                         msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,
                             content,
-                            replies: isReply ? new[] { reply } : null);
+                            replies: isReply ? new[] { reply } : null, mask: mask);
                     }
                     else
                     {
@@ -342,11 +346,11 @@ namespace DiscordBridge
                                 await _client.UploadFile(message.Attachments.First().Filename, attachment);
                             msg = await _client.Channels.SendMessageAsync(
                                 channel.RevoltChannelId, content,
-                                new() { attachmentId }, isReply ? new[] { reply } : null);
+                                new() { attachmentId }, isReply ? new[] { reply } : null, mask: mask);
                         }
                         else
                             msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,
-                                content, replies: isReply ? new[] { reply } : null);
+                                content, replies: isReply ? new[] { reply } : null, mask: mask);
                     }
 
                     if (msg._id != null)
@@ -455,7 +459,7 @@ namespace DiscordBridge
                     endIndex--;
                 return match.Value[startIndex..(endIndex + 1)];
             });
-            str += message.Author.ToBetterString() + "> " + content.ReplaceDiscordMentions();
+            str += content.ReplaceDiscordMentions();
 
             return str.Shorten(2000);
         }

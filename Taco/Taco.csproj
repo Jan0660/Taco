@@ -17,7 +17,6 @@
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="NuGet.Protocol" Version="5.11.0" />
       <PackageReference Include="Owoify.Net" Version="1.1.0" />
-      <PackageReference Include="RestSharp" Version="106.12.0" />
       <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
       <PackageReference Include="SkiaSharp" Version="2.88.0-preview.155" />
       <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.0-preview.155" />

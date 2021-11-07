@@ -54,6 +54,8 @@ namespace Revolt
         public RevoltClientUsers Users { get; private set; }
         public RevoltClientSelf Self { get; private set; }
         public RevoltClientServers Servers { get; private set; }
+        public RevoltRestClientBots Bots { get; private set; }
+        public RevoltRestClientInvites Invites { get; private set; }
         private static Random rng = new();
         public TokenType TokenType { get; private set; }
         private string token;
@@ -78,6 +80,8 @@ namespace Revolt
             this.Users = new RevoltClientUsers(this);
             this.Self = new RevoltClientSelf(this);
             this.Servers = new RevoltClientServers(this);
+            this.Bots = new RevoltRestClientBots(this);
+            this.Invites = new RevoltRestClientInvites(this);
         }
 
         /// <summary>

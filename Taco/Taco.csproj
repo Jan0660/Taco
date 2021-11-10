@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <AssemblyVersion>0.2</AssemblyVersion>
         <RootNamespace>Taco</RootNamespace>
         <RepositoryUrl>https://github.com/Jan0660/Taco</RepositoryUrl>
@@ -15,9 +15,9 @@
       <PackageReference Include="Log73.Extensions.NewtonsoftJson" Version="0.7.0" />
       <PackageReference Include="MongoDB.Driver" Version="2.13.2" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-      <PackageReference Include="NuGet.Protocol" Version="5.11.0" />
+      <PackageReference Include="NuGet.Protocol" Version="6.0.0" />
       <PackageReference Include="Owoify.Net" Version="1.1.0" />
-      <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
+      <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
       <PackageReference Include="SkiaSharp" Version="2.88.0-preview.155" />
       <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.0-preview.155" />
     </ItemGroup>

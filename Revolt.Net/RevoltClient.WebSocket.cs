@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Net.WebSockets;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Timers;
 using Newtonsoft.Json;
@@ -177,10 +176,11 @@ namespace Revolt
                         case "ChannelUpdate":
                         {
                             var id = packet.Value<string>("id");
-                            var channel = (GroupChannel)_channels.First(c => c._id == id);
+                            var channel = _channels.First(c => c._id == id);
                             var data = packet.Value<JObject>("data");
-                            if (data!.TryGetValue("icon", out var icon))
-                                channel.Icon = icon.ToObject<Attachment>()!;
+                            if (channel is GroupChannel groupChannel)
+                                if (data!.TryGetValue("icon", out var icon))
+                                    groupChannel.Icon = icon.ToObject<Attachment>()!;
                             _channelUpdate.InvokeAsync(id, data);
 
                             break;
@@ -258,6 +258,7 @@ namespace Revolt
                                 server.Roles.Remove(roleId);
                                 _serverRoleDeleted.InvokeAsync(server, role);
                             }
+
                             break;
                         }
                         case "ServerRoleUpdate":
@@ -273,6 +274,7 @@ namespace Revolt
                                 server.Roles[roleId] = partial;
                                 _serverRoleUpdated.InvokeAsync(role, partial);
                             }
+
                             break;
                         }
                     }

@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Newtonsoft.Json;
+using RestSharp;
 
 namespace Revolt;
 
@@ -15,8 +16,20 @@ public class RevoltRestClientBots
     public Task<OwnedBotsResponse> FetchOwnedBotsAsync()
         => Client._requestAsync<OwnedBotsResponse>("/bots/@me");
 
-    public Task<User> FetchPublicBotAsync(string userId)
-        => Client._requestAsync<User>($"/bots/{userId}/invite");
+    public Task<OwnedBotResponse> FetchOwnedBotAsync(string botId)
+        => Client._requestAsync<OwnedBotResponse>($"/bots/{botId}");
+
+    public Task DeleteBotAsync(string botId)
+        => Client._requestAsync($"/bots/{botId}", Method.DELETE);
+
+    public Task<User> FetchPublicBotAsync(string botId)
+        => Client._requestAsync<User>($"/bots/{botId}/invite");
+}
+
+public class OwnedBotResponse
+{
+    [JsonProperty("bot")] public OwnedBotInfo Bot { get; internal set; }
+    [JsonProperty("user")] public User User { get; internal set; }
 }
 
 public class OwnedBotsResponse

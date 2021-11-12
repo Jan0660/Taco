@@ -11,6 +11,16 @@ public class Bots
         Assert.IsNotNull(owned.Bots);
         Assert.IsNotNull(owned.Users);
     }
+
+    [TestMethod]
+    public async Task FetchOwnedBot()
+    {
+        var owned = await Static.User.Bots.FetchOwnedBotAsync(Static.Bot.User._id);
+        Assert.IsNotNull(owned);
+        Assert.IsNotNull(owned.Bot);
+        Assert.IsNotNull(owned.User);
+    }
+
     [TestMethod]
     public async Task FetchPublicBot()
     {

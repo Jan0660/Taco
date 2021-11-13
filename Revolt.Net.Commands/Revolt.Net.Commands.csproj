@@ -2,7 +2,15 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <AssemblyName>Revolt.Net.Commands</AssemblyName>
+        <PackageId>Revolt.Net.Commands</PackageId>
+        <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/Jan0660/Taco</RepositoryUrl>
+        <Authors>Jan0660</Authors>
+        <Copyright>Jan0660</Copyright>
+        <Version>0.0.8</Version>
         <RootNamespace>Revolt.Commands</RootNamespace>
+        <Description>Port of the Discord.Net command handler for Revolt.Net.</Description>
     </PropertyGroup>
 
     <ItemGroup>

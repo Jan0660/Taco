@@ -194,9 +194,12 @@ namespace Revolt
             remove => _serverRoleDeleted.Remove(value);
         }
 
-        private AsyncEvent<Func<Role, Role, Task>> _serverRoleUpdated = new();
+        private AsyncEvent<Func<Server, string, Role, Role, Task>> _serverRoleUpdated = new();
 
-        public event Func<Role, Role, Task> ServerRoleUpdated
+        /// <summary>
+        /// Server, Role Id, Old Role, New Role
+        /// </summary>
+        public event Func<Server, string, Role, Role, Task> ServerRoleUpdated
         {
             add => _serverRoleUpdated.Add(value);
             remove => _serverRoleUpdated.Remove(value);

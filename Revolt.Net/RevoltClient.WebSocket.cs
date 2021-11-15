@@ -268,11 +268,14 @@ namespace Revolt
                             var server = ServersCache.FirstOrDefault(s => s._id == serverId);
                             if (server != null)
                             {
-                                var role = server.Roles[roleId!];
+                                // null if role has just been created
+                                server.Roles ??= new();
+                                var role = server.Roles.TryGetValue(roleId!, out var oldRole) ? oldRole : null;
                                 var partial = packet.Value<JObject>("data")?.ToObject<Role>();
-                                role.FillPartial(partial!, packet.Value<string>("clear"));
+                                if (role != null)
+                                    role.FillPartial(partial!, packet.Value<string>("clear"));
                                 server.Roles[roleId] = partial;
-                                _serverRoleUpdated.InvokeAsync(role, partial);
+                                _serverRoleUpdated.InvokeAsync(server, roleId, role, partial);
                             }
 
                             break;

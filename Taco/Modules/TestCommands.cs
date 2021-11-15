@@ -75,14 +75,6 @@ namespace Taco.Modules
             await ReplyAsync(str.ToString());
         }
 
-        public string StringBooled(bool value)
-            => StringBooled(value, value.ToString());
-
-        public string StringBooled(bool value, string str)
-        {
-            return $@"$\color{{{(value ? "lime" : "red")}}}\textsf{{{str}}}$";
-        }
-
         [Command("fuck")]
         [Summary("Fuck someone.")]
         public async Task Fuck(User user = null)

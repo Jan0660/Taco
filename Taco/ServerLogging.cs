@@ -15,25 +15,41 @@ namespace Taco
             Program.Client.MessageReceived += MessageReceived;
             Program.Client.MessageUpdated += MessageUpdated;
             Program.Client.MessageDeleted += MessageDeleted;
+            Program.Client.ServerRoleUpdated += ServerRoleUpdated;
         }
 
-        public static async Task MessageReceived(Message message)
+        private static Task ServerRoleUpdated(Server server, string roleId, Role old, Role now)
+        {
+            var serverData = Mongo.GetServerData(server._id);
+            if (serverData?.LogChannelId == null)
+                return Task.CompletedTask;
+            if (old == null)
+                // dont replace
+                return serverData.LogChannel.SendMessageAsync($@"> ## Role Created
+> Id: `{roleId}`
+> {Util.Util.TextEmbed(now).Replace("\n", "\n> ")}");
+            return serverData.LogChannel.SendMessageAsync($@"> ## Role Updated
+> Id: `{roleId}`
+> {Util.Util.TextEmbed(old, now).Replace("\n", "\n> ")}");
+        }
+
+        private static async Task MessageReceived(Message message)
         {
             if (message.Channel is TextChannel textChannel)
             {
                 if (!MessageCache.ContainsKey(textChannel.ServerId))
                     MessageCache.Add(textChannel.ServerId, new());
-                MessageCache[textChannel.ServerId].LimitedAdd(message, 100);
+                MessageCache[textChannel.ServerId].LimitedAdd(message, 5000);
             }
         }
 
-        public static async Task MessageUpdated(string id, MessageEditData editData)
+        private static async Task MessageUpdated(string id, MessageEditData editData)
         {
             var server = MessageCache.FirstOrDefault(server => server.Value.Any(msg => msg._id == id));
-            if(server.Key == null)
+            if (server.Key == null)
                 return;
             var serverData = Mongo.GetServerData(server.Key);
-            if(serverData == null | serverData?.LogChannelId == null)
+            if (serverData == null | serverData?.LogChannelId == null)
                 return;
             var message = server.Value.First(msg => msg._id == id);
             await serverData.LogChannel.SendMessageAsync($@"> ## Message Edited
@@ -48,13 +64,13 @@ namespace Taco
 > ```");
         }
 
-        public static async Task MessageDeleted(string id)
+        private static async Task MessageDeleted(string id)
         {
             var server = MessageCache.FirstOrDefault(server => server.Value.Any(msg => msg._id == id));
-            if(server.Key == null)
+            if (server.Key == null)
                 return;
             var serverData = Mongo.GetServerData(server.Key);
-            if(serverData == null | serverData?.LogChannelId == null)
+            if (serverData == null | serverData?.LogChannelId == null)
                 return;
             var message = server.Value.First(msg => msg._id == id);
             await serverData.LogChannel.SendMessageAsync($@"> ## Message Deleted

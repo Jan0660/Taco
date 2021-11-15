@@ -36,21 +36,19 @@ namespace Revolt
         public Channel? GetCached(string id)
             => Client.ChannelsCache.FirstOrDefault(c => c._id == id);
 
-        public async Task<SelfMessage> SendMessageAsync(string channelId, string content,
+        public Task<SelfMessage> SendMessageAsync(string channelId, string content,
             List<string>? attachmentIds = null, MessageReply[]? replies = null, MessageMasquerade? mask = null)
         {
             if ((content == "" | content == null) && (attachmentIds == null))
                 throw new Exception("Cannot send empty message without an attachment.");
-            var req = new RestRequest($"/channels/{channelId}/messages", Method.POST);
-            req.AddJsonBody(JsonConvert.SerializeObject(new SendMessageRequest
-            {
-                Content = content,
-                Attachments = attachmentIds,
-                Replies = replies,
-                Mask = mask,
-            }));
-            var res = await Client._restClient.ExecutePostAsync(req);
-            return Client._deserialize<SelfMessage>(res.Content);
+            return Client._requestAsync<SelfMessage>($"/channels/{channelId}/messages", Method.POST,
+                JsonConvert.SerializeObject(new SendMessageRequest
+                {
+                    Content = content,
+                    Attachments = attachmentIds,
+                    Replies = replies,
+                    Mask = mask,
+                }));
         }
 
         public Task BeginTypingAsync(string channelId)

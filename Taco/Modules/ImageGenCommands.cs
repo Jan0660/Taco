@@ -16,10 +16,6 @@ namespace Taco.Modules
         public Task JesusCarry(User user = null)
             => TemplateSend("JesusCarry.png", user ?? Context.User, new SKPoint(162, 182));
 
-        [Command("suicide")]
-        public Task Suicide(User user = null)
-            => TemplateSend("Suicide.png", user ?? Context.User, new SKPoint(36, 103), size: 64);
-
         [Command("02ily")]
         public Task ZeroTwoILoveThis(User user = null)
             => TemplateSend("02ily.png", user ?? Context.User, new SKPoint(131, 569), rounded: false, size: 256);

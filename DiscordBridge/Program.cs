@@ -12,6 +12,7 @@ using Discord.Webhook;
 using Discord.WebSocket;
 using Log73;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Revolt;
 using Revolt.Channels;
 using Attachment = Revolt.Attachment;
@@ -139,7 +140,7 @@ namespace DiscordBridge
                     }
 
                     if (message.Attachments != null && !(string.IsNullOrEmpty(message.Content) &&
-                        message.Attachments.Length == 1))
+                                                         message.Attachments.Length == 1))
                         foreach (var attachment in message.Attachments)
                         {
                             embeds.Add(new EmbedBuilder()
@@ -206,17 +207,19 @@ namespace DiscordBridge
 
                 return Task.CompletedTask;
             };
-            _client.SystemMessageReceived += msg =>
-            {
-                var channel = Config.ByRevoltId(msg.ChannelId);
-                if (channel == null)
-                    return Task.CompletedTask;
-                var icon = (msg.Channel as GroupChannel)?.Icon?.Url ?? "https://app.revolt.chat/assets/group.png";
-                return channel.DiscordWebhook.SendMessageAsync(msg.Stringify(), allowedMentions: new AllowedMentions(),
-                    avatarUrl: (msg.Content.Id == null ? null : Client.Users.Get(msg.Content.Id).AvatarUrl) ??
-                               icon,
-                    username: "Revolt Bridge");
-            };
+            if (Config.RevoltSystemMessages)
+                _client.SystemMessageReceived += msg =>
+                {
+                    var channel = Config.ByRevoltId(msg.ChannelId);
+                    if (channel == null)
+                        return Task.CompletedTask;
+                    var icon = (msg.Channel as GroupChannel)?.Icon?.Url ?? "https://app.revolt.chat/assets/group.png";
+                    return channel.DiscordWebhook.SendMessageAsync(msg.Stringify(),
+                        allowedMentions: new AllowedMentions(),
+                        avatarUrl: (msg.Content.Id == null ? null : Client.Users.Get(msg.Content.Id).AvatarUrl) ??
+                                   icon,
+                        username: "Revolt Bridge");
+                };
             DiscordClient = new DiscordSocketClient();
             await DiscordClient.LoginAsync(Discord.TokenType.Bot, Config.DiscordBotToken);
             await DiscordClient.StartAsync();
@@ -252,9 +255,22 @@ namespace DiscordBridge
                             }
                         }
                     }
+                    else if (discordChannel is SocketTextChannel textChannel &&
+                             string.IsNullOrEmpty(channel.WebhookToken) && channel.WebhookId == 0)
+                    {
+                        var wh = await textChannel.CreateWebhookAsync("Revolt Bridge");
+                        channel.WebhookId = wh.Id;
+                        channel.WebhookToken = wh.Token;
+                        channel.DiscordWebhook = new(wh.Id, wh.Token);
+                    }
                 }
 
-                File.WriteAllText("./config.json", JsonConvert.SerializeObject(Config, Formatting.Indented));
+                await File.WriteAllTextAsync("./config.json", JsonConvert.SerializeObject(Config,
+                    new JsonSerializerSettings()
+                    {
+                        Formatting = Formatting.Indented,
+                        NullValueHandling = NullValueHandling.Ignore
+                    }));
             };
             DiscordClient.MessageReceived += async message =>
             {
@@ -265,6 +281,8 @@ namespace DiscordBridge
                     return;
                 if (message is SocketSystemMessage systemMessage)
                 {
+                    if (!Config.DiscordSystemMessages)
+                        return;
                     var content = systemMessage.Type switch
                     {
                         MessageType.GuildMemberJoin => $"{systemMessage.Author} has joined the Discord server.",
@@ -398,6 +416,8 @@ namespace DiscordBridge
     public class Config
     {
         public List<BridgeChannel> Channels;
+        public bool RevoltSystemMessages = true;
+        public bool DiscordSystemMessages = true;
         public string DiscordBotToken;
         public string RevoltBotToken;
 
@@ -410,7 +430,16 @@ namespace DiscordBridge
 
     public class BridgeChannel
     {
-        public ulong WebhookId;
+        // using this so that i can allow setting it to an empty string in json
+        [JsonIgnore] public ulong WebhookId;
+
+        [JsonProperty("WebhookId")]
+        public string WebhookIdString
+        {
+            set => WebhookId = string.IsNullOrWhiteSpace(value) ? 0 : ulong.Parse(value);
+            get => WebhookId.ToString();
+        }
+
         public string WebhookToken;
         public ulong DiscordChannelId;
         public ulong DiscordServerId;

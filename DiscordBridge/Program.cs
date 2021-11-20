@@ -40,6 +40,7 @@ namespace DiscordBridge
             new("<#([0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26})+>", RegexOptions.Compiled);
 
         public static readonly Regex ReplaceDiscordMentions = new("<@!?[0-9]{1,22}>", RegexOptions.Compiled);
+        public static readonly Regex ReplaceDiscordChannelMentions = new("<#[0-9]{1,22}>", RegexOptions.Compiled);
         public static readonly Regex ReplaceDiscordEmotes = new("<a?:.+?:[0-9]{1,22}>", RegexOptions.Compiled);
 
         static async Task Main()
@@ -454,16 +455,6 @@ namespace DiscordBridge
         public static string Shorten(this string str, int length)
             => str.Length > length ? str[..(length - 5)] + "(...)" : str;
 
-        public static string ToBetterString(this SocketUser user)
-        {
-            var str = user.Discriminator == "0000" ? user.Username : user.ToString();
-            if (str.StartsWith("# "))
-                str = '\\' + str;
-            str = str.Replace("$", "\\$");
-            str = str.Shorten(1999);
-            return str;
-        }
-
         public static string ReplaceDiscordMentions(this string str)
             => Program.ReplaceDiscordMentions.Replace(str,
                 match =>
@@ -476,9 +467,19 @@ namespace DiscordBridge
                     return $"@{user}";
                 });
 
+        public static string ReplaceDiscordChannelMentions(this string str)
+            => Program.ReplaceDiscordChannelMentions.Replace(str,
+                match =>
+                {
+                    ulong id = UInt64.Parse(match.Value[2..^1]);
+                    var channel = Program.DiscordClient.GetChannel(id);
+                    if (channel == null)
+                        return match.Value;
+                    return $"#{channel}";
+                });
+
         public static string ToGoodString(this SocketMessage message)
         {
-            string str = "";
             var content = Program.ReplaceDiscordEmotes.Replace(message.Content, match =>
             {
                 int startIndex = 0, endIndex = match.Value.Length - 1;
@@ -488,7 +489,7 @@ namespace DiscordBridge
                     endIndex--;
                 return match.Value[startIndex..(endIndex + 1)];
             });
-            str += content.ReplaceDiscordMentions();
+            var str = content.ReplaceDiscordMentions().ReplaceDiscordChannelMentions();
 
             return str.Shorten(2000);
         }

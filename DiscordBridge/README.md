@@ -39,4 +39,4 @@ Automatically makes sure @everyone and other pings dont actually ping.
 2. Git clone the repository.
 3. Build using: `dotnet publish DiscordBridge -r linux-x64 -c release`
 4. Ensure the Revolt bot has the `Masquerade` permission.
-5. Run using: `./DiscordBridge/bin/release/net5.0/linux-x64/publish/DiscordBridge`
+5. Run using: `./DiscordBridge/bin/release/net6.0/linux-x64/publish/DiscordBridge`

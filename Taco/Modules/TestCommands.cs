@@ -196,5 +196,9 @@ namespace Taco.Modules
         {
             return ReplyAsync(Context.Message.Replies[0]);
         }
+
+        [Command("roletest")]
+        public Task RoleTest(Role role)
+            => ReplyAsync(role.Name);
     }
 }

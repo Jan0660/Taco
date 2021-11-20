@@ -129,6 +129,7 @@ namespace Revolt.Commands
 
             var entityTypeReaders = ImmutableList.CreateBuilder<(Type, Type)>();
             entityTypeReaders.Add((typeof(User), typeof(UserTypeReader<>)));
+            entityTypeReaders.Add((typeof(Role), typeof(RoleTypeReader<>)));
             _entityTypeReaders = entityTypeReaders.ToImmutable();
         }
 

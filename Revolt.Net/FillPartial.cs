@@ -8,6 +8,7 @@
         {
             if (old != null)
             {
+                partial._id = old._id;
                 if (old.Nickname != null && partial!.Nickname == null)
                     partial.Nickname = old.Nickname;
                 if (old.Avatar != null && partial!.Avatar == null)

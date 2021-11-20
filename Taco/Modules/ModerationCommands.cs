@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Revolt;
 using Revolt.Commands.Attributes;
 using Revolt.Commands.Attributes.Preconditions;
+using Taco.Attributes;
 using Taco.CommandHandling;
 
 namespace Taco.Modules
@@ -27,6 +28,7 @@ namespace Taco.Modules
         [Command("tag")]
         [Summary("Get a tag.")]
         [Alias("tags", "t")]
+        [RequireServerModerator]
         public Task GetTag([Name("tag")] string? tagName)
         {
             if (Context.CommunityData.Tags == null)
@@ -59,11 +61,11 @@ namespace Taco.Modules
 
         [Command("add tag")]
         [Summary("Add a tag.")]
-        [RequireServerPermissions(ServerPermission.ManageServer)]
+        [RequireServerModerator]
         public async Task AddTag(string name, [Remainder] string content)
         {
             if (Context.CommunityData.Tags.Any(t =>
-                t.Key.Equals(name, StringComparison.InvariantCultureIgnoreCase)))
+                    t.Key.Equals(name, StringComparison.InvariantCultureIgnoreCase)))
             {
                 await ReplyAsync("This tag already exists!");
                 return;
@@ -77,6 +79,7 @@ namespace Taco.Modules
 
         [Command("setprefix")]
         [Summary("Set the prefix in this server.")]
+        [RequireServerPermissions(ServerPermission.ManageServer)]
         public async Task SetPrefix(string newPrefix)
         {
             Context.CommunityData.CustomPrefix = newPrefix;
@@ -119,7 +122,51 @@ namespace Taco.Modules
                 await ReplyAsync("User is not banned.");
                 return;
             }
+
             await ReplyAsync("User unbanned.");
+        }
+
+        // todo: add a way to remove a deleted role from the mod role list
+        [Command("mod add role")]
+        [TextChannelOnly]
+        [Summary("Add a role to the mod list.")]
+        [RequireServerPermissions(ServerPermission.ManageServer)]
+        public async Task AddModRole(Role role)
+        {
+            // todo: add role id to Role object in Revolt.Net
+            Context.ServerData.ModRoles.Add(Context.Server.Roles.First(r => r.Value == role).Key);
+            await Context.UpdateCommunityDataAsync();
+            await ReplyAsync($"Added role `{role.Name}` to the mod list.");
+        }
+
+        [Command("mod rm role")]
+        [TextChannelOnly]
+        [Summary("Remove a role from the mod list.")]
+        [RequireServerPermissions(ServerPermission.ManageServer)]
+        public async Task RemoveModRole(Role role)
+        {
+            Context.ServerData.ModRoles.Remove(Context.Server.Roles.First(r => r.Value == role).Key);
+            await Context.UpdateCommunityDataAsync();
+            await ReplyAsync($"Removed role `{role.Name}` from the mod list.");
+        }
+
+        [Command("mod list")]
+        [TextChannelOnly]
+        [Summary("View the mod list.")]
+        [RequireServerPermissions(ServerPermission.ManageServer)]
+        public async Task ModList()
+        {
+            var str = new StringBuilder();
+            str.AppendLine("## Mod List");
+            if (Context.ServerData.ModRoles.Count != 0)
+            {
+                str.AppendLine("### Roles");
+                foreach (var r in Context.Server.Roles)
+                    if (Context.ServerData.ModRoles.Contains(r.Key))
+                        str.AppendLine($"* {r.Value.Name} [`{r.Key}`]");
+            }
+
+            await ReplyAsync(str.ToString());
         }
     }
 }

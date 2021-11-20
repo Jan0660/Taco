@@ -150,6 +150,7 @@ namespace Taco
         public string ServerId;
         [BsonIgnore] public TextChannel LogChannel => (TextChannel)Program.Client.Channels.Get(LogChannelId);
         public string LogChannelId;
+        public List<string> ModRoles = new();
 
         [BsonConstructor]
         private ServerData()

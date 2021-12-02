@@ -28,7 +28,6 @@ namespace Taco.Modules
         [Command("tag")]
         [Summary("Get a tag.")]
         [Alias("tags", "t")]
-        [RequireServerModerator]
         public Task GetTag([Name("tag")] string? tagName)
         {
             if (Context.CommunityData.Tags == null)

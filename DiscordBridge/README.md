@@ -12,6 +12,8 @@ Automatically makes sure @everyone and other pings dont actually ping.
   // "RevoltSystemMessages": false,
   // optional, send across Discord system messages(joins, boosts)(default: true)
   // "DiscordSystemMessages": false,
+  // optional, disable fix for Revolt quote format(default: true
+  // "RevoltQuoteFix": false,
   "Channels": [
     {
       "DiscordChannelId": "",

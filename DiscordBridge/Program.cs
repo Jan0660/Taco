@@ -42,6 +42,7 @@ namespace DiscordBridge
         public static readonly Regex ReplaceDiscordMentions = new("<@!?[0-9]{1,22}>", RegexOptions.Compiled);
         public static readonly Regex ReplaceDiscordChannelMentions = new("<#[0-9]{1,22}>", RegexOptions.Compiled);
         public static readonly Regex ReplaceDiscordEmotes = new("<a?:.+?:[0-9]{1,22}>", RegexOptions.Compiled);
+        public static readonly Regex RevoltQuoteFix = new(">.*\n(?=.)", RegexOptions.Compiled);
 
         static async Task Main()
         {
@@ -419,6 +420,7 @@ namespace DiscordBridge
         public List<BridgeChannel> Channels;
         public bool RevoltSystemMessages = true;
         public bool DiscordSystemMessages = true;
+        public bool RevoltQuoteFix = true;
         public string DiscordBotToken;
         public string RevoltBotToken;
 
@@ -490,6 +492,12 @@ namespace DiscordBridge
                 return match.Value[startIndex..(endIndex + 1)];
             });
             var str = content.ReplaceDiscordMentions().ReplaceDiscordChannelMentions();
+            if (Program.Config.RevoltQuoteFix)
+            {
+                var fixedContent = Program.RevoltQuoteFix.Replace(content, match => match.Value + '\n');
+                if (fixedContent.Length < 1999)
+                    str = fixedContent;
+            }
 
             return str.Shorten(2000);
         }

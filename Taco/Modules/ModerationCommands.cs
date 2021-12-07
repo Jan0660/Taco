@@ -41,24 +41,35 @@ namespace Taco.Modules
             return InlineReplyAsync("Tag not found!", true);
         }
 
-        [Command("list tag")]
+        [Command("tag list")]
+        [Alias("list tag")]
         [Summary("List tags.")]
         public Task ListTags()
         {
             var res = new StringBuilder();
             foreach (var tag in Context.CommunityData.Tags)
             {
-                res.Append($"> `{tag.Value}`: ");
+                res.Append($"> `{tag.Key}`: ");
                 if (tag.Value.Contains('\n'))
                     res.AppendLine(tag.Value.Replace("\n", "\n> > "));
                 else
                     res.AppendLine(tag.Value);
             }
 
+            if (res.Length > 1999)
+            {
+                res = new();
+                foreach (var tag in Context.CommunityData.Tags)
+                    res.Append($"> `{tag.Key}`");
+            }
+            if(res.Length == 0)
+                return ReplyAsync("No attachments to show.");
+
             return ReplyAsync(res.ToString());
         }
 
-        [Command("add tag")]
+        [Command("tag add")]
+        [Alias("add tag")]
         [Summary("Add a tag.")]
         [RequireServerModerator]
         public async Task AddTag(string name, [Remainder] string content)
@@ -74,6 +85,42 @@ namespace Taco.Modules
             Context.CommunityData.Tags.Add(name, content);
             await Context.UpdateCommunityDataAsync();
             await ReplyAsync($"Added tag by the name of `{name}`.");
+        }
+        
+        [Command("tag remove")]
+        [Alias("tag delete", "tag rm")]
+        [Summary("Remove a tag.")]
+        [RequireServerModerator]
+        public async Task RemoveTag(string name)
+        {
+            if (!Context.CommunityData.Tags.Any(t =>
+                    t.Key.Equals(name, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                await ReplyAsync("This tag doesn't exist!");
+                return;
+            }
+
+            Context.CommunityData.Tags.Remove(name);
+            await Context.UpdateCommunityDataAsync();
+            await ReplyAsync($"Removed tag by the name of `{name}`.");
+        }
+        
+        [Command("tag edit")]
+        [Alias("tag set")]
+        [Summary("Edit a tag.")]
+        [RequireServerModerator]
+        public async Task SetTag(string name, [Remainder] string content)
+        {
+            if (!Context.CommunityData.Tags.Any(t =>
+                    t.Key.Equals(name, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                await ReplyAsync("This tag doesn't exist!");
+                return;
+            }
+
+            Context.CommunityData.Tags[name] = content;
+            await Context.UpdateCommunityDataAsync();
+            await ReplyAsync($"Edited tag by the name of `{name}`.");
         }
 
         [Command("setprefix")]

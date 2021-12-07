@@ -63,7 +63,7 @@ namespace Taco.Modules
                     res.Append($"> `{tag.Key}`");
             }
             if(res.Length == 0)
-                return ReplyAsync("No attachments to show.");
+                return ReplyAsync("No tags to show.");
 
             return ReplyAsync(res.ToString());
         }

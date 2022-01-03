@@ -64,6 +64,14 @@ namespace Taco.CommandHandling
                     var response = HelpUtil.GetModuleHelpContent(content);
                     if (response != null)
                         await context.Channel.SendMessageAsync(response);
+                    else
+                    {
+                        var (_, tagValue) = context.ServerData.Tags.FirstOrDefault(t =>
+                            t.Key.Equals(content, StringComparison.InvariantCultureIgnoreCase));
+                        if (tagValue != null)
+                            await context.Channel.SendMessageAsync(tagValue,
+                                replies: new MessageReply[] { new(context.Message._id) });
+                    }
 // #if DEBUG
 //                     else
 //                     {
@@ -110,6 +118,7 @@ namespace Taco.CommandHandling
                     else if (context.UserData.PermissionLevel == PermissionLevel.BlacklistSilent)
                         return;
                 }
+
                 await Commands.ExecuteAsync(context, message.Content.Substring(argPos), null, MultiMatchHandling.Best);
             }
             catch (Exception exc)

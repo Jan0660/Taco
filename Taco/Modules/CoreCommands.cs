@@ -122,7 +122,7 @@ namespace Taco.Modules
             var restPing = stopwatch.ElapsedMilliseconds;
             return ReplyAsync(@$"**REST API Ping:** `{restPing}`ms
 **MongoDB:** `{Mongo.Ping().Result}`ms
-**Websocket Ping:** doesnt exist");
+**Websocket Ping:** `{Context.Client.WebSocketPing}`ms");
         }
 
         [Command("test")]

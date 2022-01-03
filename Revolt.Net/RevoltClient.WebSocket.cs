@@ -14,6 +14,11 @@ namespace Revolt
     public partial class RevoltClient
     {
         /// <summary>
+        /// The WebSocket ping in milliseconds, refreshed around every 30 seconds
+        /// </summary>
+        public long WebSocketPing { get; private set; }
+
+        /// <summary>
         /// Connects the client to the websocket.
         /// </summary>
         public async Task ConnectWebSocketAsync()
@@ -74,6 +79,14 @@ namespace Revolt
 
                             break;
                         }
+                        case "Pong":
+                        {
+                            var pongTime = packet.Value<long>("data");
+                            var time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                            WebSocketPing = time - pongTime;
+                            _onWebSocketPong.InvokeAsync();
+                            break;
+                        }
                         case "Ready":
                         {
                             State = RevoltClientState.WebSocketReady;
@@ -81,10 +94,11 @@ namespace Revolt
                             _pingTimer = new Timer(30_000d);
                             _pingTimer.Elapsed += (_, _) =>
                             {
+                                var time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                                 _webSocket.Send(JsonConvert.SerializeObject(new
                                 {
                                     type = "Ping",
-                                    time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                                    data = time
                                 }));
                             };
                             _pingTimer.Start();

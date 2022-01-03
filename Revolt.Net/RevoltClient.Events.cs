@@ -33,6 +33,17 @@ namespace Revolt
             add => _onReady.Add(value);
             remove => _onReady.Remove(value);
         }
+        
+        private AsyncEvent<Func<Task>> _onWebSocketPong = new();
+        
+        /// <summary>
+        /// When WebSocket ping is updated, around every 30 seconds.
+        /// </summary>
+        public event Func<Task> OnWebSocketPong
+        {
+            add => _onWebSocketPong.Add(value);
+            remove => _onWebSocketPong.Remove(value);
+        }
 
         private AsyncEvent<Func<string, Task>> _messageDeleted = new();
 

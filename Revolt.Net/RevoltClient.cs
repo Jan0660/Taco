@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
@@ -30,21 +32,25 @@ namespace Revolt
         public AutumnInformation AutumnInfo { get; private set; }
         internal WebsocketClient? _webSocket { get; private set; }
         public RevoltClientState State { get; private set; } = RevoltClientState.NotLoggedIn;
-        internal List<User> _users = new();
-        public IReadOnlyList<User> UsersCache => _users.AsReadOnly();
-        private List<Channel> _channels = new();
-        public IReadOnlyList<Channel> ChannelsCache => _channels.AsReadOnly();
+        internal ConcurrentDictionary<string, User> _users = new();
+        public IReadOnlyCollection<User> UsersCache => _users.ToReadOnlyCollection();
+        private ConcurrentDictionary<string, Channel> _channels = new();
+        public IReadOnlyCollection<Channel> ChannelsCache => _channels.ToReadOnlyCollection();
+        internal ConcurrentDictionary<string, Server> _servers = new();
+        public IReadOnlyCollection<Server> ServersCache => _servers.ToReadOnlyCollection();
 
-        public List<Server> ServersCache { get; internal set; }
         private Timer _pingTimer;
+
         /// <summary>
         /// Url for the Revolt Api server, known as Delta.
         /// </summary>
         public string ApiUrl { get; private set; }
+
         /// <summary>
         /// Url for the Revolt CDN, known as Autumn.
         /// </summary>
         public string AutumnUrl => ApiInfo!.Features.Autumn.Url;
+
         /// <summary>
         /// Url for the Revolt voice server, known as Vortex.
         /// </summary>
@@ -59,11 +65,13 @@ namespace Revolt
         private static Random rng = new();
         public TokenType TokenType { get; private set; }
         private string token;
+
         private readonly JsonSerializerSettings _jsonSerializerSettings = new()
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
             NullValueHandling = NullValueHandling.Ignore
         };
+
         /// <summary>
         /// The logged in user.
         /// </summary>
@@ -115,10 +123,11 @@ namespace Revolt
         public async Task<Session> LoginAsync(string email, string password, string? challenge = null,
             string? friendlyName = null, string? captcha = null)
         {
-            var session = await _requestAsync<Session>($"{ApiUrl}/auth/session/login", body: JsonConvert.SerializeObject(new
-            {
-                email, password, friendly_name = friendlyName, captcha, challenge
-            }, _jsonSerializerSettings));
+            var session = await _requestAsync<Session>($"{ApiUrl}/auth/session/login",
+                body: JsonConvert.SerializeObject(new
+                {
+                    email, password, friendly_name = friendlyName, captcha, challenge
+                }, _jsonSerializerSettings));
             LoginAsync(TokenType.User, session.SessionToken);
             return session;
         }
@@ -173,22 +182,19 @@ namespace Revolt
 
         internal void CacheChannel(Channel channel)
         {
-            var cached = _channels.FirstOrDefault(c => c._id == channel._id);
-            if (cached != null)
-                _channels.Remove(cached);
-            _channels.Add(channel);
+            if (_channels.TryGetValue(channel._id, out var cached))
+            {
+                _channels.TryRemove(cached._id, out _);
+            }
+
+            _channels.TryAdd(channel._id, channel);
         }
 
         internal void CacheUsers(User[] users)
         {
             foreach (var user in users)
-            {
-                var index = _users.IndexOf(user);
-                if (index == -1)
-                    _users.Add(user);
-                // else
-                //     _users[index] = user;
-            }
+                if (!_users.ContainsKey(user._id))
+                    _users.TryAdd(user._id, user);
         }
 
         /// <summary>
@@ -197,8 +203,8 @@ namespace Revolt
         public async Task CacheAll()
         {
             List<Task> tasks = new();
-            foreach(var server in ServersCache)
-                tasks.Add(server.GetMembersAsync());
+            foreach (var server in _servers)
+                tasks.Add(server.Value.GetMembersAsync());
             await Task.WhenAll(tasks);
         }
     }
@@ -211,7 +217,7 @@ namespace Revolt
         [JsonProperty("replies")] public MessageReply[] Replies;
         [JsonProperty("masquerade")] public MessageMasquerade Mask;
     }
-    
+
     public class MessageMasquerade
     {
         [JsonProperty("name")] public string Name;
@@ -231,7 +237,7 @@ namespace Revolt
         public RevoltError Error { get; }
 
         public RevoltException(RevoltError error, IRestResponse response) : base(
-            $"Revolt responded with {(int)response.StatusCode}: {error.Type}.") => (Error) = (error);
+            $"Revolt responded with {(int)response.StatusCode}: {error?.Type}.") => (Error) = (error);
     }
 
     public class RevoltError

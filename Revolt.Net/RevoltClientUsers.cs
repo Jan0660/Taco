@@ -28,7 +28,7 @@ namespace Revolt
             if (user != null)
                 return user;
             user = FetchUserAsync(id).Result;
-            Client._users.Add(user);
+            Client._users.TryAdd(user._id, user);
             return user;
         }
 

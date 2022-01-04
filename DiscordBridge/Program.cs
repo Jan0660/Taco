@@ -121,8 +121,7 @@ namespace DiscordBridge
                         }.Build());
                         updateReply = async () =>
                         {
-                            var msg = await DiscordClient.GetGuild(channel.DiscordServerId)
-                                .GetTextChannel(channel.DiscordChannelId)
+                            var msg = await ((SocketTextChannel)DiscordClient.GetChannel(channel.DiscordChannelId))
                                 .GetMessageAsync(replyToId);
                             embeds[index] = new EmbedBuilder()
                             {

@@ -1,0 +1,15 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": ["Revolt.Net.Commands/*.csproj"],
+          "src": "../"
+        }
+      ],
+      "dest": "api-commands",
+      "disableGitFeatures": false,
+      "disableDefaultFilter": false
+    }
+  ]
+}

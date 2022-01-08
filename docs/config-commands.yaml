@@ -1,0 +1,3 @@
+outputPath: ./docs/api-commands
+yamlPath: ./api-commands
+indexSlug: "/api-commands"

@@ -309,7 +309,8 @@ namespace DiscordBridge
                 {
                     await message.Channel.SendMessageAsync($@"**DiscordRevoltMessages:** {DiscordRevoltMessages.Count}
 **RevoltDiscordMessages:** {RevoltDiscordMessages.Count}
-**Discord Latency:** {DiscordClient.Latency}");
+**Discord Latency:** {DiscordClient.Latency}
+**Revolt WS Ping:** {_client.WebSocketPing}");
                 }
 
                 try

@@ -64,7 +64,7 @@ namespace Revolt
 
         #region Server Permissions
 
-        public Task SetRolePermission(string id, string roleId, ServerPermissions permissions)
+        public Task SetRolePermissionAsync(string id, string roleId, ServerPermissions permissions)
             => Client._requestAsync($"{Client.ApiUrl}/servers/{id}/permissions/{roleId}", Method.PUT,
                 JsonConvert.SerializeObject(new { permissions }));
 
@@ -73,11 +73,41 @@ namespace Revolt
         /// </summary>
         /// <param name="id">Server Id</param>
         /// <param name="permissions">The permissions</param>
-        public Task SetDefaultPermission(string id, ServerPermissions permissions)
+        public Task SetDefaultPermissionAsync(string id, ServerPermissions permissions)
             => Client._requestAsync($"{Client.ApiUrl}/servers/{id}/permissions/default", Method.PUT,
                 JsonConvert.SerializeObject(new { permissions }));
 
+        public Task<CreateRoleResponse> CreateRoleAsync(string id, string name)
+            => Client._requestAsync<CreateRoleResponse>($"{Client.ApiUrl}/servers/{id}/roles", Method.POST,
+                JsonConvert.SerializeObject(new { name }));
+        
+        public Task EditRoleAsync(string id, string roleId, EditRoleRequest request)
+            => Client._requestAsync($"{Client.ApiUrl}/servers/{id}/roles/{roleId}", Method.PATCH, JsonConvert.SerializeObject(request));
+        
+        public Task DeleteRoleAsync(string id, string roleId)
+            => Client._requestAsync($"{Client.ApiUrl}/servers/{id}/roles/{roleId}", Method.DELETE);
+
         #endregion
+    }
+
+    public class EditRoleRequest
+    {
+        [JsonProperty("name")] public string Name { get; set; }
+        [JsonProperty("colour")] public string Colour { get; set; }
+        [JsonProperty("hoist")] public bool Hoist { get; set; }
+        [JsonProperty("rank")] public int Rank { get; set; }
+        /// <summary>
+        /// "Colour"
+        /// </summary>
+        [JsonProperty("remove")] public string Remove { get; set; }
+    }
+
+    public class CreateRoleResponse
+    {
+        [JsonProperty("id")] public string Id { get; private set; }
+        [JsonProperty("permissions")] public int[] PermissionsRaw { get; private set; }
+        [JsonIgnore] public ServerPermission ServerPermissions => (ServerPermission)PermissionsRaw[0];
+        [JsonIgnore] public ChannelPermission ChannelPermissions => (ChannelPermission)PermissionsRaw[1];
     }
 
     public class CreateServerRequest

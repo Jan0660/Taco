@@ -221,7 +221,11 @@ namespace DiscordBridge
                                    icon,
                         username: "Revolt Bridge");
                 };
-            DiscordClient = new DiscordSocketClient();
+            DiscordClient = new DiscordSocketClient(new DiscordSocketConfig
+            {
+                GatewayIntents = GatewayIntents.GuildMessages | GatewayIntents.GuildMembers |
+                                 GatewayIntents.GuildWebhooks | GatewayIntents.Guilds
+            });
             await DiscordClient.LoginAsync(Discord.TokenType.Bot, Config.DiscordBotToken);
             await DiscordClient.StartAsync();
             DiscordClient.Ready += async () =>

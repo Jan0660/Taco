@@ -292,7 +292,11 @@ namespace DiscordBridge
                     {
                         MessageType.GuildMemberJoin => $"{systemMessage.Author} has joined the Discord server.",
                         MessageType.UserPremiumGuildSubscription =>
-                            $"{systemMessage.Author} has boosted the Discord server."
+                            $"{systemMessage.Author} has boosted the Discord server.",
+                        MessageType.ChannelFollowAdd =>
+                            $"**{systemMessage.Author}** has added **{systemMessage.Content}** to this channel.",
+                        MessageType.ThreadCreated =>
+                            $"**{systemMessage.Author}** started a thread: **{systemMessage.Content}**.",
                     };
                     DiscordRevoltMessagesContent.LimitedAdd(content, 50);
                     var msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId, content);

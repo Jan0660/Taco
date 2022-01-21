@@ -42,3 +42,29 @@ Automatically makes sure @everyone and other pings dont actually ping.
 3. Build using: `dotnet publish DiscordBridge -r linux-x64 -c release`
 4. Ensure the Revolt bot has the `Masquerade` permission.
 5. Run using: `./DiscordBridge/bin/release/net6.0/linux-x64/publish/DiscordBridge`
+
+# Docker
+
+A Dockerfile is included in the project root.
+
+With docker-compose:
+
+```yml
+version: "3.1"
+
+services:
+  bridge:
+    build:
+      context: path/to/repository
+      dockerfile: DiscordBridge.Dockerfile
+    volumes:
+      - ./config.json:/app/config.json:rw
+    restart: unless-stopped
+```
+
+Or, if you hate yourself, using Docker CLI:
+
+```bash
+docker build -f DiscordBridge.Dockerfile -t discord-bridge .
+docker run -v $PWD/config.json:/app/config.json discord-bridge
+```

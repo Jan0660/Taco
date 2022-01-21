@@ -4,7 +4,7 @@ services:
   bridge:
     build:
       context: ./..
-      dockerfile: Dockerfile
+      dockerfile: DiscordBridge/Dockerfile
     volumes:
       - ./config.json:/app/config.json:rw
     restart: unless-stopped

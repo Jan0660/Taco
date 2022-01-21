@@ -55,8 +55,8 @@ version: "3.1"
 services:
   bridge:
     build:
-      context: path/to/repository
-      dockerfile: DiscordBridge.Dockerfile
+      context: ./..
+      dockerfile: Dockerfile
     volumes:
       - ./config.json:/app/config.json:rw
     restart: unless-stopped
@@ -65,6 +65,6 @@ services:
 Or, if you hate yourself, using Docker CLI:
 
 ```bash
-docker build -f DiscordBridge.Dockerfile -t discord-bridge .
+docker build -f DiscordBridge/Dockerfile -t discord-bridge .
 docker run -v $PWD/config.json:/app/config.json discord-bridge
 ```

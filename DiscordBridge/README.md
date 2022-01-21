@@ -45,24 +45,9 @@ Automatically makes sure @everyone and other pings dont actually ping.
 
 # Docker
 
-A Dockerfile is included in the project root.
+A Dockerfile and docker-compose.yml is included in the project root.
 
-With docker-compose:
-
-```yml
-version: "3.1"
-
-services:
-  bridge:
-    build:
-      context: ./..
-      dockerfile: Dockerfile
-    volumes:
-      - ./config.json:/app/config.json:rw
-    restart: unless-stopped
-```
-
-Or, if you hate yourself, using Docker CLI:
+Or, if you hate yourself, you can use Docker CLI:
 
 ```bash
 docker build -f DiscordBridge/Dockerfile -t discord-bridge .

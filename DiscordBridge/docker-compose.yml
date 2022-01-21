@@ -1,0 +1,10 @@
+version: "3.1"
+
+services:
+  bridge:
+    build:
+      context: ./..
+      dockerfile: DiscordBridge/Dockerfile
+    volumes:
+      - ./config.json:/app/config.json:rw
+    restart: unless-stopped

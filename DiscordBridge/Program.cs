@@ -369,7 +369,7 @@ namespace DiscordBridge
                         if (message.Attachments.Any())
                         {
                             var http = new HttpClient();
-                            var attachment = await http.GetByteArrayAsync(message.Attachments.First().ProxyUrl);
+                            var attachment = await http.GetByteArrayAsync(message.Attachments.First().Url);
                             var attachmentId =
                                 await _client.UploadFile(message.Attachments.First().Filename, attachment);
                             msg = await _client.Channels.SendMessageAsync(

@@ -368,13 +368,18 @@ namespace DiscordBridge
                         DiscordRevoltMessagesContent.LimitedAdd(content, 50);
                         if (message.Attachments.Any())
                         {
+                            var attachmentIds = new List<string>(5);
                             var http = new HttpClient();
-                            var attachment = await http.GetByteArrayAsync(message.Attachments.First().Url);
-                            var attachmentId =
-                                await _client.UploadFile(message.Attachments.First().Filename, attachment);
+                            // Discord's attachment limit 10, while Revolt's is 5 :weary:
+                            foreach (var att in message.Attachments.Count > 5 ? message.Attachments.Take(5) : message.Attachments)
+                            {
+                                var attachment = await http.GetByteArrayAsync(att.Url);
+                                var attachmentId = await _client.UploadFile(att.Filename, attachment);
+                                attachmentIds.Add(attachmentId);
+                            }
                             msg = await _client.Channels.SendMessageAsync(
                                 channel.RevoltChannelId, content,
-                                new() { attachmentId }, isReply ? new[] { reply } : null, mask: mask);
+                                attachmentIds, isReply ? new[] { reply } : null, mask: mask);
                         }
                         else
                             msg = await _client.Channels.SendMessageAsync(channel.RevoltChannelId,

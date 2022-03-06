@@ -1,5 +1,3 @@
-#!/bin/sh
-
 # Revolt.Net
 cd ../Revolt.Net
 dotnet build
@@ -8,7 +6,6 @@ docfx metadata
 dfmg
 
 # Revolt.Net.Commands
-# C:\Users\Jan\RiderProjects\DocFxMarkdownGen\bin\Release\net6.0\publish\
 cd ../Revolt.Net.Commands
 dotnet build
 cd ../docs

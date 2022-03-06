@@ -34,12 +34,9 @@ namespace Revolt
             StatusText
         }
 
-        public Task EditSelfAsync(EditUserRequest user, EditSelf_Remove remove)
-        {
-            user.Remove = remove.ToString();
-            return Client._requestAsync($"{Client.ApiUrl}/users/@me", Method.PATCH,
+        public Task EditSelfAsync(EditUserRequest user)
+            => Client._requestAsync($"{Client.ApiUrl}/users/@me", Method.PATCH,
                 JsonConvert.SerializeObject(user));
-        }
 
         public Task ChangeUsernameAsync(string username, string password)
             => Client._requestAsync($"{Client.ApiUrl}/users/@me/username", Method.PATCH, JsonConvert.SerializeObject(new
@@ -116,6 +113,6 @@ namespace Revolt
         [JsonProperty("status")] public Status Status { get; set; }
         [JsonProperty("profile")] public Profile Profile { get; set; }
         [JsonProperty("avatar")] public string AvatarId { get; set; }
-        [JsonProperty("remove")] public string Remove { get; set; }
+        [JsonProperty("remove")] public string[] Remove { get; set; }
     }
 }

@@ -99,7 +99,7 @@ namespace Revolt
         /// <summary>
         /// "Colour"
         /// </summary>
-        [JsonProperty("remove")] public string Remove { get; set; }
+        [JsonProperty("remove")] public string[] Remove { get; set; }
     }
 
     public class CreateRoleResponse

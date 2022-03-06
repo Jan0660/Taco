@@ -30,6 +30,7 @@ namespace Taco.Modules
             return ReplyAsync($@"> ## {user.Username}
 > Mention: [@{user.Username}](/@{user._id})
 > Id: `{user._id}`
+> Created: <t:{Ulid.Parse(user._id).Time.ToUnixTimeSeconds()}:F>
 > Online: {user.Online}
 > Badges: {user.Badges} ({user.BadgesRaw})
 > [\[Default Avatar\]]({user.DefaultAvatarUrl}) [\[Avatar\]]({user.AvatarUrl})");

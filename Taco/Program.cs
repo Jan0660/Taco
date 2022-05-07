@@ -68,6 +68,10 @@ namespace Taco
             _client = new RevoltClient();
             await _client.LoginAsync(TokenType.Bot, Config!.BotToken);
 
+            // var ch = _client.Channels.Get("01F7ZSBSFHCAAJQ92ZGTY67HMN");
+            //
+            // return;
+
             #region Event handlers
 
             // _client.PacketReceived += (packetType, packet, message) =>

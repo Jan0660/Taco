@@ -14,17 +14,17 @@ namespace Revolt.Commands.Attributes.Preconditions
         public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command,
             IServiceProvider services)
         {
-            foreach (var enumVal in Enum.GetValues<ServerPermission>())
-            {
-                var perms = context.Server.GetPermissionsFor(context.Client.User._id);
-                if (Permissions.HasFlag(enumVal))
-                    if (!perms.Server.HasFlag(enumVal))
-                    {
-                        return Task.FromResult(PreconditionResult.FromError(
-                            $"I need the {enumVal} server permission to execute this command."));
-                    }
-            }
-
+            // foreach (var enumVal in Enum.GetValues<ServerPermission>())
+            // {
+            //     var perms = context.Server.GetPermissionsFor(context.Client.User._id);
+            //     if (Permissions.HasFlag(enumVal))
+            //         if (!perms.Server.HasFlag(enumVal))
+            //         {
+            //             return Task.FromResult(PreconditionResult.FromError(
+            //                 $"I need the {enumVal} server permission to execute this command."));
+            //         }
+            // }
+            
             return Task.FromResult(PreconditionResult.FromSuccess());
         }
     }

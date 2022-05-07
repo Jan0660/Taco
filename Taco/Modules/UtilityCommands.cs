@@ -345,30 +345,32 @@ namespace Taco.Modules
         [TextChannelOnly]
         public async Task RolesList()
         {
-            var res = new StringBuilder();
-            res.AppendLine($@"**Default Channel Permissions:** {Context.Server.ChannelPermissions}");
-            res.AppendLine($@"**Default Server Permissions:** {Context.Server.ServerPermissions}");
-            res.AppendLine("\\");
-            foreach (var role in Context.Server.Roles)
-            {
-                res.AppendLine(@$"$\color{{{role.Value.Color ?? "white"}}}\textsf{{{role.Value.Name}}}$
-> **Id:** `{role.Key}`");
-                if (role.Value.Color != null)
-                    res.AppendLine($"> **Color:** `{role.Value.Color}`");
-                var channelPerms = role.Value.ChannelPermissions ^
-                                   (Context.Server.ChannelPermissions & role.Value.ChannelPermissions);
-                if (role.Value.ChannelPermissions != Context.Server.ChannelPermissions && channelPerms != 0)
-                    res.AppendLine(
-                        $"**Channel Permissions:** {channelPerms}");
-                var serverPerms = role.Value.ServerPermissions ^
-                                  (Context.Server.ServerPermissions & role.Value.ServerPermissions);
-                if (role.Value.ServerPermissions != Context.Server.ServerPermissions)
-                    res.AppendLine(
-                        $"**Server Permissions:** {serverPerms}");
-                res.AppendLine("\n");
-            }
-
-            await ReplyAsync(res.ToString());
+            await InlineReplyAsync("Commands with permissions temporarily disabled.");
+            return;
+//             var res = new StringBuilder();
+//             res.AppendLine($@"**Default Channel Permissions:** {Context.Server.ChannelPermissions}");
+//             res.AppendLine($@"**Default Server Permissions:** {Context.Server.ServerPermissions}");
+//             res.AppendLine("\\");
+//             foreach (var role in Context.Server.Roles)
+//             {
+//                 res.AppendLine(@$"$\color{{{role.Value.Color ?? "white"}}}\textsf{{{role.Value.Name}}}$
+// > **Id:** `{role.Key}`");
+//                 if (role.Value.Color != null)
+//                     res.AppendLine($"> **Color:** `{role.Value.Color}`");
+//                 var channelPerms = role.Value.ChannelPermissions ^
+//                                    (Context.Server.ChannelPermissions & role.Value.ChannelPermissions);
+//                 if (role.Value.ChannelPermissions != Context.Server.ChannelPermissions && channelPerms != 0)
+//                     res.AppendLine(
+//                         $"**Channel Permissions:** {channelPerms}");
+//                 var serverPerms = role.Value.ServerPermissions ^
+//                                   (Context.Server.ServerPermissions & role.Value.ServerPermissions);
+//                 if (role.Value.ServerPermissions != Context.Server.ServerPermissions)
+//                     res.AppendLine(
+//                         $"**Server Permissions:** {serverPerms}");
+//                 res.AppendLine("\n");
+//             }
+//
+//             await ReplyAsync(res.ToString());
         }
     }
 }

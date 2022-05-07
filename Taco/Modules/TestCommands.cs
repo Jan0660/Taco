@@ -150,26 +150,28 @@ namespace Taco.Modules
         [Alias("perms")]
         public async Task PermissionTest(User user = null)
         {
-            user ??= Context.User;
-            var perms = Context.Server.GetPermissionsFor(user._id);
-
-            StringBuilder res = new();
-            res.Append("> ## Server Permissions\n");
-            foreach (var enumVal in Enum.GetValues<ServerPermission>())
-            {
-                res.AppendLine("> " + (perms.Server.HasFlag(enumVal) ? ":white_check_mark:" : ":x:") +
-                               $" {enumVal.ToString()}");
-            }
-
-            res.Append("> ## Channel Permissions\n");
-            foreach (var enumVal in Enum.GetValues<ChannelPermission>())
-            {
-                res.AppendLine("> " + (perms.Channel.HasFlag(enumVal) ? ":white_check_mark:" : ":x:") +
-                               $" {enumVal.ToString()}");
-            }
-            // todo: this channel permissions
-
-            await ReplyAsync(res.ToString());
+            await InlineReplyAsync("Commands with permissions temporarily disabled.");
+            return;
+            // user ??= Context.User;
+            // var perms = Context.Server.GetPermissionsFor(user._id);
+            //
+            // StringBuilder res = new();
+            // res.Append("> ## Server Permissions\n");
+            // foreach (var enumVal in Enum.GetValues<ServerPermission>())
+            // {
+            //     res.AppendLine("> " + (perms.Server.HasFlag(enumVal) ? ":white_check_mark:" : ":x:") +
+            //                    $" {enumVal.ToString()}");
+            // }
+            //
+            // res.Append("> ## Channel Permissions\n");
+            // foreach (var enumVal in Enum.GetValues<ChannelPermission>())
+            // {
+            //     res.AppendLine("> " + (perms.Channel.HasFlag(enumVal) ? ":white_check_mark:" : ":x:") +
+            //                    $" {enumVal.ToString()}");
+            // }
+            // // todo: this channel permissions
+            //
+            // await ReplyAsync(res.ToString());
         }
 
         [Command("prectest")]

@@ -26,8 +26,8 @@ public static class Util
         if (role.Color is not null or "")
             str.AppendLine($"Color: `{role.Color}`");
         str.AppendLine($"Hoisted: {StringBooled(role.Hoist ?? false)}");
-        str.AppendLine($"Server Permissions: {role.ServerPermissions} ({(int)role.ServerPermissions})");
-        str.AppendLine($"Channel Permissions: {role.ChannelPermissions} ({(int)role.ChannelPermissions})");
+        // str.AppendLine($"Server Permissions: {role.ServerPermissions} ({(int)role.ServerPermissions})");
+        // str.AppendLine($"Channel Permissions: {role.ChannelPermissions} ({(int)role.ChannelPermissions})");
         return str.ToString();
     }
 
@@ -48,10 +48,10 @@ public static class Util
             str.AppendLine($"Color: `{old.Color}` **=>** `{now.Color}`");
         if (old.Hoist != now.Hoist)
             str.AppendLine($"Hoisted: {StringBooled(now.Hoist ?? false)} **=>** {StringBooled(now.Hoist ?? false)}");
-        if(old.ServerPermissions != now.ServerPermissions)
-            str.AppendLine($"Server Permissions: {old.ServerPermissions} **=>** {now.ServerPermissions}");
-        if(old.ChannelPermissions != now.ChannelPermissions)
-            str.AppendLine($"Channel Permissions: {old.ChannelPermissions} **=>** {now.ChannelPermissions}");
+        // if(old.ServerPermissions != now.ServerPermissions)
+        //     str.AppendLine($"Server Permissions: {old.ServerPermissions} **=>** {now.ServerPermissions}");
+        // if(old.ChannelPermissions != now.ChannelPermissions)
+        //     str.AppendLine($"Channel Permissions: {old.ChannelPermissions} **=>** {now.ChannelPermissions}");
 
         return str.ToString();
     }

@@ -6,25 +6,21 @@ namespace Revolt
     {
         [JsonProperty("name")] public string Name { get; internal set; }
 
-        [JsonIgnore]
-        public ServerPermission ServerPermissions
-        {
-            get => (ServerPermission)PermissionsRaw[0];
-            set => PermissionsRaw[0] = (int)value;
-        }
-
-        [JsonIgnore]
-        public ChannelPermission ChannelPermissions
-        {
-            get => (ChannelPermission)PermissionsRaw[1];
-            set => PermissionsRaw[1] = (int)value;
-        }
-
-        [JsonProperty("permissions")] public int[] PermissionsRaw { get; internal set; }
+        [JsonProperty("permissions")] public RolePermissions Permissions { get; internal set; }
         [JsonProperty("colour")] public string? Color { get; set; }
 
         [JsonProperty("hoist")] public bool? Hoist { get; internal set; }
         // todo: do we nullable this?
         [JsonProperty("rank")] public int Rank { get; internal set; }
+    }
+
+    public class RolePermissions
+    {
+        [JsonProperty("a")]
+        public long Allow { get; internal set; }
+        [JsonProperty("b")]
+        public long Deny { get; internal set; }
+        [JsonProperty("r")]
+        public long? Ranking { get; internal set; }
     }
 }

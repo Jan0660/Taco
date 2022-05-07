@@ -29,7 +29,7 @@
             if (partial != null)
             {
                 partial.Name ??= old.Name;
-                partial.PermissionsRaw ??= old.PermissionsRaw;
+                partial.Permissions ??= old.Permissions;
                 partial.Color ??= old.Color;
                 partial.Hoist ??= old.Hoist;
                 now = partial;
